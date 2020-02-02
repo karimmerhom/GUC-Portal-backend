@@ -1,0 +1,33 @@
+{
+  "name": "tbhapp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "npm start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SamirOrabi/TBHApp.git"
+  },
+  "author": "Mohamed Hossam",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SamirOrabi/TBHApp/issues"
+  },
+  "homepage": "https://github.com/SamirOrabi/TBHApp#readme",
+  "dependencies": {
+    "@hapi/joi": "^17.1.0",
+    "axios": "^0.19.2",
+    "bcrypt": "^3.0.7",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "express-list-endpoints": "^4.0.1",
+    "joi": "^14.3.1",
+    "joi-password-complexity": "^3.1.0",
+    "jsonwebtoken": "^8.5.1",
+    "passport": "^0.4.1",
+    "pg": "^7.18.1",
+    "sequelize": "^5.21.3"
+  }
+}
