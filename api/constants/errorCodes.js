@@ -1,3 +1,5 @@
+const success = 0
+
 const validation = 101
 
 const emailExists = 102
@@ -10,11 +12,30 @@ const unVerified = 105
 
 const wrongVerificationCode = 106
 
+const alreadyVerified = 107
+//Old password like new password
+const SamePassword = 108
+
+const authentication = 109
+//User forgot password and didn't reset it
+const forgotPassword = 110
+
+const notAccessibleNow = 111
+
+const verificationCodeExpired = 112
+
 module.exports = {
+  success,
   validation,
   emailExists,
   unknown,
   invalidCredentials,
   unVerified,
-  wrongVerificationCode
+  wrongVerificationCode,
+  alreadyVerified,
+  SamePassword,
+  authentication,
+  forgotPassword,
+  notAccessibleNow,
+  verificationCodeExpired
 }

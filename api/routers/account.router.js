@@ -1,16 +1,30 @@
 const express = require('express')
 const router = express.Router()
 
-// import controller
 const accountController = require('../controllers/account.controller')
 
-const { register, login, verify } = accountController
+const {
+  register,
+  login,
+  verify,
+  change_password,
+  change_email,
+  change_phone,
+  forget_password,
+  reset_password,
+  resend_password
+} = accountController
 
-// const { verifyToken } = require('../helpers/authentications/login.auth')
-// const { verifyAdmin } = require('../helpers/authentications/admin.auth')
+const { verifyToken } = require('../../config/AuthenticationMiddleWare')
 
 router.post('/register', register)
 router.post('/login', login)
 router.post('/verify', verify)
+router.post('/changePassword', verifyToken, change_password)
+router.post('/changeEmail', verifyToken, change_email)
+router.post('/changePhone', verifyToken, change_phone)
+router.post('/forgetpassword', forget_password)
+router.post('/resetpassword', reset_password)
+router.post('/resendpassword', verifyToken, resend_password)
 
 module.exports = router

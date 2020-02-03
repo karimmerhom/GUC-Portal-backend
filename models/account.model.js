@@ -2,11 +2,7 @@ const Sequelize = require('sequelize')
 
 const sequelize = require('../config/DBConfig')
 
-const {
-  accountStatus,
-  paymentMethods,
-  gender
-} = require('../api/constants/TBH.enum')
+const { accountStatus, gender } = require('../api/constants/TBH.enum')
 
 const { Model } = Sequelize
 
@@ -30,19 +26,6 @@ Account.init(
     },
     phone: {
       type: Sequelize.STRING
-    },
-    facebookAccount: {
-      type: Sequelize.STRING
-    },
-    googleAccount: {
-      type: Sequelize.STRING
-    },
-    age: {
-      type: Sequelize.STRING
-    },
-    gender: {
-      type: Sequelize.STRING,
-      values: [gender.MALE, gender.FEMALE]
     },
     status: {
       type: Sequelize.ENUM,

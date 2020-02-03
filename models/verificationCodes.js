@@ -9,6 +9,9 @@ verificationCode.init(
   {
     code: {
       type: Sequelize.STRING
+    },
+    date: {
+      type: Sequelize.DATE
     }
   },
   {

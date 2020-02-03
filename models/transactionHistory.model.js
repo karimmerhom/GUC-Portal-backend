@@ -2,8 +2,6 @@ const Sequelize = require('sequelize')
 
 const sequelize = require('../config/DBConfig')
 
-const { accountStatus, paymentMethods } = require('../api/constants/TBH.enum')
-
 const { Model } = Sequelize
 
 class transactionHistory extends Model {}
