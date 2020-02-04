@@ -28,8 +28,8 @@ sequelize
   })
 
 app.use('/api/accounts', account)
-app.use('/api/bookings', booking)
-app.use('/api/packages', package)
+// app.use('/api/bookings', booking)
+// app.use('/api/packages', package)
 
 app.use((req, res) => {
   res.status(404).send({ err: 'No such url' })
