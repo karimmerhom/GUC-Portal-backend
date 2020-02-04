@@ -23,7 +23,7 @@ booking.init(
     roomType: {
       type: Sequelize.ENUM,
       values: [
-        'Meeting room',
+        'meeting room',
         'training room',
         'private office',
         'virtual office'

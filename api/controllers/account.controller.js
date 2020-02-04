@@ -17,7 +17,7 @@ const register = async (req, res) => {
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
-        error: 'Validation error'
+        error: isValid.error.details[0].message
       })
     }
     const findEmail = await AccountModel.findOne({
@@ -110,7 +110,7 @@ const login = async (req, res) => {
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
-        error: 'Validation error'
+        error: isValid.error.details[0].message
       })
     }
 
@@ -168,7 +168,7 @@ const verify = async (req, res) => {
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
-        error: 'Validation error'
+        error: isValid.error.details[0].message
       })
     }
     const account = await AccountModel.findOne({
@@ -242,7 +242,7 @@ const change_password = async (req, res) => {
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
-        error: 'Validation error'
+        error: isValid.error.details[0].message
       })
     }
     const { id } = req.data
@@ -293,7 +293,7 @@ const change_email = async (req, res) => {
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
-        error: 'Validation error'
+        error: isValid.error.details[0].message
       })
     }
     const { id } = req.data
@@ -323,7 +323,7 @@ const change_phone = async (req, res) => {
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
-        error: 'Validation error'
+        error: isValid.error.details[0].message
       })
     }
     const { id } = req.data
@@ -353,7 +353,7 @@ const forget_password = async (req, res) => {
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
-        error: 'Validation error'
+        error: isValid.error.details[0].message
       })
     }
     const account = await AccountModel.findOne({
@@ -439,7 +439,7 @@ const reset_password = async (req, res) => {
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
-        error: 'Validation error'
+        error: isValid.error.details[0].message
       })
     }
     const account = await AccountModel.findOne({
@@ -492,7 +492,7 @@ const resend_password = async (req, res) => {
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
-        error: 'Validation error'
+        error: isValid.error.details[0].message
       })
     }
     const { id } = req.data

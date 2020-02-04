@@ -7,18 +7,6 @@ const { Model } = Sequelize
 class calendar extends Model {}
 calendar.init(
   {
-    dayName: {
-      type: Sequelize.ENUM,
-      values: [
-        'Saturday',
-        'Sunday',
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday'
-      ]
-    },
     dayNumber: {
       type: Sequelize.FLOAT
     },
@@ -40,7 +28,7 @@ calendar.init(
       ]
     },
     slot: {
-      type: Sequelize.FLOAT
+      type: Sequelize.STRING
     },
     status: {
       type: Sequelize.ENUM,

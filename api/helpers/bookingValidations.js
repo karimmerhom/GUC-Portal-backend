@@ -23,7 +23,7 @@ const validateAddBooking = request => {
             '9PM'
           ])
           .required(),
-        period: joi.string().required(),
+        period: joi.number().required(),
         roomType: joi
           .string()
           .valid([
@@ -34,9 +34,11 @@ const validateAddBooking = request => {
           ])
           .required(),
         amountOfPeople: joi.number().required(),
-        price: joi.number().required(),
         packageCode: joi.string(),
-        paymentMethod: joi.string().valid(['cash', 'credit card', 'fawry'])
+        paymentMethod: joi
+          .string()
+          .valid(['cash', 'credit card', 'fawry'])
+          .required()
       })
       .required(),
     Account: joi
@@ -48,6 +50,29 @@ const validateAddBooking = request => {
   return joi.validate(request, schema)
 }
 
+const validateShowBookings = request => {
+  const schema = {
+    bookingDate: joi.object({
+      from: joi.date().required(),
+      to: joi.date().required()
+    })
+  }
+  return joi.validate(request, schema)
+}
+
+const validateConfirmBooking = request => {
+  const schema = {
+    Booking: joi
+      .object({
+        id: joi.number().required()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
+
 module.exports = {
-  validateAddBooking
+  validateAddBooking,
+  validateShowBookings,
+  validateConfirmBooking
 }

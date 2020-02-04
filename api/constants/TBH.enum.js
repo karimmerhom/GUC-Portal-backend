@@ -23,9 +23,15 @@ const verificationMethods = {
   EMAIL: 'email'
 }
 
+const slotStatus = {
+  BUSY: 'Busy',
+  FREE: 'Free'
+}
+
 module.exports = {
   accountStatus,
   paymentMethods,
   gender,
-  verificationMethods
+  verificationMethods,
+  slotStatus
 }

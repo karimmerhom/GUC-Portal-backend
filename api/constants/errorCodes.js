@@ -26,6 +26,12 @@ const verificationCodeExpired = 112
 
 const dateInThePast = 113
 
+const entityNotFound = 114
+
+const bookingCanceled = 115
+
+const slotNotFree = 116
+
 module.exports = {
   success,
   validation,
@@ -40,5 +46,8 @@ module.exports = {
   forgotPassword,
   notAccessibleNow,
   verificationCodeExpired,
-  dateInThePast
+  dateInThePast,
+  entityNotFound,
+  bookingCanceled,
+  slotNotFree
 }
