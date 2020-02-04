@@ -18,7 +18,7 @@ const add_booking = async (req, res) => {
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
-        error: 'Validation error'
+        error: isValid.error.details[0].message
       })
     }
     const { Booking, Account } = req.body
@@ -74,7 +74,7 @@ const show_all_slots_from_to = async (req, res) => {
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
-        error: 'Validation error'
+        error: isValid.error.details[0].message
       })
     }
     const { bookingDate } = req.body
@@ -96,7 +96,7 @@ const confirm_booking = async (req, res) => {
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
-        error: 'Validation error'
+        error: isValid.error.details[0].message
       })
     }
     const { Booking } = req.body
@@ -136,10 +136,11 @@ const confirm_booking = async (req, res) => {
     const checkSlot = await CalendarModel.findOne({
       where: {
         slot: booking.slot,
-        dayNumber: bookingDate.getDay(),
+        dayNumber: bookingDate.getDate(),
         month
       }
     })
+
     if (checkSlot) {
       return res.json({
         code: errorCodes.slotNotFree,
@@ -157,7 +158,7 @@ const confirm_booking = async (req, res) => {
       }
     )
     await CalendarModel.create({
-      dayNumber: bookingDate.getDay(),
+      dayNumber: bookingDate.getDate(),
       month,
       slot: booking.slot,
       status: slotStatus.BUSY

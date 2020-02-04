@@ -127,7 +127,7 @@ const login = async (req, res) => {
     if (!account) {
       return res.json({
         code: errorCodes.invalidCredentials,
-        error: 'User not found'
+        error: 'Wrong Credentials'
       })
     }
 
@@ -148,14 +148,21 @@ const login = async (req, res) => {
       lastName: account.lastName,
       username: account.username,
       phone: account.phone,
-      email: account.email
+      email: account.email,
+      status: account.status
     }
 
     const token = jwt.sign(payLoad, secretOrKey, {
       expiresIn: '8h'
     })
 
-    return res.json({ code: errorCodes.success, token, id: account.id })
+    return res.json({
+      code: errorCodes.success,
+      token,
+      id: account.id,
+      username: account.username,
+      state: account.status
+    })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
