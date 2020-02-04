@@ -5,6 +5,7 @@ const passport = require('passport')
 const app = express()
 
 const account = require('./api/routers/account.router')
+const booking = require('./api/routers/booking.router')
 
 // import db configuration
 const sequelize = require('./config/DBConfig')
@@ -26,6 +27,7 @@ sequelize
   })
 
 app.use('/api/accounts', account)
+// app.use('/api/bookings', booking)
 
 app.use((req, res) => {
   res.status(404).send({ err: 'No such url' })

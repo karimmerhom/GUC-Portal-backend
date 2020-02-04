@@ -15,7 +15,11 @@ const validateAccount = request => {
     Account: joi
       .object({
         password: new PasswordComplexity(complexityOptions).required(),
-        username: joi.string().required(),
+        username: joi
+          .string()
+          .min(5)
+          .max(15)
+          .required(),
         firstName: joi.string().required(),
         lastName: joi.string().required(),
         phoneNumber: joi
