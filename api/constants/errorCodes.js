@@ -32,6 +32,8 @@ const bookingCanceled = 115
 
 const slotNotFree = 116
 
+const packageAlreadyExists = 117
+
 module.exports = {
   success,
   validation,
@@ -49,5 +51,6 @@ module.exports = {
   dateInThePast,
   entityNotFound,
   bookingCanceled,
-  slotNotFree
+  slotNotFree,
+  packageAlreadyExists
 }

@@ -20,8 +20,14 @@ const validateAccount = request => {
           .min(5)
           .max(15)
           .required(),
-        firstName: joi.string().required(),
-        lastName: joi.string().required(),
+        firstName: joi
+          .string()
+          .min(3)
+          .required(),
+        lastName: joi
+          .string()
+          .min(3)
+          .required(),
         phoneNumber: joi
           .string()
           .trim()

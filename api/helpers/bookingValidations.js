@@ -71,8 +71,21 @@ const validateConfirmBooking = request => {
   return joi.validate(request, schema)
 }
 
+const validateCreatePackage = request => {
+  const schema = {
+    Package: joi
+      .object({
+        code: joi.string().required(),
+        packageSize: joi.number().required()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
+
 module.exports = {
   validateAddBooking,
   validateShowBookings,
-  validateConfirmBooking
+  validateConfirmBooking,
+  validateCreatePackage
 }

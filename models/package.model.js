@@ -8,8 +8,8 @@ const Account = require('./account.model')
 
 const { Model } = Sequelize
 
-class package extends Model {}
-package.init(
+class packageModel extends Model {}
+packageModel.init(
   {
     code: {
       type: Sequelize.STRING
@@ -31,9 +31,9 @@ package.init(
   }
 )
 
-package.belongsTo(Account, {
+packageModel.belongsTo(Account, {
   foreignKey: 'accountId',
   targetKey: 'id'
 })
 
-module.exports = booking
+module.exports = packageModel
