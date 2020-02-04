@@ -131,13 +131,6 @@ const login = async (req, res) => {
       })
     }
 
-    if (account.password === null) {
-      return res.json({
-        code: errorCodes.forgotPassword,
-        error: 'Please reset your password'
-      })
-    }
-
     // if (account.status === accountStatus.PENDING) {
     //   return res.json({ code: errorCodes.unVerified })
     // }
@@ -378,9 +371,51 @@ const forget_password = async (req, res) => {
         error: 'User not found'
       })
     }
+
+    const code = await generateOTP()
+    await VerificationCode.create({
+      code,
+      date: new Date()
+    })
+
+    const saltKey = bcrypt.genSaltSync(10)
+    const hashed_pass = bcrypt.hashSync(code, saltKey)
+
+    if (Account.sendBy === verificationMethods.EMAIL) {
+      axios({
+        method: 'post',
+        url: 'http://18.185.138.12:2000/emailservice/sendemail',
+        data: {
+          header: {
+            accessKey: '6kohol360nx7cobnnetam3puhmeg0bmx-n1in91m-db647jnzr'
+          },
+          body: {
+            receiverMail: account.email,
+            body: code,
+            subject: 'Verify your account'
+          }
+        }
+      })
+    }
+
+    if (Account.sendBy === verificationMethods.SMS) {
+      axios({
+        method: 'post',
+        url: 'http://18.185.138.12:2001/epushservice/sendsms',
+        data: {
+          header: {
+            accessKey: 'inf7qawo9ooyxkxpj92ix5ffqn647zed-z9u4m79-c4oeqsyv3'
+          },
+          body: {
+            receiverPhone: account.phone,
+            body: code
+          }
+        }
+      })
+    }
     await AccountModel.update(
       {
-        password: null
+        password: hashed_pass
       },
       {
         where: {

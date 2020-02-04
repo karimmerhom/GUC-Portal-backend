@@ -4,6 +4,8 @@ const sequelize = require('../config/DBConfig')
 
 const { Model } = Sequelize
 
+const Account = require('./account.model')
+
 class transactionHistory extends Model {}
 transactionHistory.init(
   {
@@ -21,8 +23,8 @@ transactionHistory.init(
 )
 
 transactionHistory.belongsTo(Account, {
-  foreignKey: 'id',
-  targetKey: 'accountId'
+  foreignKey: 'accountId',
+  targetKey: 'id'
 })
 
 module.exports = transactionHistory

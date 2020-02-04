@@ -24,6 +24,8 @@ const notAccessibleNow = 111
 
 const verificationCodeExpired = 112
 
+const dateInThePast = 113
+
 module.exports = {
   success,
   validation,
@@ -37,5 +39,6 @@ module.exports = {
   authentication,
   forgotPassword,
   notAccessibleNow,
-  verificationCodeExpired
+  verificationCodeExpired,
+  dateInThePast
 }

@@ -118,7 +118,11 @@ const validateForgetPassword = request => {
   const schema = {
     Account: joi
       .object({
-        username: joi.string().required()
+        username: joi.string().required(),
+        sendBy: joi
+          .string()
+          .valid(['sms', 'email'])
+          .required()
       })
       .required()
   }

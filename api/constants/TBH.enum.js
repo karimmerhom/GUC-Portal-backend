@@ -1,10 +1,16 @@
 const accountStatus = {
   PENDING: 'pending',
-  VERIFIED: 'verified'
+  VERIFIED: 'verified',
+  CONFIRMED: 'confirmed',
+  CANCELED: 'canceled',
+  ACTIVE: 'active',
+  USED: 'used'
 }
 
 const paymentMethods = {
-  CASH: 'cash'
+  CASH: 'cash',
+  FAWRY: 'fawry',
+  CC: 'credit card'
 }
 
 const gender = {
