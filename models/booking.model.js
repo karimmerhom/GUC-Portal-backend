@@ -17,9 +17,6 @@ booking.init(
     slot: {
       type: Sequelize.STRING
     },
-    period: {
-      type: Sequelize.STRING
-    },
     roomType: {
       type: Sequelize.ENUM,
       values: [

@@ -22,7 +22,10 @@ packageModel.init(
     },
     status: {
       type: Sequelize.ENUM,
-      values: [accountStatus.ACTIVE, accountStatus.USED]
+      values: [accountStatus.ACTIVE, accountStatus.USED, accountStatus.CANCELED]
+    },
+    name: {
+      type: Sequelize.STRING
     }
   },
   {

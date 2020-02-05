@@ -36,7 +36,8 @@ const create_package = async (req, res) => {
       code: Package.code,
       usage: 0,
       remaining: Package.packageSize,
-      status: accountStatus.ACTIVE
+      status: accountStatus.ACTIVE,
+      name: Package.name
     })
     return res.json({ code: errorCodes.success })
   } catch (exception) {
@@ -44,6 +45,185 @@ const create_package = async (req, res) => {
   }
 }
 
+const cancel_specific_package = async (req, res) => {
+  try {
+    const isValid = validator.validateCancelSpecificPackage(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Package } = req.body
+    const checkPackage = await PackageModel.findOne({
+      where: { code: Package.code }
+    })
+    if (!checkPackage) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'Package does not exist'
+      })
+    }
+    await PackageModel.update(
+      { status: accountStatus.CANCELED },
+      { where: { code: Package.code } }
+    )
+    return res.json({ code: errorCodes.success })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const cancel_all_packages = async (req, res) => {
+  try {
+    const isValid = validator.validateCancelAllPackages(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Package } = req.body
+    const checkPackage = await PackageModel.findOne({
+      where: { name: Package.name }
+    })
+    if (!checkPackage) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'Package does not exist'
+      })
+    }
+    await PackageModel.update(
+      {
+        status: accountStatus.CANCELED
+      },
+      {
+        where: {
+          name: Package.name
+        }
+      }
+    )
+    return res.json({ code: errorCodes.success })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const view_package_by_name = async (req, res) => {
+  try {
+    const isValid = validator.validateViewPackageByName(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Package } = req.body
+    const packages = await PackageModel.findAll({
+      where: {
+        name: Package.name
+      }
+    })
+    return res.json({ code: errorCodes.success, packages })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const view_package_by_code = async (req, res) => {
+  try {
+    const isValid = validator.validateViewPackageByCode(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Package } = req.body
+    const package = await PackageModel.findOne({
+      where: {
+        code: Package.code
+      }
+    })
+    return res.json({ code: errorCodes.success, package })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const edit_package_by_code = async (req, res) => {
+  try {
+    const isValid = validator.validateEditPackageByCode(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Package } = req.body
+    const package = await PackageModel.findOne({
+      where: {
+        code: Package.code
+      }
+    })
+    if (!package) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'Package not found'
+      })
+    }
+    await PackageModel.update(
+      {
+        status: Package.status
+      },
+      { where: { code: Package.code } }
+    )
+    return res.json({ code: errorCodes.success })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const edit_package_by_name = async (req, res) => {
+  try {
+    const isValid = validator.validateEditPackageByName(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Package } = req.body
+    const package = await PackageModel.findOne({
+      where: {
+        name: Package.name
+      }
+    })
+    if (!package) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'Package not found'
+      })
+    }
+    await PackageModel.update(
+      {
+        status: Package.status
+      },
+      { where: { name: Package.name } }
+    )
+    return res.json({ code: errorCodes.success })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
 module.exports = {
-  create_package
+  create_package,
+  cancel_all_packages,
+  cancel_specific_package,
+  view_package_by_name,
+  view_package_by_code,
+  edit_package_by_code,
+  edit_package_by_name
 }

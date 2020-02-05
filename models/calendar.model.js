@@ -7,8 +7,11 @@ const { Model } = Sequelize
 class calendar extends Model {}
 calendar.init(
   {
+    date: {
+      type: Sequelize.DATE
+    },
     dayNumber: {
-      type: Sequelize.FLOAT
+      type: Sequelize.INTEGER
     },
     month: {
       type: Sequelize.ENUM,
@@ -26,6 +29,12 @@ calendar.init(
         'November',
         'December'
       ]
+    },
+    monthNumber: {
+      type: Sequelize.INTEGER
+    },
+    year: {
+      type: Sequelize.INTEGER
     },
     slot: {
       type: Sequelize.STRING
