@@ -48,6 +48,55 @@ const register = async (req, res) => {
       })
     }
 
+    const saltKey = bcrypt.genSaltSync(10)
+    const hashed_pass = bcrypt.hashSync(Account.password, saltKey)
+    await AccountModel.create({
+      username: Account.username.toString().toLowerCase(),
+      password: hashed_pass,
+      firstName: Account.firstName,
+      lastName: Account.lastName,
+      phone: Account.phoneNumber,
+      email: Account.email.toString().toLowerCase(),
+      status: accountStatus.PENDING
+    })
+    return res.json({ code: errorCodes.success })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const verify = async (req, res) => {
+  try {
+    const { Account } = req.body
+    const isValid = validator.validateVerify({ Account })
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+
+    const account = await AccountModel.findOne({
+      where: {
+        [Op.or]: {
+          username: Account.username.toString().toLowerCase(),
+          email: Account.username.toString().toLowerCase(),
+          phone: Account.username
+        }
+      }
+    })
+    if (!account) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'User not found'
+      })
+    }
+    if (account.status === accountStatus.VERIFIED) {
+      return res.json({
+        code: errorCodes.alreadyVerified,
+        error: 'Already verified'
+      })
+    }
     const code = await generateOTP()
     await VerificationCode.create({
       code,
@@ -59,10 +108,10 @@ const register = async (req, res) => {
         url: 'http://18.185.138.12:2000/emailservice/sendemail',
         data: {
           header: {
-            accessKey: '6kohol360nx7cobnnetam3puhmeg0bmx-n1in91m-db647jnzr'
+            accessKey: 'U2FsdGVkX19obt+1O1fD8EVO9wRD9eTn6bckJOyG7y4='
           },
           body: {
-            receiverMail: Account.email,
+            receiverMail: account.email,
             body: code,
             subject: 'Verify your account'
           }
@@ -76,27 +125,27 @@ const register = async (req, res) => {
         url: 'http://18.185.138.12:2001/epushservice/sendsms',
         data: {
           header: {
-            accessKey: 'inf7qawo9ooyxkxpj92ix5ffqn647zed-z9u4m79-c4oeqsyv3'
+            accessKey: 'U2FsdGVkX19sK2zyxfrYHesYdZIvqtWUdxylT0b5Ums='
           },
           body: {
-            receiverPhone: Account.phoneNumber,
+            receiverPhone: account.phone,
             body: code
           }
         }
       })
     }
-    const saltKey = bcrypt.genSaltSync(10)
-    const hashed_pass = bcrypt.hashSync(Account.password, saltKey)
-    await AccountModel.create({
-      username: Account.username.toString().toLowerCase(),
-      password: hashed_pass,
-      firstName: Account.firstName,
-      lastName: Account.lastName,
-      phone: Account.phoneNumber,
-      email: Account.email.toString().toLowerCase(),
-      status: accountStatus.PENDING,
-      verificationCode: code
-    })
+    await AccountModel.update(
+      { verificationCode: code },
+      {
+        where: {
+          [Op.or]: {
+            username: Account.username.toString().toLowerCase(),
+            email: Account.username.toString().toLowerCase(),
+            phone: Account.username
+          }
+        }
+      }
+    )
     return res.json({ code: errorCodes.success })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
@@ -168,10 +217,10 @@ const login = async (req, res) => {
   }
 }
 
-const verify = async (req, res) => {
+const confirm_verify = async (req, res) => {
   try {
     const { Account } = req.body
-    const isValid = validator.validateVerify({ Account })
+    const isValid = validator.validateConfirmVerify({ Account })
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
@@ -518,6 +567,12 @@ const resend_password = async (req, res) => {
         error: 'User not found'
       })
     }
+    if (account.status === accountStatus.VERIFIED) {
+      return res.json({
+        code: errorCodes.alreadyVerified,
+        error: 'Already verified'
+      })
+    }
     const code = await generateOTP()
     await VerificationCode.create({
       code,
@@ -580,5 +635,6 @@ module.exports = {
   change_phone,
   forget_password,
   reset_password,
-  resend_password
+  resend_password,
+  confirm_verify
 }

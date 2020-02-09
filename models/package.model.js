@@ -26,6 +26,9 @@ packageModel.init(
     },
     name: {
       type: Sequelize.STRING
+    },
+    price: {
+      type: Sequelize.FLOAT
     }
   },
   {

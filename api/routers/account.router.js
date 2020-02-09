@@ -11,7 +11,8 @@ const {
   change_email,
   change_phone,
   forget_password,
-  resend_password
+  resend_password,
+  confirm_verify
 } = accountController
 
 const { verifyToken } = require('../../config/AuthenticationMiddleWare')
@@ -19,6 +20,7 @@ const { verifyToken } = require('../../config/AuthenticationMiddleWare')
 router.post('/register', register)
 router.post('/login', login)
 router.post('/verify', verify)
+router.post('/confirmverify', confirm_verify)
 router.post('/changePassword', verifyToken, change_password)
 router.post('/changeEmail', verifyToken, change_email)
 router.post('/changePhone', verifyToken, change_phone)

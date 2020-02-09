@@ -1,6 +1,7 @@
 const express = require('express')
 const cors = require('cors')
 const passport = require('passport')
+const allRoutes = require('express-list-endpoints')
 
 const app = express()
 
@@ -27,9 +28,27 @@ sequelize
     console.error('Unable to connect to postgres', err)
   })
 
+const explore = (req, res) => {
+  const routes = allRoutes(app)
+  const result = {
+    ServiceList: []
+  }
+  routes.forEach(route => {
+    const name = route.path.split('/')[5]
+    result.ServiceList.push({
+      Service: {
+        name,
+        fullUrl: `${route.path}`
+      }
+    })
+  })
+  return res.json(result)
+}
+
 app.use('/api/accounts', account)
 app.use('/api/bookings', booking)
 app.use('/api/packages', package)
+app.use('/explore', explore)
 
 app.use((req, res) => {
   res.status(404).send({ err: 'No such url' })

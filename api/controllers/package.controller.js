@@ -37,7 +37,8 @@ const create_package = async (req, res) => {
       usage: 0,
       remaining: Package.packageSize,
       status: accountStatus.ACTIVE,
-      name: Package.name
+      name: Package.name,
+      price: Package.price
     })
     return res.json({ code: errorCodes.success })
   } catch (exception) {

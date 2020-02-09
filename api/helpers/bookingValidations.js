@@ -83,7 +83,11 @@ const validateCreatePackage = request => {
       .object({
         code: joi.string().required(),
         packageSize: joi.number().required(),
-        name: joi.string().required()
+        name: joi.string().required(),
+        price: joi
+          .number()
+          .positive()
+          .required()
       })
       .required()
   }

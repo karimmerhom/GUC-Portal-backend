@@ -36,10 +36,6 @@ const validateAccount = request => {
         email: joi
           .string()
           .email()
-          .required(),
-        verifyBy: joi
-          .string()
-          .valid(['sms', 'email'])
           .required()
       })
       .required()
@@ -60,6 +56,21 @@ const validateLogin = request => {
 }
 
 const validateVerify = request => {
+  const schema = {
+    Account: joi
+      .object({
+        username: joi.string().required(),
+        verifyBy: joi
+          .string()
+          .valid(['sms', 'email'])
+          .required()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
+
+const validateConfirmVerify = request => {
   const schema = {
     Account: joi
       .object({
@@ -184,5 +195,6 @@ module.exports = {
   validateChangePhone,
   validateForgetPassword,
   validateResetPassword,
-  validateResendPassword
+  validateResendPassword,
+  validateConfirmVerify
 }
