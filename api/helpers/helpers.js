@@ -1,4 +1,6 @@
 const VerificationCode = require('../../models/verificationCodes')
+const errorCodes = require('../constants/errorCodes')
+const CalendarModel = require('../../models/calendar.model')
 
 const generateOTP = async () => {
   let text = ''
@@ -14,6 +16,43 @@ const generateOTP = async () => {
   return text
 }
 
+const checkFreeSlot = async (slot, date) => {
+  const bookingDate = new Date(date)
+  const months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December'
+  ]
+  const month = months[bookingDate.getMonth()]
+
+  const checkSlot = await CalendarModel.findOne({
+    where: {
+      slot: slot,
+      dayNumber: bookingDate.getDate(),
+      month,
+      monthNumber: bookingDate.getMonth(),
+      year: bookingDate.getFullYear()
+    }
+  })
+  if (checkSlot) {
+    return {
+      code: errorCodes.slotNotFree,
+      error: 'Slot is not free'
+    }
+  }
+  return { code: errorCodes.success }
+}
+
 module.exports = {
-  generateOTP
+  generateOTP,
+  checkFreeSlot
 }

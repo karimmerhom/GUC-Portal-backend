@@ -5,7 +5,12 @@ const AccountModel = require('../../models/account.model')
 const validator = require('../helpers/validations')
 const errorCodes = require('../constants/errorCodes')
 const { Op } = require('sequelize')
-const { secretOrKey } = require('../../config/keys')
+const {
+  secretOrKey,
+  smsAccessKey,
+  contactAccessKey,
+  emailAccessKey
+} = require('../../config/keys')
 const { accountStatus, verificationMethods } = require('../constants/TBH.enum')
 const VerificationCode = require('../../models/verificationCodes')
 const { generateOTP } = require('../helpers/helpers')
@@ -50,7 +55,7 @@ const register = async (req, res) => {
 
     const saltKey = bcrypt.genSaltSync(10)
     const hashed_pass = bcrypt.hashSync(Account.password, saltKey)
-    await AccountModel.create({
+    const accountCreated = await AccountModel.create({
       username: Account.username.toString().toLowerCase(),
       password: hashed_pass,
       firstName: Account.firstName,
@@ -58,6 +63,72 @@ const register = async (req, res) => {
       phone: Account.phoneNumber,
       email: Account.email.toString().toLowerCase(),
       status: accountStatus.PENDING
+    })
+    axios({
+      method: 'post',
+      url: 'http://18.185.138.12:2003/contacts/createcontact',
+      data: {
+        header: {
+          accessKey: contactAccessKey
+        },
+        body: {
+          firstName: Account.firstName,
+          lastName: Account.lastName,
+          email: Account.email,
+          phoneNumber: Account.phoneNumber,
+          ownerId: parseInt(accountCreated.id)
+        }
+      }
+    })
+    return res.json({ code: errorCodes.success })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const update_profile = async (req, res) => {
+  try {
+    const { Account } = req.body
+    const isValid = validator.validateUpdateProfile({ Account })
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { id } = req.data
+    if (parseInt(id) !== parseInt(Account.ownerId)) {
+      return res.json({ code: errorCodes.authentication, error: 'breach' })
+    }
+    const account = await AccountModel.findOne({
+      where: {
+        id: parseInt(id)
+      }
+    })
+    if (!account) {
+      return res.json({
+        code: errorCodes.invalidCredentials,
+        error: 'User not found'
+      })
+    }
+    axios({
+      method: 'post',
+      url: 'http://18.185.138.12:2003/contacts/updatecontact',
+      data: {
+        header: {
+          accessKey: contactAccessKey
+        },
+        body: {
+          firstName: Account.firstName,
+          lastName: Account.lastName,
+          email: Account.email,
+          phoneNumber: Account.phoneNumber,
+          ownerId: parseInt(Account.ownerId),
+          gender: Account.gender,
+          birhdate: Account.birthdate,
+          profession: Account.profession
+        }
+      }
     })
     return res.json({ code: errorCodes.success })
   } catch (exception) {
@@ -108,7 +179,7 @@ const verify = async (req, res) => {
         url: 'http://18.185.138.12:2000/emailservice/sendemail',
         data: {
           header: {
-            accessKey: 'U2FsdGVkX19obt+1O1fD8EVO9wRD9eTn6bckJOyG7y4='
+            accessKey: emailAccessKey
           },
           body: {
             receiverMail: account.email,
@@ -125,7 +196,7 @@ const verify = async (req, res) => {
         url: 'http://18.185.138.12:2001/epushservice/sendsms',
         data: {
           header: {
-            accessKey: 'U2FsdGVkX19sK2zyxfrYHesYdZIvqtWUdxylT0b5Ums='
+            accessKey: smsAccessKey
           },
           body: {
             receiverPhone: account.phone,
@@ -213,6 +284,7 @@ const login = async (req, res) => {
       state: account.status
     })
   } catch (exception) {
+    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -241,15 +313,15 @@ const confirm_verify = async (req, res) => {
         error: 'User not found'
       })
     }
-    if (!account) {
-      return res.json({
-        code: errorCodes.invalidCredentials,
-        error: 'User not found'
-      })
-    }
     const checkCodeExpired = await VerificationCode.findOne({
       where: { code: account.verificationCode }
     })
+    if (!checkCodeExpired) {
+      return res.json({
+        code: errorCodes.wrongVerificationCode,
+        error: 'Wrong verification code'
+      })
+    }
     const date1 = new Date(checkCodeExpired.date)
     const date2 = new Date()
     const diffTime = Math.abs(date2 - date1)
@@ -287,6 +359,7 @@ const confirm_verify = async (req, res) => {
       error: 'Wrong verification code'
     })
   } catch (exception) {
+    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -443,7 +516,7 @@ const forget_password = async (req, res) => {
         url: 'http://18.185.138.12:2000/emailservice/sendemail',
         data: {
           header: {
-            accessKey: '6kohol360nx7cobnnetam3puhmeg0bmx-n1in91m-db647jnzr'
+            accessKey: emailAccessKey
           },
           body: {
             receiverMail: account.email,
@@ -460,7 +533,7 @@ const forget_password = async (req, res) => {
         url: 'http://18.185.138.12:2001/epushservice/sendsms',
         data: {
           header: {
-            accessKey: 'inf7qawo9ooyxkxpj92ix5ffqn647zed-z9u4m79-c4oeqsyv3'
+            accessKey: smsAccessKey
           },
           body: {
             receiverPhone: account.phone,
@@ -584,7 +657,7 @@ const resend_password = async (req, res) => {
         url: 'http://18.185.138.12:2000/emailservice/sendemail',
         data: {
           header: {
-            accessKey: '6kohol360nx7cobnnetam3puhmeg0bmx-n1in91m-db647jnzr'
+            accessKey: emailAccessKey
           },
           body: {
             receiverMail: account.email,
@@ -601,7 +674,7 @@ const resend_password = async (req, res) => {
         url: 'http://18.185.138.12:2001/epushservice/sendsms',
         data: {
           header: {
-            accessKey: 'inf7qawo9ooyxkxpj92ix5ffqn647zed-z9u4m79-c4oeqsyv3'
+            accessKey: smsAccessKey
           },
           body: {
             receiverPhone: account.phone,
@@ -626,6 +699,52 @@ const resend_password = async (req, res) => {
   }
 }
 
+const get_profile = async (req, res) => {
+  try {
+    const { Account } = req.body
+    const isValid = validator.validateGetProfile({ Account })
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { id } = req.data
+    if (parseInt(id) !== parseInt(Account.ownerId)) {
+      return res.json({ code: errorCodes.authentication, error: 'breach' })
+    }
+    const account = await AccountModel.findOne({
+      where: {
+        id: parseInt(id)
+      }
+    })
+    if (!account) {
+      return res.json({
+        code: errorCodes.invalidCredentials,
+        error: 'User not found'
+      })
+    }
+    let profile
+    await axios({
+      method: 'post',
+      url: 'http://18.185.138.12:2003/contacts/getcontact',
+      data: {
+        header: {
+          accessKey: contactAccessKey
+        },
+        body: {
+          ownerId: parseInt(Account.ownerId)
+        }
+      }
+    }).then(res => {
+      profile = res.data.body.Item
+    })
+    return res.json({ code: errorCodes.success, profile })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
 module.exports = {
   register,
   login,
@@ -636,5 +755,7 @@ module.exports = {
   forget_password,
   reset_password,
   resend_password,
-  confirm_verify
+  confirm_verify,
+  update_profile,
+  get_profile
 }

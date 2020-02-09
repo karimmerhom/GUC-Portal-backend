@@ -29,5 +29,12 @@
     "passport": "^0.4.1",
     "pg": "^7.18.1",
     "sequelize": "^5.21.3"
+  },
+  "devDependencies": {
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb-base": "^13.2.0",
+    "eslint-plugin-import": "^2.18.0",
+    "nodemon": "^1.19.2",
+    "prettier": "^1.19.1"
   }
 }

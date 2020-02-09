@@ -8,12 +8,12 @@ const { Op } = require('sequelize')
 const { secretOrKey } = require('../../config/keys')
 const { accountStatus, slotStatus } = require('../constants/TBH.enum')
 const VerificationCode = require('../../models/verificationCodes')
-const { generateOTP } = require('../helpers/helpers')
+const { generateOTP, checkFreeSlot } = require('../helpers/helpers')
 const BookingModel = require('../../models/booking.model')
 const CalendarModel = require('../../models/calendar.model')
 const PackageModel = require('../../models/package.model')
 
-const add_booking = async (req, res) => {
+const validate_booking = async (req, res) => {
   try {
     const isValid = validator.validateAddBooking(req.body)
     if (isValid.error) {
@@ -50,6 +50,22 @@ const add_booking = async (req, res) => {
         error: 'Date cannot be in the past'
       })
     }
+
+    let slots = []
+    slots = Booking.slot
+    let slotsThatAreNotFree = []
+    for (i = 0; i < slots.length; i++) {
+      const helper = await checkFreeSlot(slots[i], Booking.date)
+      if (helper.code === errorCodes.slotNotFree) {
+        slotsThatAreNotFree.push(slots[i])
+      }
+    }
+    if (slotsThatAreNotFree.length !== 0) {
+      res.json({
+        code: errorCodes.slotNotFree,
+        error: `These slots are not free: ${slotsThatAreNotFree}`
+      })
+    }
     if (Booking.packageCode !== '') {
       const package = await PackageModel.findOne({
         where: { code: Booking.packageCode }
@@ -61,24 +77,9 @@ const add_booking = async (req, res) => {
         })
       }
     }
-    let slots = []
-    slots = Booking.slot
-    slots.forEach(async element => {
-      await BookingModel.create({
-        date: Booking.date,
-        slot: element,
-        period: Booking.period,
-        roomType: Booking.roomType,
-        amountOfPeople: Booking.amountOfPeople,
-        packageCode: Booking.packageCode,
-        paymentMethod: Booking.paymentMethod,
-        accountId: id,
-        dateCreated: new Date(),
-        status: accountStatus.PENDING
-      })
-    })
-    res.json({ code: errorCodes.success })
+    return res.json({ code: errorCodes.success })
   } catch (exception) {
+    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -116,8 +117,7 @@ const show_all_slots_from_to = async (req, res) => {
       day: element.dayNumber,
       month: element.month,
       year: element.year,
-      slot: element.slot,
-      status: element.status
+      slot: element.slot
     }))
     return res.json({
       code: errorCodes.success,
@@ -309,7 +309,7 @@ const edit_booking = async (req, res) => {
 }
 
 module.exports = {
-  add_booking,
+  validate_booking,
   show_all_slots_from_to,
   confirm_booking,
   show_my_bookings

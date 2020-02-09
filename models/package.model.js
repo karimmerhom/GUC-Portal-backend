@@ -2,7 +2,7 @@ const Sequelize = require('sequelize')
 
 const sequelize = require('../config/DBConfig')
 
-const { accountStatus, paymentMethods } = require('../api/constants/TBH.enum')
+const { accountStatus } = require('../api/constants/TBH.enum')
 
 const Account = require('./account.model')
 
@@ -24,11 +24,21 @@ packageModel.init(
       type: Sequelize.ENUM,
       values: [accountStatus.ACTIVE, accountStatus.USED, accountStatus.CANCELED]
     },
-    name: {
-      type: Sequelize.STRING
+    package: {
+      type: Sequelize.ENUM,
+      values: [
+        'meeting room 5',
+        'meeting room 10',
+        'training room 7',
+        'training room 16'
+      ]
     },
     price: {
       type: Sequelize.FLOAT
+    },
+    roomType: {
+      type: Sequelize.ENUM,
+      values: ['meeting room', 'training room']
     }
   },
   {

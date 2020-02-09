@@ -43,6 +43,38 @@ const validateAccount = request => {
   return joi.validate(request, schema)
 }
 
+const validateUpdateProfile = request => {
+  const schema = {
+    Account: joi
+      .object({
+        firstName: joi.string().min(3),
+        lastName: joi.string().min(3),
+        phoneNumber: joi
+          .string()
+          .trim()
+          .regex(/^[0-9]{11,11}$/),
+        email: joi.string().email(),
+        ownerId: joi.number().required(),
+        gender: joi.string().valid('Male', 'Female'),
+        birthdate: joi.date(),
+        profession: joi.string()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
+
+const validateGetProfile = request => {
+  const schema = {
+    Account: joi
+      .object({
+        ownerId: joi.number().required()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
+
 const validateLogin = request => {
   const schema = {
     Account: joi
@@ -196,5 +228,7 @@ module.exports = {
   validateForgetPassword,
   validateResetPassword,
   validateResendPassword,
-  validateConfirmVerify
+  validateConfirmVerify,
+  validateUpdateProfile,
+  validateGetProfile
 }
