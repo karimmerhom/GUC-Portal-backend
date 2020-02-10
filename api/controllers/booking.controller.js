@@ -55,7 +55,11 @@ const validate_booking = async (req, res) => {
     slots = Booking.slot
     let slotsThatAreNotFree = []
     for (i = 0; i < slots.length; i++) {
-      const helper = await checkFreeSlot(slots[i], Booking.date)
+      const helper = await checkFreeSlot(
+        slots[i],
+        Booking.date,
+        Booking.roomNumber
+      )
       if (helper.code === errorCodes.slotNotFree) {
         slotsThatAreNotFree.push(slots[i])
       }

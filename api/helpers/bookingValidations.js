@@ -37,6 +37,10 @@ const validateAddBooking = request => {
             'virtual office'
           ])
           .required(),
+        roomNumber: joi
+          .string()
+          .valid(['1', '2', '3', '4'])
+          .required(),
         amountOfPeople: joi.number().required(),
         packageCode: joi.string().allow(''),
         paymentMethod: joi

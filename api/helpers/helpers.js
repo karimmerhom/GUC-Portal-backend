@@ -16,7 +16,7 @@ const generateOTP = async () => {
   return text
 }
 
-const checkFreeSlot = async (slot, date) => {
+const checkFreeSlot = async (slot, date, roomNumber) => {
   const bookingDate = new Date(date)
   const months = [
     'January',
@@ -40,7 +40,8 @@ const checkFreeSlot = async (slot, date) => {
       dayNumber: bookingDate.getDate(),
       month,
       monthNumber: bookingDate.getMonth(),
-      year: bookingDate.getFullYear()
+      year: bookingDate.getFullYear(),
+      roomNumber
     }
   })
   if (checkSlot) {
@@ -51,6 +52,8 @@ const checkFreeSlot = async (slot, date) => {
   }
   return { code: errorCodes.success }
 }
+
+const checkPrice = async (amountOfPeople, roomType) => {}
 
 module.exports = {
   generateOTP,

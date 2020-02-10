@@ -91,7 +91,7 @@ const validateVerify = request => {
   const schema = {
     Account: joi
       .object({
-        username: joi.string().required(),
+        id: joi.number().required(),
         verifyBy: joi
           .string()
           .valid(['sms', 'email'])
@@ -106,7 +106,7 @@ const validateConfirmVerify = request => {
   const schema = {
     Account: joi
       .object({
-        username: joi.string().required(),
+        id: joi.number().required(),
         code: joi.string().required()
       })
       .required()

@@ -26,6 +26,10 @@ booking.init(
         'virtual office'
       ]
     },
+    roomNumber: {
+      type: Sequelize.ENUM,
+      values: ['1', '2', '3', '4']
+    },
     amountOfPeople: {
       type: Sequelize.INTEGER
     },

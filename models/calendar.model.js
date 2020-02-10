@@ -42,6 +42,10 @@ calendar.init(
     status: {
       type: Sequelize.ENUM,
       values: ['Busy', 'Free']
+    },
+    roomNumber: {
+      type: Sequelize.ENUM,
+      values: ['1', '2', '3', '4']
     }
   },
   {

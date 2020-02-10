@@ -111,6 +111,12 @@ const update_profile = async (req, res) => {
         error: 'User not found'
       })
     }
+    if (account.status === accountStatus.PENDING) {
+      return res.json({
+        code: errorCodes.unVerified,
+        error: 'Account must be verified'
+      })
+    }
     axios({
       method: 'post',
       url: 'http://18.185.138.12:2003/contacts/updatecontact',
@@ -146,14 +152,13 @@ const verify = async (req, res) => {
         error: isValid.error.details[0].message
       })
     }
-
+    const { id } = req.data
+    if (parseInt(id) !== parseInt(Account.id)) {
+      return res.json({ code: errorCodes.authentication, error: 'breach' })
+    }
     const account = await AccountModel.findOne({
       where: {
-        [Op.or]: {
-          username: Account.username.toString().toLowerCase(),
-          email: Account.username.toString().toLowerCase(),
-          phone: Account.username
-        }
+        id: parseInt(id)
       }
     })
     if (!account) {
@@ -210,9 +215,7 @@ const verify = async (req, res) => {
       {
         where: {
           [Op.or]: {
-            username: Account.username.toString().toLowerCase(),
-            email: Account.username.toString().toLowerCase(),
-            phone: Account.username
+            id
           }
         }
       }
@@ -299,12 +302,13 @@ const confirm_verify = async (req, res) => {
         error: isValid.error.details[0].message
       })
     }
+    const { id } = req.data
+    if (parseInt(id) !== parseInt(Account.id)) {
+      return res.json({ code: errorCodes.authentication, error: 'breach' })
+    }
     const account = await AccountModel.findOne({
       where: {
-        [Op.or]: {
-          username: Account.username.toString().toLowerCase(),
-          email: Account.username.toString().toLowerCase()
-        }
+        id
       }
     })
     if (!account) {
@@ -345,10 +349,7 @@ const confirm_verify = async (req, res) => {
         },
         {
           where: {
-            [Op.or]: {
-              username: Account.username.toString().toLowerCase(),
-              email: Account.username.toString().toLowerCase()
-            }
+            id
           }
         }
       )
@@ -359,7 +360,6 @@ const confirm_verify = async (req, res) => {
       error: 'Wrong verification code'
     })
   } catch (exception) {
-    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -722,6 +722,12 @@ const get_profile = async (req, res) => {
       return res.json({
         code: errorCodes.invalidCredentials,
         error: 'User not found'
+      })
+    }
+    if (account.status === accountStatus.PENDING) {
+      return res.json({
+        code: errorCodes.unVerified,
+        error: 'Account must be verified'
       })
     }
     let profile
