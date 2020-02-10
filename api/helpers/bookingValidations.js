@@ -1,5 +1,22 @@
 const joi = require('joi')
 
+const validateBookingWithPackage = request => {
+  const schema = {
+    Booking: joi
+      .object({
+        id: joi.number().required(),
+        packageCode: joi.string().required()
+      })
+      .required(),
+    Account: joi
+      .object({
+        id: joi.number().required()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
+
 const validateAddBooking = request => {
   const schema = {
     Booking: joi
@@ -27,7 +44,6 @@ const validateAddBooking = request => {
               ])
           )
           .required(),
-        period: joi.number().required(),
         roomType: joi
           .string()
           .valid([
@@ -42,7 +58,6 @@ const validateAddBooking = request => {
           .valid(['1', '2', '3', '4'])
           .required(),
         amountOfPeople: joi.number().required(),
-        packageCode: joi.string().allow(''),
         paymentMethod: joi
           .string()
           .valid(['cash', 'credit card', 'fawry'])
@@ -74,6 +89,15 @@ const validateConfirmBooking = request => {
   const schema = {
     Booking: joi
       .object({
+        id: joi.number().required(),
+        packageCode: joi
+          .string()
+          .allow('')
+          .required()
+      })
+      .required(),
+    Account: joi
+      .object({
         id: joi.number().required()
       })
       .required()
@@ -85,12 +109,24 @@ const validateCreatePackage = request => {
   const schema = {
     Package: joi
       .object({
-        code: joi.string().required(),
+        accountId: joi.number().required(),
         packageSize: joi.number().required(),
-        name: joi.string().required(),
+        package: joi
+          .string()
+          .valid(
+            'meeting room 5',
+            'training room 7 ',
+            'meeting room 10',
+            'training room 16'
+          )
+          .required(),
         price: joi
           .number()
           .positive()
+          .required(),
+        roomType: joi
+          .string()
+          .valid('meeting room', 'training room')
           .required()
       })
       .required()
@@ -211,5 +247,6 @@ module.exports = {
   validateViewPackageByName,
   validateEditBooking,
   validateEditPackageByCode,
-  validateEditPackageByName
+  validateEditPackageByName,
+  validateBookingWithPackage
 }

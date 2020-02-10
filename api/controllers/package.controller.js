@@ -1,17 +1,8 @@
-const bcrypt = require('bcrypt')
-const axios = require('axios')
-const jwt = require('jsonwebtoken')
-const AccountModel = require('../../models/account.model')
 const validator = require('../helpers/bookingValidations')
 const errorCodes = require('../constants/errorCodes')
-const { Op } = require('sequelize')
-const { secretOrKey } = require('../../config/keys')
 const { accountStatus, slotStatus } = require('../constants/TBH.enum')
-const VerificationCode = require('../../models/verificationCodes')
-const { generateOTP } = require('../helpers/helpers')
-const BookingModel = require('../../models/booking.model')
-const CalendarModel = require('../../models/calendar.model')
 const PackageModel = require('../../models/package.model')
+const { generateOTP } = require('../helpers/helpers')
 
 const create_package = async (req, res) => {
   try {
@@ -32,13 +23,20 @@ const create_package = async (req, res) => {
         error: 'Package already exists'
       })
     }
+    const code = await generateOTP()
+    await VerificationCode.create({
+      code,
+      date: new Date()
+    })
     await PackageModel.create({
-      code: Package.code,
+      code,
       usage: 0,
       remaining: Package.packageSize,
       status: accountStatus.ACTIVE,
-      name: Package.name,
-      price: Package.price
+      package: Package.package,
+      price: Package.price,
+      roomType: Package.roomType,
+      accountId: Package.accountId
     })
     return res.json({ code: errorCodes.success })
   } catch (exception) {

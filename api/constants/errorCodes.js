@@ -36,6 +36,16 @@ const packageAlreadyExists = 117
 
 const invalidDateInput = 118
 
+const peopleOverload = 119
+
+const invalidPackage = 120
+
+const packageUsed = 121
+
+const packageCanceled = 122
+
+const unauthorized = 123
+
 module.exports = {
   success,
   validation,
@@ -55,5 +65,10 @@ module.exports = {
   bookingCanceled,
   slotNotFree,
   packageAlreadyExists,
-  invalidDateInput
+  invalidDateInput,
+  peopleOverload,
+  invalidPackage,
+  packageUsed,
+  packageCanceled,
+  unauthorized
 }

@@ -1,11 +1,13 @@
 const VerificationCode = require('../../models/verificationCodes')
 const errorCodes = require('../constants/errorCodes')
 const CalendarModel = require('../../models/calendar.model')
+const PackageModel = require('../../models/package.model')
+const { accountStatus } = require('../constants/TBH.enum')
 
 const generateOTP = async () => {
   let text = ''
   const possible =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    'ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789'
   for (let i = 0; i < 8; i += 1) {
     text += possible.charAt(Math.floor(Math.random() * possible.length))
   }
@@ -53,9 +55,79 @@ const checkFreeSlot = async (slot, date, roomNumber) => {
   return { code: errorCodes.success }
 }
 
-const checkPrice = async (amountOfPeople, roomType) => {}
+const checkPrice = async (
+  amountOfPeople,
+  roomType,
+  hours,
+  packageCode,
+  accountId
+) => {
+  let price
+  if (amountOfPeople > 10 && roomType === 'meeting room') {
+    return { code: errorCodes.peopleOverload }
+  }
+  if (amountOfPeople > 16 && roomType === 'training room') {
+    return { code: errorCodes.peopleOverload }
+  }
+  if (packageCode === '') {
+    if (amountOfPeople <= 5 && roomType === 'meeting room') {
+      price = hours * 100
+    }
+    if (
+      amountOfPeople > 5 &&
+      amountOfPeople <= 10 &&
+      roomType === 'meeting room'
+    ) {
+      price = hours * 170
+    }
+    if (amountOfPeople <= 7 && roomType === 'training room') {
+      price = hours * 200
+    }
+    if (
+      amountOfPeople >= 8 &&
+      amountOfPeople <= 16 &&
+      roomType === 'training room'
+    ) {
+      price = hours * 300
+    }
+  }
+  let newHours
+  if (packageCode !== '') {
+    const package = await PackageModel.findOne({
+      where: { code: packageCode }
+    })
+    if (!package) {
+      return {
+        code: errorCodes.entityNotFound,
+        error: 'Package not found'
+      }
+    }
+    if (package.status === accountStatus.CANCELED) {
+      return { code: errorCodes.packageCanceled, error: 'Package canceled' }
+    }
+    if (package.accountId !== accountId) {
+      return { code: errorCodes.invalidPackage, error: 'Invalid package' }
+    }
+    if (package.status === accountStatus.USED || package.remaining === 0) {
+      return { code: errorCodes.packageUsed, error: 'Package used' }
+    }
+    newHours = hours - package.remaining
+    if (newHours > 0) {
+      price = await checkPrice(amountOfPeople, roomType, newHours, '', '')
+      price = price.price
+      newHours = 0
+    } else {
+      newHours = package.remaining - hours
+      price = await checkPrice(amountOfPeople, roomType, 0, '', '')
+      price = price.price
+    }
+  }
+
+  return { price, code: errorCodes.success, remainingHours: newHours }
+}
 
 module.exports = {
   generateOTP,
-  checkFreeSlot
+  checkFreeSlot,
+  checkPrice
 }

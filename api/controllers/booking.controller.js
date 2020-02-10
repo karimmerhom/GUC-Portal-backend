@@ -8,7 +8,7 @@ const { Op } = require('sequelize')
 const { secretOrKey } = require('../../config/keys')
 const { accountStatus, slotStatus } = require('../constants/TBH.enum')
 const VerificationCode = require('../../models/verificationCodes')
-const { generateOTP, checkFreeSlot } = require('../helpers/helpers')
+const { checkFreeSlot, checkPrice } = require('../helpers/helpers')
 const BookingModel = require('../../models/booking.model')
 const CalendarModel = require('../../models/calendar.model')
 const PackageModel = require('../../models/package.model')
@@ -65,25 +65,127 @@ const validate_booking = async (req, res) => {
       }
     }
     if (slotsThatAreNotFree.length !== 0) {
-      res.json({
+      return res.json({
         code: errorCodes.slotNotFree,
         error: `These slots are not free: ${slotsThatAreNotFree}`
       })
     }
-    if (Booking.packageCode !== '') {
-      const package = await PackageModel.findOne({
-        where: { code: Booking.packageCode }
+
+    const price = await checkPrice(
+      Booking.amountOfPeople,
+      Booking.roomType,
+      slots.length,
+      '',
+      ''
+    )
+
+    if (price.code === errorCodes.peopleOverload) {
+      return res.json({
+        code: errorCodes.peopleOverload,
+        error: 'Number of people is too much for this room type'
       })
-      if (!package) {
-        return res.json({
-          code: errorCodes.entityNotFound,
-          error: 'Package does not exist'
-        })
-      }
     }
-    return res.json({ code: errorCodes.success })
+
+    await BookingModel.create({
+      date: Booking.date,
+      slot: slots,
+      roomType: Booking.roomType,
+      roomNumber: Booking.roomNumber,
+      amountOfPeople: Booking.amountOfPeople,
+      price: price.price,
+      paymentMethod: Booking.paymentMethod,
+      status: accountStatus.PENDING,
+      accountId: Account.id
+    })
+    const bookingDate = new Date(Booking.date)
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
+    ]
+    const month = months[bookingDate.getMonth()]
+    for (i = 0; i < slots.length; i++) {
+      await CalendarModel.create({
+        dayNumber: bookingDate.getDate(),
+        month,
+        monthNumber: bookingDate.getMonth(),
+        year: bookingDate.getFullYear(),
+        slot: slots[i],
+        status: slotStatus.PENDING,
+        date: bookingDate,
+        roomNumber: Booking.roomNumber
+      })
+    }
+
+    return res.json({ code: errorCodes.success, price: price.price })
   } catch (exception) {
     console.log(exception)
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const validate_booking_with_package = async (req, res) => {
+  try {
+    const isValid = validator.validateBookingWithPackage(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Booking, Account } = req.body
+    const { id } = req.data
+    if (parseInt(id) !== parseInt(Account.id)) {
+      return res.json({ code: errorCodes.authentication, error: 'breach' })
+    }
+    const account = await AccountModel.findOne({
+      where: {
+        id: parseInt(id)
+      }
+    })
+    if (!account) {
+      return res.json({
+        code: errorCodes.invalidCredentials,
+        error: 'User not found'
+      })
+    }
+    if (account.status === accountStatus.PENDING) {
+      return res.json({
+        code: errorCodes.unVerified,
+        error: 'Account must be verified'
+      })
+    }
+    const booking = await BookingModel.findOne({ where: { id: Booking.id } })
+    if (!booking) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'Booking not found'
+      })
+    }
+    const price = await checkPrice(
+      booking.amountOfPeople,
+      booking.roomType,
+      booking.slot.length,
+      Booking.packageCode,
+      Account.id
+    )
+    if (price.code !== errorCodes.success) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: price.error
+      })
+    }
+    return res.json({ code: errorCodes.success, price: price.price })
+  } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -141,12 +243,27 @@ const confirm_booking = async (req, res) => {
         error: isValid.error.details[0].message
       })
     }
-    const { Booking } = req.body
+    const { Booking, Account } = req.body
     const booking = await BookingModel.findOne({
       where: {
         id: Booking.id
       }
     })
+    const { id } = req.data
+    if (parseInt(id) !== parseInt(Account.id)) {
+      return res.json({ code: errorCodes.authentication, error: 'breach' })
+    }
+    const account = await AccountModel.findOne({
+      where: {
+        id: parseInt(id)
+      }
+    })
+    if (!account) {
+      return res.json({
+        code: errorCodes.invalidCredentials,
+        error: 'User not found'
+      })
+    }
     if (!booking) {
       return res.json({
         code: errorCodes.entityNotFound,
@@ -159,6 +276,52 @@ const confirm_booking = async (req, res) => {
         error: 'Cannot confirm a canceled booking'
       })
     }
+    if (booking.accountId !== Account.id) {
+      return res.json({
+        code: errorCodes.unauthorized,
+        error: 'Unauthorized access to this booking'
+      })
+    }
+    let slots = []
+    slots = booking.slot
+    const price = await checkPrice(
+      Booking.amountOfPeople,
+      Booking.roomType,
+      slots.length,
+      Booking.packageCode,
+      Account.id
+    )
+
+    if (price.code === errorCodes.peopleOverload) {
+      return res.json({
+        code: errorCodes.peopleOverload,
+        error: 'Number of people is too much for this room type'
+      })
+    }
+
+    if (price.remainingHours === 0) {
+      await PackageModel.update(
+        { remaining: 0, status: accountStatus.USED },
+        { where: { code: Booking.packageCode } }
+      )
+    } else {
+      await PackageModel.update(
+        { remaining: price.remainingHours },
+        { where: { code: Booking.packageCode } }
+      )
+    }
+
+    await BookingModel.update(
+      {
+        packageCode: Booking.packageCode,
+        price: price.price
+      },
+      {
+        where: {
+          id: Booking.id
+        }
+      }
+    )
     const bookingDate = new Date(booking.date)
     const months = [
       'January',
@@ -175,43 +338,25 @@ const confirm_booking = async (req, res) => {
       'December'
     ]
     const month = months[bookingDate.getMonth()]
-    const checkSlot = await CalendarModel.findOne({
-      where: {
-        slot: booking.slot,
-        dayNumber: bookingDate.getDate(),
-        month,
-        monthNumber: bookingDate.getMonth(),
-        year: bookingDate.getFullYear()
-      }
-    })
-
-    if (checkSlot) {
-      return res.json({
-        code: errorCodes.slotNotFree,
-        error: 'Slot is not free'
-      })
-    }
-    await BookingModel.update(
-      {
-        status: accountStatus.CONFIRMED
-      },
-      {
-        where: {
-          id: Booking.id
+    for (i = 0; i < slots.length; i++) {
+      await CalendarModel.update(
+        { status: slotStatus.BUSY },
+        {
+          where: {
+            dayNumber: bookingDate.getDate(),
+            month,
+            monthNumber: bookingDate.getMonth(),
+            year: bookingDate.getFullYear(),
+            slot: slots[i],
+            date: bookingDate,
+            roomNumber: booking.roomNumber
+          }
         }
-      }
-    )
-    await CalendarModel.create({
-      dayNumber: bookingDate.getDate(),
-      month,
-      monthNumber: bookingDate.getMonth(),
-      year: bookingDate.getFullYear(),
-      slot: booking.slot,
-      status: slotStatus.BUSY,
-      date: bookingDate
-    })
+      )
+    }
     return res.json({ code: errorCodes.success })
   } catch (exception) {
+    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -316,5 +461,6 @@ module.exports = {
   validate_booking,
   show_all_slots_from_to,
   confirm_booking,
-  show_my_bookings
+  show_my_bookings,
+  validate_booking_with_package
 }

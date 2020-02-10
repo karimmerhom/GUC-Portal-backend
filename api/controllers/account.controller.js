@@ -439,6 +439,19 @@ const change_email = async (req, res) => {
         }
       }
     )
+    axios({
+      method: 'post',
+      url: 'http://18.185.138.12:2003/contacts/updatecontact',
+      data: {
+        header: {
+          accessKey: contactAccessKey
+        },
+        body: {
+          email: Account.email,
+          ownerId: parseInt(Account.id)
+        }
+      }
+    })
     return res.json({ code: errorCodes.success })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
@@ -469,6 +482,19 @@ const change_phone = async (req, res) => {
         }
       }
     )
+    axios({
+      method: 'post',
+      url: 'http://18.185.138.12:2003/contacts/updatecontact',
+      data: {
+        header: {
+          accessKey: contactAccessKey
+        },
+        body: {
+          phoneNumber: Account.phoneNumber,
+          ownerId: parseInt(Account.id)
+        }
+      }
+    })
     return res.json({ code: errorCodes.success })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
