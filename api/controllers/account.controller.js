@@ -724,12 +724,6 @@ const get_profile = async (req, res) => {
         error: 'User not found'
       })
     }
-    if (account.status === accountStatus.PENDING) {
-      return res.json({
-        code: errorCodes.unVerified,
-        error: 'Account must be verified'
-      })
-    }
     let profile
     await axios({
       method: 'post',
