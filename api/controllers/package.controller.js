@@ -29,7 +29,6 @@ const create_package = async (req, res) => {
       code,
       date: new Date()
     })
-    console.log(code)
     await PackageModel.create({
       code,
       usage: 0,
@@ -42,7 +41,6 @@ const create_package = async (req, res) => {
     })
     return res.json({ code: errorCodes.success, packageCode: code })
   } catch (exception) {
-    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }

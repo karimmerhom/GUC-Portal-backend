@@ -91,7 +91,7 @@ const validate_booking = async (req, res) => {
       })
     }
 
-    await BookingModel.create({
+    const booking = await BookingModel.create({
       date: Booking.date,
       slot: slots,
       roomType: Booking.roomType,
@@ -131,7 +131,11 @@ const validate_booking = async (req, res) => {
       })
     }
 
-    return res.json({ code: errorCodes.success, price: price.price })
+    return res.json({
+      code: errorCodes.success,
+      price: price.price,
+      bookingId: booking.id
+    })
   } catch (exception) {
     console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
