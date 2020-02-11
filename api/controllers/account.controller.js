@@ -318,6 +318,12 @@ const confirm_verify = async (req, res) => {
         error: 'User not found'
       })
     }
+    if (account.status === accountStatus.VERIFIED) {
+      return res.json({
+        code: errorCodes.alreadyVerified,
+        error: 'Already verified'
+      })
+    }
     const checkCodeExpired = await VerificationCode.findOne({
       where: { code: account.verificationCode }
     })
@@ -354,7 +360,10 @@ const confirm_verify = async (req, res) => {
           }
         }
       )
-      return res.json({ code: errorCodes.success })
+      return res.json({
+        code: errorCodes.success,
+        state: accountStatus.VERIFIED
+      })
     }
     return res.json({
       code: errorCodes.wrongVerificationCode,
@@ -766,7 +775,11 @@ const get_profile = async (req, res) => {
     }).then(res => {
       profile = res.data.body.Item
     })
-    return res.json({ code: errorCodes.success, profile })
+    return res.json({
+      code: errorCodes.success,
+      profile,
+      state: account.status
+    })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
