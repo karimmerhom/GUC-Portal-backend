@@ -4,5 +4,6 @@ module.exports = {
   salt: process.env.SALT,
   smsAccessKey: process.env.SMS_ACCESS_KEY,
   emailAccessKey: process.env.EMAIL_ACCESS_KEY,
-  contactAccessKey: process.env.CONTACT_ACCESS_KEY
+  contactAccessKey: process.env.CONTACT_ACCESS_KEY,
+  bookingExpiry: process.env.BOOKING_EXPIRY
 }

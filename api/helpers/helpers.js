@@ -2,7 +2,8 @@ const VerificationCode = require('../../models/verificationCodes')
 const errorCodes = require('../constants/errorCodes')
 const CalendarModel = require('../../models/calendar.model')
 const PackageModel = require('../../models/package.model')
-const { accountStatus } = require('../constants/TBH.enum')
+const BookingModel = require('../../models/booking.model')
+const { accountStatus, slotStatus } = require('../constants/TBH.enum')
 
 const generateOTP = async () => {
   let text = ''
@@ -126,8 +127,58 @@ const checkPrice = async (
   return { price, code: errorCodes.success, remainingHours: newHours }
 }
 
+const expireBooking = async id => {
+  const booking = await BookingModel.findOne({ where: { id } })
+  if (booking.status === accountStatus.CONFIRMED) {
+    return {
+      code: errorCodes.bookingConfirmed,
+      error: 'Cannot expire a confirmed booking'
+    }
+  }
+  let slots = []
+  slots = booking.slot
+  if (booking.packageCode !== '') {
+    const package = await PackageModel.findOne({
+      where: { code: booking.packageCode }
+    })
+    await PackageModel.update(
+      { remaining: package.remaining + slots.length },
+      {
+        where: {
+          code: booking.packageCode
+        }
+      }
+    )
+    if (package.status === accountStatus.USED) {
+      await PackageModel.update(
+        { status: accountStatus.ACTIVE },
+        {
+          where: {
+            code: booking.packageCode
+          }
+        }
+      )
+    }
+  }
+  for (i = 0; i < slots.length; i++) {
+    await CalendarModel.destroy({
+      where: {
+        slot: slots[i],
+        date: new Date(booking.date),
+        roomNumber: booking.roomNumber
+      }
+    })
+  }
+  await BookingModel.update(
+    { status: accountStatus.EXPIRED },
+    { where: { id } }
+  )
+  return { code: errorCodes.success }
+}
+
 module.exports = {
   generateOTP,
   checkFreeSlot,
-  checkPrice
+  checkPrice,
+  expireBooking
 }

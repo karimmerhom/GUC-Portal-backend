@@ -57,7 +57,8 @@ booking.init(
       values: [
         accountStatus.CANCELED,
         accountStatus.CONFIRMED,
-        accountStatus.PENDING
+        accountStatus.PENDING,
+        accountStatus.EXPIRED
       ]
     }
   },

@@ -4,7 +4,8 @@ const accountStatus = {
   CONFIRMED: 'confirmed',
   CANCELED: 'canceled',
   ACTIVE: 'active',
-  USED: 'used'
+  USED: 'used',
+  EXPIRED: 'expired'
 }
 
 const paymentMethods = {

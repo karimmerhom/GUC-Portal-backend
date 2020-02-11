@@ -5,10 +5,15 @@ const AccountModel = require('../../models/account.model')
 const validator = require('../helpers/bookingValidations')
 const errorCodes = require('../constants/errorCodes')
 const { Op } = require('sequelize')
-const { secretOrKey } = require('../../config/keys')
+const cron = require('cron')
+const { bookingExpiry } = require('../../config/keys')
 const { accountStatus, slotStatus } = require('../constants/TBH.enum')
 const VerificationCode = require('../../models/verificationCodes')
-const { checkFreeSlot, checkPrice } = require('../helpers/helpers')
+const {
+  checkFreeSlot,
+  checkPrice,
+  expireBooking
+} = require('../helpers/helpers')
 const BookingModel = require('../../models/booking.model')
 const CalendarModel = require('../../models/calendar.model')
 const PackageModel = require('../../models/package.model')
@@ -354,9 +359,14 @@ const confirm_booking = async (req, res) => {
         }
       )
     }
+    const date = new Date().getTime() + bookingExpiry //Enviroment variable
+    const expiryDate = new Date(date)
+    const scheduleJob = cron.job(expiryDate, async () => {
+      await expireBooking(Booking.id)
+    })
+    scheduleJob.start()
     return res.json({ code: errorCodes.success })
   } catch (exception) {
-    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }

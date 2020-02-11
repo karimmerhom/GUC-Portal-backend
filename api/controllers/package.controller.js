@@ -3,6 +3,7 @@ const errorCodes = require('../constants/errorCodes')
 const { accountStatus, slotStatus } = require('../constants/TBH.enum')
 const PackageModel = require('../../models/package.model')
 const { generateOTP } = require('../helpers/helpers')
+const VerificationCode = require('../../models/verificationCodes')
 
 const create_package = async (req, res) => {
   try {
@@ -14,20 +15,21 @@ const create_package = async (req, res) => {
       })
     }
     const { Package } = req.body
-    const checkPackage = await PackageModel.findOne({
-      where: { code: Package.code }
-    })
-    if (checkPackage) {
-      return res.json({
-        code: errorCodes.packageAlreadyExists,
-        error: 'Package already exists'
-      })
-    }
+    // const checkPackage = await PackageModel.findOne({
+    //   where: { code: Package.code }
+    // })
+    // if (checkPackage) {
+    //   return res.json({
+    //     code: errorCodes.packageAlreadyExists,
+    //     error: 'Package already exists'
+    //   })
+    // }
     const code = await generateOTP()
     await VerificationCode.create({
       code,
       date: new Date()
     })
+    console.log(code)
     await PackageModel.create({
       code,
       usage: 0,
@@ -38,8 +40,9 @@ const create_package = async (req, res) => {
       roomType: Package.roomType,
       accountId: Package.accountId
     })
-    return res.json({ code: errorCodes.success })
+    return res.json({ code: errorCodes.success, packageCode: code })
   } catch (exception) {
+    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }

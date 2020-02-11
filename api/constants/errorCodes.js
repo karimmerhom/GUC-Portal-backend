@@ -45,6 +45,8 @@ const packageUsed = 121
 const packageCanceled = 122
 
 const unauthorized = 123
+//Cannot expire a confirmed booking
+const bookingConfirmed = 124
 
 module.exports = {
   success,
@@ -70,5 +72,6 @@ module.exports = {
   invalidPackage,
   packageUsed,
   packageCanceled,
-  unauthorized
+  unauthorized,
+  bookingConfirmed
 }
