@@ -77,8 +77,7 @@ const validateShowBookings = request => {
   const schema = {
     BookingDate: joi
       .object({
-        from: joi.date().required(),
-        to: joi.date().required()
+        date: joi.date().required()
       })
       .required()
   }

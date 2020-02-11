@@ -90,7 +90,6 @@ const validate_booking = async (req, res) => {
         error: 'Number of people is too much for this room type'
       })
     }
-
     const booking = await BookingModel.create({
       date: Booking.date,
       slot: slots,
@@ -225,7 +224,7 @@ const show_all_slots_from_to = async (req, res) => {
     }
     const bookingsFiltered = await CalendarModel.findAll({
       where: {
-        date: { [Op.between]: [dateFrom, dateTo] }
+        date: new Date(BookingDate.date)
       }
     })
     const bookings = bookingsFiltered.map(element => ({
@@ -239,6 +238,7 @@ const show_all_slots_from_to = async (req, res) => {
       bookings
     })
   } catch (exception) {
+    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
