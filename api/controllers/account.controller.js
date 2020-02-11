@@ -132,7 +132,7 @@ const update_profile = async (req, res) => {
           phoneNumber: Account.phoneNumber,
           ownerId: parseInt(Account.ownerId),
           gender: Account.gender,
-          birhdate: Account.birthdate,
+          birthdate: Account.birthdate,
           profession: Account.profession
         }
       }
