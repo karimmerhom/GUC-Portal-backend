@@ -4,6 +4,8 @@ const CalendarModel = require('../../models/calendar.model')
 const PackageModel = require('../../models/package.model')
 const BookingModel = require('../../models/booking.model')
 const { accountStatus, slotStatus } = require('../constants/TBH.enum')
+const axios = require('axios')
+const { contactAccessKey } = require('../../config/keys')
 
 const generateOTP = async () => {
   let text = ''
@@ -176,9 +178,29 @@ const expireBooking = async id => {
   return { code: errorCodes.success }
 }
 
+const eraseDatabaseOnSyncContacts = () => {
+  try {
+    axios({
+      method: 'post',
+      url: 'http://18.185.138.12:2003/contacts/dropdatabase',
+      data: {
+        header: {
+          accessKey: contactAccessKey
+        }
+      }
+    })
+      .then(res => console.log(res))
+      .catch(err => console.log(err))
+    return { code: errorCodes.success }
+  } catch (exception) {
+    return { code: errorCodes.unknown, error: 'Something went wrong' }
+  }
+}
+
 module.exports = {
   generateOTP,
   checkFreeSlot,
   checkPrice,
-  expireBooking
+  expireBooking,
+  eraseDatabaseOnSyncContacts
 }

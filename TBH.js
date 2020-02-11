@@ -72,10 +72,15 @@ app.use((req, res, next) => {
 })
 
 const eraseDatabaseOnSync = false
+const { eraseDatabaseOnSyncContacts } = require('./api/helpers/helpers')
 sequelize
   .sync({ force: eraseDatabaseOnSync })
   .then(() => console.log('Synced models with database'))
-  .then(() => {})
+  .then(() => {
+    if (eraseDatabaseOnSync) {
+      eraseDatabaseOnSyncContacts()
+    }
+  })
   .catch(error => console.log('Could not sync models with database', error))
 
 const port = process.env.PORT || 5000
