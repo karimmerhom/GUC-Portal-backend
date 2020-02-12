@@ -11,14 +11,14 @@ const validateAccount = request => {
     symbol: 0,
     requirementCount: 8
   }
+  const usernamePattern = /^[a-zA-Z0-9!#_$%&*]{3,25}$/
   const schema = {
     Account: joi
       .object({
         password: new PasswordComplexity(complexityOptions).required(),
         username: joi
           .string()
-          .min(5)
-          .max(15)
+          .regex(usernamePattern)
           .required(),
         firstName: joi
           .string()
@@ -171,11 +171,7 @@ const validateForgetPassword = request => {
   const schema = {
     Account: joi
       .object({
-        username: joi.string().required(),
-        sendBy: joi
-          .string()
-          .valid(['sms', 'email'])
-          .required()
+        phoneNumber: joi.string().required()
       })
       .required()
   }

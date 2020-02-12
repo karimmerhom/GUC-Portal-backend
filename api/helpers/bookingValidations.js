@@ -61,6 +61,10 @@ const validateAddBooking = request => {
         paymentMethod: joi
           .string()
           .valid(['cash', 'credit card', 'fawry'])
+          .required(),
+        packageCode: joi
+          .string()
+          .allow('')
           .required()
       })
       .required(),
@@ -77,7 +81,8 @@ const validateShowBookings = request => {
   const schema = {
     BookingDate: joi
       .object({
-        date: joi.date().required()
+        from: joi.date().required(),
+        to: joi.date().required()
       })
       .required()
   }
@@ -192,12 +197,8 @@ const validateEditBooking = request => {
   const schema = {
     Booking: joi
       .object({
-        id: joi.number().required()
-      })
-      .required(),
-    Account: joi
-      .object({
-        id: joi.number().required()
+        id: joi.number().required(),
+        status: joi.string().valid('confirmed', 'canceled', 'pending')
       })
       .required()
   }

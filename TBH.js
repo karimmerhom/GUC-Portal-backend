@@ -73,12 +73,14 @@ app.use((req, res, next) => {
 
 const eraseDatabaseOnSync = false
 const { eraseDatabaseOnSyncContacts } = require('./api/helpers/helpers')
+const { populate_admins } = require('./config/populateAdmins')
 sequelize
   .sync({ force: eraseDatabaseOnSync })
   .then(() => console.log('Synced models with database'))
   .then(() => {
     if (eraseDatabaseOnSync) {
       eraseDatabaseOnSyncContacts()
+      populate_admins()
     }
   })
   .catch(error => console.log('Could not sync models with database', error))

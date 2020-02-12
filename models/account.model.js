@@ -2,7 +2,7 @@ const Sequelize = require('sequelize')
 
 const sequelize = require('../config/DBConfig')
 
-const { accountStatus, gender } = require('../api/constants/TBH.enum')
+const { accountStatus, userTypes } = require('../api/constants/TBH.enum')
 
 const { Model } = Sequelize
 
@@ -33,6 +33,10 @@ Account.init(
     },
     verificationCode: {
       type: Sequelize.STRING
+    },
+    type: {
+      type: Sequelize.ENUM,
+      values: [userTypes.ADMIN, userTypes.USER]
     }
   },
   {

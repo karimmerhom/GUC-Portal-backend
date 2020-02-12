@@ -11,7 +11,11 @@ const {
   contactAccessKey,
   emailAccessKey
 } = require('../../config/keys')
-const { accountStatus, verificationMethods } = require('../constants/TBH.enum')
+const {
+  accountStatus,
+  verificationMethods,
+  userTypes
+} = require('../constants/TBH.enum')
 const VerificationCode = require('../../models/verificationCodes')
 const { generateOTP } = require('../helpers/helpers')
 
@@ -62,7 +66,8 @@ const register = async (req, res) => {
       lastName: Account.lastName,
       phone: Account.phoneNumber,
       email: Account.email.toString().toLowerCase(),
-      status: accountStatus.PENDING
+      status: accountStatus.PENDING,
+      type: userTypes.USER
     })
     axios({
       method: 'post',
@@ -82,7 +87,6 @@ const register = async (req, res) => {
     })
     return res.json({ code: errorCodes.success })
   } catch (exception) {
-    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -273,7 +277,8 @@ const login = async (req, res) => {
       username: account.username,
       phone: account.phone,
       email: account.email,
-      status: account.status
+      status: account.status,
+      type: account.type
     }
 
     const token = jwt.sign(payLoad, secretOrKey, {
@@ -288,7 +293,6 @@ const login = async (req, res) => {
       state: account.status
     })
   } catch (exception) {
-    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -523,17 +527,13 @@ const forget_password = async (req, res) => {
     }
     const account = await AccountModel.findOne({
       where: {
-        [Op.or]: {
-          username: Account.username.toString().toLowerCase(),
-          email: Account.username.toString().toLowerCase()
-        }
+        phone: Account.phoneNumber
       }
     })
-
     if (!account) {
       return res.json({
         code: errorCodes.invalidCredentials,
-        error: 'User not found'
+        error: 'Phone not found'
       })
     }
 
@@ -546,53 +546,33 @@ const forget_password = async (req, res) => {
     const saltKey = bcrypt.genSaltSync(10)
     const hashed_pass = bcrypt.hashSync(code, saltKey)
 
-    if (Account.sendBy === verificationMethods.EMAIL) {
-      axios({
-        method: 'post',
-        url: 'http://18.185.138.12:2000/emailservice/sendemail',
-        data: {
-          header: {
-            accessKey: emailAccessKey
-          },
-          body: {
-            receiverMail: account.email,
-            body: code,
-            subject: 'Verify your account'
-          }
+    axios({
+      method: 'post',
+      url: 'http://18.185.138.12:2001/epushservice/sendsms',
+      data: {
+        header: {
+          accessKey: smsAccessKey
+        },
+        body: {
+          receiverPhone: Account.phoneNumber,
+          body: code
         }
-      })
-    }
+      }
+    })
 
-    if (Account.sendBy === verificationMethods.SMS) {
-      axios({
-        method: 'post',
-        url: 'http://18.185.138.12:2001/epushservice/sendsms',
-        data: {
-          header: {
-            accessKey: smsAccessKey
-          },
-          body: {
-            receiverPhone: account.phone,
-            body: code
-          }
-        }
-      })
-    }
     await AccountModel.update(
       {
         password: hashed_pass
       },
       {
         where: {
-          [Op.or]: {
-            username: Account.username.toString().toLowerCase(),
-            email: Account.username.toString().toLowerCase()
-          }
+          phone: Account.phoneNumber
         }
       }
     )
     return res.json({ code: errorCodes.success })
   } catch (exception) {
+    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }

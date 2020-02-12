@@ -108,7 +108,7 @@ const checkPrice = async (
     if (package.status === accountStatus.CANCELED) {
       return { code: errorCodes.packageCanceled, error: 'Package canceled' }
     }
-    if (package.accountId !== accountId) {
+    if (parseInt(package.accountId) !== parseInt(accountId)) {
       return { code: errorCodes.invalidPackage, error: 'Invalid package' }
     }
     if (package.status === accountStatus.USED || package.remaining === 0) {
@@ -178,9 +178,9 @@ const expireBooking = async id => {
   return { code: errorCodes.success }
 }
 
-const eraseDatabaseOnSyncContacts = () => {
+const eraseDatabaseOnSyncContacts = async () => {
   try {
-    axios({
+    await axios({
       method: 'post',
       url: 'http://18.185.138.12:2003/contacts/dropdatabase',
       data: {

@@ -8,6 +8,11 @@ const accountStatus = {
   EXPIRED: 'expired'
 }
 
+const userTypes = {
+  ADMIN: 'admin',
+  USER: 'user'
+}
+
 const paymentMethods = {
   CASH: 'cash',
   FAWRY: 'fawry',
@@ -59,5 +64,6 @@ module.exports = {
   gender,
   verificationMethods,
   slotStatus,
-  roomPricing
+  roomPricing,
+  userTypes
 }
