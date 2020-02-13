@@ -4,6 +4,7 @@ const { accountStatus, slotStatus } = require('../constants/TBH.enum')
 const PackageModel = require('../../models/package.model')
 const { generateOTP } = require('../helpers/helpers')
 const VerificationCode = require('../../models/verificationCodes')
+const pricingModel = require('../../models/pricing.model')
 
 const create_package = async (req, res) => {
   try {
@@ -15,15 +16,57 @@ const create_package = async (req, res) => {
       })
     }
     const { Package } = req.body
-    // const checkPackage = await PackageModel.findOne({
-    //   where: { code: Package.code }
-    // })
-    // if (checkPackage) {
-    //   return res.json({
-    //     code: errorCodes.packageAlreadyExists,
-    //     error: 'Package already exists'
-    //   })
-    // }
+    const checkPrice = await pricingModel.findOne({
+      where: { code: Package.package }
+    })
+    if (!checkPrice) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'Invalid package code'
+      })
+    }
+    if (checkPrice.roomType !== Package.roomType) {
+      return res.json({
+        code: errorCodes.invalidPackage,
+        error: 'This package is not for this room type'
+      })
+    }
+    let price
+    if (checkPrice.hoursRangeFrom === null) {
+      price = Package.numberOfHours * checkPrice.price
+    } else {
+      if (
+        checkPrice.hoursRangeTo !== null &&
+        checkPrice.hoursRangeFrom !== null
+      ) {
+        if (
+          Package.numberOfHours > checkPrice.hoursRangeTo ||
+          Package.numberOfHours < checkPrice.hoursRangeFrom
+        ) {
+          return res.json({
+            code: errorCodes.invalidPackage,
+            error: 'Hours not in the range for this package'
+          })
+        } else {
+          price = Package.numberOfHours * checkPrice.price
+        }
+      } else {
+        if (
+          checkPrice.hoursRangeTo === null &&
+          checkPrice.hoursRangeFrom !== null &&
+          Package.numberOfHours < checkPrice.hoursRangeFrom
+        ) {
+          {
+            return res.json({
+              code: errorCodes.invalidPackage,
+              error: 'Hours not in the range for this package'
+            })
+          }
+        } else {
+          price = Package.numberOfHours * checkPrice.price
+        }
+      }
+    }
     const code = await generateOTP()
     await VerificationCode.create({
       code,
@@ -31,15 +74,81 @@ const create_package = async (req, res) => {
     })
     await PackageModel.create({
       code,
-      usage: 0,
-      remaining: Package.packageSize,
+      remaining: Package.numberOfHours,
       status: accountStatus.ACTIVE,
       package: Package.package,
-      price: Package.price,
+      price,
       roomType: Package.roomType,
       accountId: Package.accountId
     })
-    return res.json({ code: errorCodes.success, packageCode: code })
+    return res.json({ code: errorCodes.success, packageCode: code, price })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const calculate_package_price = async (req, res) => {
+  try {
+    const isValid = validator.validateCreatePackage(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Package } = req.body
+    const checkPrice = await pricingModel.findOne({
+      where: { code: Package.package }
+    })
+    if (!checkPrice) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'Invalid package code'
+      })
+    }
+    if (checkPrice.roomType !== Package.roomType) {
+      return res.json({
+        code: errorCodes.invalidPackage,
+        error: 'This package is not for this room type'
+      })
+    }
+    let price
+    if (checkPrice.hoursRangeFrom === null) {
+      price = Package.numberOfHours * checkPrice.price
+    } else {
+      if (
+        checkPrice.hoursRangeTo !== null &&
+        checkPrice.hoursRangeFrom !== null
+      ) {
+        if (
+          Package.numberOfHours > checkPrice.hoursRangeTo ||
+          Package.numberOfHours < checkPrice.hoursRangeFrom
+        ) {
+          return res.json({
+            code: errorCodes.invalidPackage,
+            error: 'Hours not in the range for this package'
+          })
+        } else {
+          price = Package.numberOfHours * checkPrice.price
+        }
+      } else {
+        if (
+          checkPrice.hoursRangeTo === null &&
+          checkPrice.hoursRangeFrom !== null &&
+          Package.numberOfHours < checkPrice.hoursRangeFrom
+        ) {
+          {
+            return res.json({
+              code: errorCodes.invalidPackage,
+              error: 'Hours not in the range for this package'
+            })
+          }
+        } else {
+          price = Package.numberOfHours * checkPrice.price
+        }
+      }
+    }
+    return res.json({ code: errorCodes.success, price })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
@@ -225,5 +334,6 @@ module.exports = {
   view_package_by_name,
   view_package_by_code,
   edit_package_by_code,
-  edit_package_by_name
+  edit_package_by_name,
+  calculate_package_price
 }

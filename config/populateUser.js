@@ -5,19 +5,19 @@ const errorCodes = require('../api/constants/errorCodes')
 const { contactAccessKey } = require('../config/keys')
 const { accountStatus, userTypes } = require('../api/constants/TBH.enum')
 
-const populate_admins = async () => {
+const populate_users = async () => {
   const saltKey = bcrypt.genSaltSync(10)
-  let password = 'Islam1234'
+  let password = 'Aisha1234'
   let hashed_pass = bcrypt.hashSync(password, saltKey)
   let accountCreated = await AccountModel.create({
-    username: 'isanad',
+    username: 'aisha',
     password: hashed_pass,
-    firstName: 'Islam',
-    lastName: 'Sanad',
-    phone: '01018070815',
-    email: 'islam.sanad98@gmail.com',
-    status: accountStatus.VERIFIED,
-    type: userTypes.ADMIN
+    firstName: 'Aisha',
+    lastName: 'Shokry',
+    phone: '01149196419',
+    email: 'aisha.shokry@lirten.com',
+    status: accountStatus.PENDING,
+    type: userTypes.USER
   })
   await axios({
     method: 'post',
@@ -27,25 +27,25 @@ const populate_admins = async () => {
         accessKey: contactAccessKey
       },
       body: {
-        firstName: 'Islam',
-        lastName: 'Sanad',
-        email: 'islam.sanad98@gmail.com',
-        phoneNumber: '01018070815',
+        firstName: 'Aisha',
+        lastName: 'Shokry',
+        email: 'aisha.shokry@lirten.com',
+        phoneNumber: '01149196419',
         ownerId: parseInt(accountCreated.id)
       }
     }
   })
-  password = 'Samar1234'
+  password = 'Radwa123'
   hashed_pass = bcrypt.hashSync(password, saltKey)
   accountCreated = await AccountModel.create({
-    username: 'samarashery',
+    username: 'radwa',
     password: hashed_pass,
-    firstName: 'Samar',
-    lastName: 'Ashery',
-    phone: '01141988757',
-    email: 'samar.ashery@lirten.com',
-    status: accountStatus.VERIFIED,
-    type: userTypes.ADMIN
+    firstName: 'Radwa',
+    lastName: 'Ragab',
+    phone: '01142340509',
+    email: 'radwa.ragab@lirten.com',
+    status: accountStatus.PENDING,
+    type: userTypes.USER
   })
   await axios({
     method: 'post',
@@ -55,10 +55,38 @@ const populate_admins = async () => {
         accessKey: contactAccessKey
       },
       body: {
-        firstName: 'Samar',
-        lastName: 'Ashery',
-        email: 'samar.ashery@lirten.com',
-        phoneNumber: '01141988757',
+        firstName: 'Radwa',
+        lastName: 'Ragab',
+        email: 'radwa.ragab@lirten.com',
+        phoneNumber: '01142340509',
+        ownerId: parseInt(accountCreated.id)
+      }
+    }
+  })
+  password = 'Noura123'
+  hashed_pass = bcrypt.hashSync(password, saltKey)
+  accountCreated = await AccountModel.create({
+    username: 'noura',
+    password: hashed_pass,
+    firstName: 'Noura',
+    lastName: 'Hassan',
+    phone: '01098723687',
+    email: 'noura.hassan@lirten.com',
+    status: accountStatus.PENDING,
+    type: userTypes.USER
+  })
+  await axios({
+    method: 'post',
+    url: 'http://18.185.138.12:2003/contacts/createcontact',
+    data: {
+      header: {
+        accessKey: contactAccessKey
+      },
+      body: {
+        firstName: 'Noura',
+        lastName: 'Hassan',
+        email: 'noura.hassan@lirten.com',
+        phoneNumber: '01098723687',
         ownerId: parseInt(accountCreated.id)
       }
     }
@@ -66,14 +94,14 @@ const populate_admins = async () => {
   password = 'Hooda1234'
   hashed_pass = bcrypt.hashSync(password, saltKey)
   accountCreated = await AccountModel.create({
-    username: 'hoodaadmin',
+    username: 'hooda',
     password: hashed_pass,
     firstName: 'Hooda',
-    lastName: 'Admin',
+    lastName: 'Mahmoud',
     phone: '01005599171',
-    email: 'mohammed.mahmoud57@gmail.com',
+    email: 'elhobbakhaless@gmail.com',
     status: accountStatus.VERIFIED,
-    type: userTypes.ADMIN
+    type: userTypes.USER
   })
   await axios({
     method: 'post',
@@ -84,8 +112,8 @@ const populate_admins = async () => {
       },
       body: {
         firstName: 'Hooda',
-        lastName: 'Admin',
-        email: 'mohammed.mahmoud@gmail.com',
+        lastName: 'Mahmoud',
+        email: 'elhobbakhaless@gmail.com',
         phoneNumber: '01005599171',
         ownerId: parseInt(accountCreated.id)
       }
@@ -94,4 +122,4 @@ const populate_admins = async () => {
   return { code: errorCodes.success }
 }
 
-module.exports = { populate_admins }
+module.exports = { populate_users }

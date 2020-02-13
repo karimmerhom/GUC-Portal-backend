@@ -10,12 +10,12 @@ const {
   view_package_by_name,
   view_package_by_code,
   edit_package_by_code,
-  edit_package_by_name
+  edit_package_by_name,
+  calculate_package_price
 } = packageController
 
-const { verifyToken } = require('../../config/AuthenticationMiddleWare')
-
 router.post('/addpackage', create_package)
+router.post('/calculatepackageprice', calculate_package_price)
 router.post('/cancelallpackages', cancel_all_packages)
 router.post('/cancelspecificpackage', cancel_specific_package)
 router.post('/viewpackagebyname', view_package_by_name)

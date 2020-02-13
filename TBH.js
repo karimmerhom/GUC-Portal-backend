@@ -74,6 +74,8 @@ app.use((req, res, next) => {
 const eraseDatabaseOnSync = false
 const { eraseDatabaseOnSyncContacts } = require('./api/helpers/helpers')
 const { populate_admins } = require('./config/populateAdmins')
+const { populate_users } = require('./config/populateUser')
+const { populate_pricing } = require('./config/populatePricing')
 sequelize
   .sync({ force: eraseDatabaseOnSync })
   .then(() => console.log('Synced models with database'))
@@ -81,6 +83,8 @@ sequelize
     if (eraseDatabaseOnSync) {
       eraseDatabaseOnSyncContacts()
       populate_admins()
+      populate_users()
+      populate_pricing()
     }
   })
   .catch(error => console.log('Could not sync models with database', error))
