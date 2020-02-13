@@ -63,6 +63,34 @@ const populate_admins = async () => {
       }
     }
   })
+  password = 'Hooda1234'
+  hashed_pass = bcrypt.hashSync(password, saltKey)
+  accountCreated = await AccountModel.create({
+    username: 'hoodaadmin',
+    password: hashed_pass,
+    firstName: 'Hooda',
+    lastName: 'Admin',
+    phone: '01005599171',
+    email: 'mohammed.mahmoud57@gmail.com',
+    status: accountStatus.VERIFIED,
+    type: userTypes.ADMIN
+  })
+  await axios({
+    method: 'post',
+    url: 'http://18.185.138.12:2003/contacts/createcontact',
+    data: {
+      header: {
+        accessKey: contactAccessKey
+      },
+      body: {
+        firstName: 'Hooda',
+        lastName: 'Admin',
+        email: 'mohammed.mahmoud@gmail.com',
+        phoneNumber: '01005599171',
+        ownerId: parseInt(accountCreated.id)
+      }
+    }
+  })
   return { code: errorCodes.success }
 }
 

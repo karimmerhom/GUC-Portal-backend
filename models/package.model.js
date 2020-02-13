@@ -14,9 +14,6 @@ packageModel.init(
     code: {
       type: Sequelize.STRING
     },
-    usage: {
-      type: Sequelize.FLOAT
-    },
     remaining: {
       type: Sequelize.FLOAT
     },
@@ -27,10 +24,22 @@ packageModel.init(
     package: {
       type: Sequelize.ENUM,
       values: [
-        'meeting room 5',
-        'meeting room 10',
-        'training room 7',
-        'training room 16'
+        'MRSG10',
+        'MRSG30',
+        'MRSG50',
+        'TRSG10',
+        'TRSG30',
+        'TRSG50',
+        'MRLG10',
+        'MRLG30',
+        'MRLG50',
+        'TRLG10',
+        'TRLG30',
+        'TRLG50',
+        'MRFRSG',
+        'MRFRLG',
+        'TRFRSG',
+        'TRFRLG'
       ]
     },
     price: {

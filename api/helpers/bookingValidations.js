@@ -114,24 +114,32 @@ const validateCreatePackage = request => {
     Package: joi
       .object({
         accountId: joi.number().required(),
-        packageSize: joi.number().required(),
-        package: joi
-          .string()
-          .valid(
-            'meeting room 5',
-            'training room 7 ',
-            'meeting room 10',
-            'training room 16'
-          )
-          .required(),
-        price: joi
+        numberOfHours: joi
           .number()
           .positive()
           .required(),
-        roomType: joi
+        package: joi
           .string()
-          .valid('meeting room', 'training room')
-          .required()
+          .valid(
+            'MRSG10',
+            'MRSG30',
+            'MRSG50',
+            'TRSG10',
+            'TRSG30',
+            'TRSG50',
+            'MRLG10',
+            'MRLG30',
+            'MRLG50',
+            'TRLG10',
+            'TRLG30',
+            'TRLG50',
+            'MRFRSG',
+            'MRFRLG',
+            'TRFRSG',
+            'TRFRLG'
+          )
+          .required(),
+        roomType: joi.string().required()
       })
       .required()
   }
