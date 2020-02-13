@@ -16,7 +16,8 @@ const {
   confirm_verify,
   update_profile,
   get_profile,
-  suspend_account
+  suspend_account,
+  get_accounts
 } = accountController
 
 const { verifyToken } = require('../../config/AuthenticationMiddleWare')
@@ -35,5 +36,6 @@ router.post('/resendpassword', verifyToken, resend_password)
 router.post('/updateprofile', verifyToken, update_profile)
 router.post('/getprofile', verifyToken, verifyUser, get_profile)
 router.post('/suspendAccount', verifyAdmin, suspend_account)
+router.post('/getAccounts', verifyAdmin, get_accounts)
 
 module.exports = router
