@@ -102,7 +102,7 @@ const update_profile = async (req, res) => {
       })
     }
     const { id } = req.data
-    if (parseInt(id) !== parseInt(Account.ownerId)) {
+    if (parseInt(id) !== parseInt(Account.id)) {
       return res.json({ code: errorCodes.authentication, error: 'breach' })
     }
     const account = await AccountModel.findOne({
@@ -134,7 +134,7 @@ const update_profile = async (req, res) => {
           lastName: Account.lastName,
           email: Account.email,
           phoneNumber: Account.phoneNumber,
-          ownerId: parseInt(Account.ownerId),
+          ownerId: parseInt(Account.id),
           gender: Account.gender,
           birthdate: Account.birthdate,
           profession: Account.profession
@@ -380,18 +380,18 @@ const confirm_verify = async (req, res) => {
 
 const change_password = async (req, res) => {
   try {
-    const { Credentials } = req.body
-    const isValid = validator.validateChangePassword({ Credentials })
+    const { Credentials, Account } = req.body
+    const isValid = validator.validateChangePassword({ Credentials, Account })
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
         error: isValid.error.details[0].message
       })
     }
-    const { id } = req.data
-    if (parseInt(id, 10) !== parseInt(Credentials.id, 10)) {
-      return res.json({ code: errorCodes.authentication, error: 'breach' })
-    }
+    const { id } = Account
+    // if (parseInt(id, 10) !== parseInt(Credentials.id, 10)) {
+    //   return res.json({ code: errorCodes.authentication, error: 'breach' })
+    // }
     const account = await AccountModel.findOne({
       where: {
         id: parseInt(id, 10)
@@ -439,10 +439,7 @@ const change_email = async (req, res) => {
         error: isValid.error.details[0].message
       })
     }
-    const { id } = req.data
-    if (parseInt(id, 10) !== parseInt(Account.id, 10)) {
-      return res.json({ code: errorCodes.authentication, error: 'breach' })
-    }
+    const { id } = Account
     await AccountModel.update(
       {
         email: Account.email
@@ -482,10 +479,7 @@ const change_phone = async (req, res) => {
         error: isValid.error.details[0].message
       })
     }
-    const { id } = req.data
-    if (parseInt(id, 10) !== parseInt(Account.id, 10)) {
-      return res.json({ code: errorCodes.authentication, error: 'breach' })
-    }
+    const { id } = Account
     await AccountModel.update(
       {
         phone: Account.phoneNumber
@@ -725,7 +719,7 @@ const get_profile = async (req, res) => {
         error: isValid.error.details[0].message
       })
     }
-    const { id } = req.data
+    const { id } = Account
 
     const account = await AccountModel.findOne({
       where: {
@@ -747,7 +741,7 @@ const get_profile = async (req, res) => {
           accessKey: contactAccessKey
         },
         body: {
-          ownerId: parseInt(Account.ownerId)
+          ownerId: parseInt(Account.id)
         }
       }
     }).then(res => {
@@ -758,6 +752,83 @@ const get_profile = async (req, res) => {
       profile,
       state: account.status
     })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const suspend_account = async (req, res) => {
+  try {
+    const { Account } = req.body
+
+    const isValid = validator.validateSuspendAccount({ Account })
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const account = await AccountModel.findOne({
+      where: {
+        id: parseInt(id)
+      }
+    })
+    if (!account) {
+      return res.json({
+        code: errorCodes.invalidCredentials,
+        error: 'Wrong credentials'
+      })
+    }
+    if (account.type === accountStatus.SUSPENDED) {
+      return res.json({
+        code: errorCodes.alreadySuspendeds,
+        error: 'User already suspended'
+      })
+    }
+    await AccountModel.update(
+      { type: accountStatus.SUSPENDED },
+      { WHERE: { id: Account.id } }
+    )
+    return res.json({ code: errorCodes.success })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const unsuspend_account = async (req, res) => {
+  try {
+    const { Account } = req.body
+
+    const isValid = validator.validateSuspendAccount({ Account })
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const account = await AccountModel.findOne({
+      where: {
+        id: parseInt(id)
+      }
+    })
+    if (!account) {
+      return res.json({
+        code: errorCodes.invalidCredentials,
+        error: 'Wrong credentials'
+      })
+    }
+    if (account.type === accountStatus.ACTIVE) {
+      return res.json({
+        code: errorCodes.alreadySuspendeds,
+        error: 'User already active'
+      })
+    }
+    await AccountModel.update(
+      { type: accountStatus.ACTIVE },
+      { WHERE: { id: Account.id } }
+    )
+    return res.json({ code: errorCodes.success })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
@@ -775,5 +846,7 @@ module.exports = {
   resend_password,
   confirm_verify,
   update_profile,
-  get_profile
+  get_profile,
+  suspend_account,
+  unsuspend_account
 }

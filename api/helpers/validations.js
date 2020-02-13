@@ -54,7 +54,7 @@ const validateUpdateProfile = request => {
           .trim()
           .regex(/^[0-9]{11,11}$/),
         email: joi.string().email(),
-        ownerId: joi.number().required(),
+        id: joi.number().required(),
         gender: joi.string().valid('Male', 'Female'),
         birthdate: joi.date(),
         profession: joi.string()
@@ -68,7 +68,7 @@ const validateGetProfile = request => {
   const schema = {
     Account: joi
       .object({
-        ownerId: joi.number().required()
+        id: joi.number().required()
       })
       .required()
   }
@@ -125,9 +125,9 @@ const validateChangePassword = request => {
     requirementCount: 8
   }
   const schema = {
+    Account: joi.object({ id: joi.number().required() }).required(),
     Credentials: joi
       .object({
-        id: joi.number().required(),
         password: joi.string().required(),
         newPassword: new PasswordComplexity(complexityOptions).required()
       })
@@ -213,6 +213,16 @@ const validateResendPassword = request => {
   }
   return joi.validate(request, schema)
 }
+const validateSuspendAccount = request => {
+  const schema = {
+    Account: joi
+      .object({
+        id: joi.number().required()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
 
 module.exports = {
   validateAccount,
@@ -226,5 +236,6 @@ module.exports = {
   validateResendPassword,
   validateConfirmVerify,
   validateUpdateProfile,
-  validateGetProfile
+  validateGetProfile,
+  validateSuspendAccount
 }

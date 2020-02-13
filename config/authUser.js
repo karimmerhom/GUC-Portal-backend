@@ -6,14 +6,14 @@ module.exports = {
     try {
       const { Account } = req.body
       if (!Account) {
-        return res.json({ code: authentication, error: 'breach' })
+        return res.json({ code: authentication, error: 'breach not account' })
       }
-      if (req.data.id !== Account.id && req.data.userType !== userTypes.ADMIN) {
-        return res.json({ code: authentication, error: 'breach' })
+      if (req.data.id !== Account.id && req.data.type !== userTypes.ADMIN) {
+        return res.json({ code: authentication, error: 'breach breach' })
       }
       return next()
     } catch (exception) {
-      return res.json({ code: authentication, error: 'breach' })
+      return res.json({ code: authentication, error: 'breach exception' })
     }
   }
 }

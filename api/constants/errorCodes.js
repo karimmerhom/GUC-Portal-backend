@@ -48,6 +48,8 @@ const unauthorized = 123
 //Cannot expire a confirmed booking
 const bookingConfirmed = 124
 
+const alreadySuspended = 125
+
 module.exports = {
   success,
   validation,
@@ -73,5 +75,6 @@ module.exports = {
   packageUsed,
   packageCanceled,
   unauthorized,
-  bookingConfirmed
+  bookingConfirmed,
+  alreadySuspended
 }

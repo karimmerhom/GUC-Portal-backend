@@ -15,10 +15,12 @@ const {
   resend_password,
   confirm_verify,
   update_profile,
-  get_profile
+  get_profile,
+  suspend_account
 } = accountController
 
 const { verifyToken } = require('../../config/AuthenticationMiddleWare')
+const { verifyAdmin } = require('../../config/AdminAuthentication')
 const { verifyUser } = require('../../config/authUser')
 
 router.post('/register', register)
@@ -32,5 +34,6 @@ router.post('/forgetpassword', forget_password)
 router.post('/resendpassword', verifyToken, resend_password)
 router.post('/updateprofile', verifyToken, update_profile)
 router.post('/getprofile', verifyToken, verifyUser, get_profile)
+router.post('/suspendAccount', verifyAdmin, suspend_account)
 
 module.exports = router
