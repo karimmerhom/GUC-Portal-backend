@@ -29,7 +29,7 @@ Account.init(
     },
     status: {
       type: Sequelize.ENUM,
-      values: [accountStatus.VERIFIED, accountStatus.PENDING]
+      values: [accountStatus.VERIFIED, accountStatus.PENDING, accountStatus.SUSPENDED]
     },
     verificationCode: {
       type: Sequelize.STRING

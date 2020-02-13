@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 const axios = require('axios')
 const jwt = require('jsonwebtoken')
 const AccountModel = require('../../models/account.model')
@@ -308,7 +308,7 @@ const confirm_verify = async (req, res) => {
       })
     }
     const { id } = req.data
-    if (parseInt(id) !== parseInt(Account.id)) {
+    if (parseInt(id, 10) !== parseInt(Account.id, 10)) {
       return res.json({ code: errorCodes.authentication, error: 'breach' })
     }
     const account = await AccountModel.findOne({
@@ -389,12 +389,12 @@ const change_password = async (req, res) => {
       })
     }
     const { id } = req.data
-    if (parseInt(id) !== parseInt(Credentials.id)) {
+    if (parseInt(id, 10) !== parseInt(Credentials.id, 10)) {
       return res.json({ code: errorCodes.authentication, error: 'breach' })
     }
     const account = await AccountModel.findOne({
       where: {
-        id: parseInt(id)
+        id: parseInt(id, 10)
       }
     })
 
@@ -440,7 +440,7 @@ const change_email = async (req, res) => {
       })
     }
     const { id } = req.data
-    if (parseInt(id) !== parseInt(Account.id)) {
+    if (parseInt(id, 10) !== parseInt(Account.id, 10)) {
       return res.json({ code: errorCodes.authentication, error: 'breach' })
     }
     await AccountModel.update(
@@ -483,7 +483,7 @@ const change_phone = async (req, res) => {
       })
     }
     const { id } = req.data
-    if (parseInt(id) !== parseInt(Account.id)) {
+    if (parseInt(id, 10) !== parseInt(Account.id, 10)) {
       return res.json({ code: errorCodes.authentication, error: 'breach' })
     }
     await AccountModel.update(
@@ -726,9 +726,7 @@ const get_profile = async (req, res) => {
       })
     }
     const { id } = req.data
-    if (parseInt(id) !== parseInt(Account.ownerId)) {
-      return res.json({ code: errorCodes.authentication, error: 'breach' })
-    }
+
     const account = await AccountModel.findOne({
       where: {
         id: parseInt(id)

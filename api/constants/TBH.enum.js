@@ -5,7 +5,8 @@ const accountStatus = {
   CANCELED: 'canceled',
   ACTIVE: 'active',
   USED: 'used',
-  EXPIRED: 'expired'
+  EXPIRED: 'expired',
+  SUSPENDED: 'suspended'
 }
 
 const userTypes = {
