@@ -30,7 +30,7 @@ const register = async (req, res) => {
       })
     }
     const findEmail = await AccountModel.findOne({
-      where: { email: Account.email }
+      where: { email: Account.email.toString().toLowerCase() }
     })
     if (findEmail) {
       return res.json({
@@ -39,7 +39,7 @@ const register = async (req, res) => {
       })
     }
     const findUsername = await AccountModel.findOne({
-      where: { username: Account.username }
+      where: { username: Account.username.toString().toLowerCase() }
     })
     if (findUsername) {
       return res.json({
@@ -440,6 +440,15 @@ const change_email = async (req, res) => {
       })
     }
     const { id } = Account
+    const found = await AccountModel.findOne({
+      where: { email: Account.email }
+    })
+    if (found) {
+      return res.json({
+        code: errorCodes.emailExists,
+        error: 'Email Already exists'
+      })
+    }
     await AccountModel.update(
       {
         email: Account.email
@@ -480,6 +489,16 @@ const change_phone = async (req, res) => {
       })
     }
     const { id } = Account
+    const found = await AccountModel.findOne({
+      where: { phone: Account.phoneNumber }
+    })
+
+    if (found) {
+      return res.json({
+        code: errorCodes.emailExists,
+        error: 'Phone Already exists'
+      })
+    }
     await AccountModel.update(
       {
         phone: Account.phoneNumber
@@ -834,6 +853,20 @@ const unsuspend_account = async (req, res) => {
   }
 }
 
+const get_accounts = async (req, res) => {
+  try {
+    const allAccounts = await axios({
+      method: 'post',
+      url: 'http://18.185.138.12:2003/contacts/getcontacts',
+      data: { header: { accessKey: contactAccessKey } }
+    })
+
+    return res.json({ code: errorCodes.success, data: allAccounts.data.body })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
 module.exports = {
   register,
   login,
@@ -848,5 +881,6 @@ module.exports = {
   update_profile,
   get_profile,
   suspend_account,
-  unsuspend_account
+  unsuspend_account,
+  get_accounts
 }
