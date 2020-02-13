@@ -19,7 +19,12 @@ packageModel.init(
     },
     status: {
       type: Sequelize.ENUM,
-      values: [accountStatus.ACTIVE, accountStatus.USED, accountStatus.CANCELED]
+      values: [
+        accountStatus.ACTIVE,
+        accountStatus.USED,
+        accountStatus.CANCELED,
+        accountStatus.PENDING
+      ]
     },
     package: {
       type: Sequelize.ENUM,

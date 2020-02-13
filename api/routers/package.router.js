@@ -5,22 +5,26 @@ const packageController = require('../controllers/package.controller')
 
 const {
   create_package,
-  cancel_all_packages,
-  cancel_specific_package,
-  view_package_by_name,
   view_package_by_code,
   edit_package_by_code,
-  edit_package_by_name,
-  calculate_package_price
+  calculate_package_price,
+  view_pricings,
+  view_packages_for_user
 } = packageController
+
+const { verifyUser } = require('../../config/authUser')
+const { verifyToken } = require('../../config/AuthenticationMiddleWare')
 
 router.post('/addpackage', create_package)
 router.post('/calculatepackageprice', calculate_package_price)
-router.post('/cancelallpackages', cancel_all_packages)
-router.post('/cancelspecificpackage', cancel_specific_package)
-router.post('/viewpackagebyname', view_package_by_name)
 router.post('/viewpackagebycode', view_package_by_code)
 router.post('/editpackagebycode', edit_package_by_code)
-router.post('/editpackagebyname', edit_package_by_name)
+router.post('/viewpricings', view_pricings)
+router.post(
+  '/viewpackagesforuser',
+  verifyToken,
+  verifyUser,
+  view_packages_for_user
+)
 
 module.exports = router

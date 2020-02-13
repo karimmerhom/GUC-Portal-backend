@@ -75,7 +75,7 @@ const create_package = async (req, res) => {
     await PackageModel.create({
       code,
       remaining: Package.numberOfHours,
-      status: accountStatus.ACTIVE,
+      status: accountStatus.PENDING,
       package: Package.package,
       price,
       roomType: Package.roomType,
@@ -154,92 +154,6 @@ const calculate_package_price = async (req, res) => {
   }
 }
 
-const cancel_specific_package = async (req, res) => {
-  try {
-    const isValid = validator.validateCancelSpecificPackage(req.body)
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message
-      })
-    }
-    const { Package } = req.body
-    const checkPackage = await PackageModel.findOne({
-      where: { code: Package.code }
-    })
-    if (!checkPackage) {
-      return res.json({
-        code: errorCodes.entityNotFound,
-        error: 'Package does not exist'
-      })
-    }
-    await PackageModel.update(
-      { status: accountStatus.CANCELED },
-      { where: { code: Package.code } }
-    )
-    return res.json({ code: errorCodes.success })
-  } catch (exception) {
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
-  }
-}
-
-const cancel_all_packages = async (req, res) => {
-  try {
-    const isValid = validator.validateCancelAllPackages(req.body)
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message
-      })
-    }
-    const { Package } = req.body
-    const checkPackage = await PackageModel.findOne({
-      where: { name: Package.name }
-    })
-    if (!checkPackage) {
-      return res.json({
-        code: errorCodes.entityNotFound,
-        error: 'Package does not exist'
-      })
-    }
-    await PackageModel.update(
-      {
-        status: accountStatus.CANCELED
-      },
-      {
-        where: {
-          name: Package.name
-        }
-      }
-    )
-    return res.json({ code: errorCodes.success })
-  } catch (exception) {
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
-  }
-}
-
-const view_package_by_name = async (req, res) => {
-  try {
-    const isValid = validator.validateViewPackageByName(req.body)
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message
-      })
-    }
-    const { Package } = req.body
-    const packages = await PackageModel.findAll({
-      where: {
-        name: Package.name
-      }
-    })
-    return res.json({ code: errorCodes.success, packages })
-  } catch (exception) {
-    console.log(exception)
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
-  }
-}
-
 const view_package_by_code = async (req, res) => {
   try {
     const isValid = validator.validateViewPackageByCode(req.body)
@@ -294,34 +208,29 @@ const edit_package_by_code = async (req, res) => {
   }
 }
 
-const edit_package_by_name = async (req, res) => {
+const view_pricings = async (req, res) => {
   try {
-    const isValid = validator.validateEditPackageByName(req.body)
+    const packages = await pricingModel.findAll()
+    return res.json({ code: errorCodes.success, packages })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const view_packages_for_user = async (req, res) => {
+  try {
+    const isValid = validator.validateShowMyPackages(req.body)
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
         error: isValid.error.details[0].message
       })
     }
-    const { Package } = req.body
-    const package = await PackageModel.findOne({
-      where: {
-        name: Package.name
-      }
+    const { Account } = req.body
+    const packages = await PackageModel.findAll({
+      where: { accountId: Account.id }
     })
-    if (!package) {
-      return res.json({
-        code: errorCodes.entityNotFound,
-        error: 'Package not found'
-      })
-    }
-    await PackageModel.update(
-      {
-        status: Package.status
-      },
-      { where: { name: Package.name } }
-    )
-    return res.json({ code: errorCodes.success })
+    return res.json({ code: errorCodes.success, packages })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
@@ -329,11 +238,9 @@ const edit_package_by_name = async (req, res) => {
 
 module.exports = {
   create_package,
-  cancel_all_packages,
-  cancel_specific_package,
-  view_package_by_name,
   view_package_by_code,
   edit_package_by_code,
-  edit_package_by_name,
-  calculate_package_price
+  calculate_package_price,
+  view_pricings,
+  view_packages_for_user
 }

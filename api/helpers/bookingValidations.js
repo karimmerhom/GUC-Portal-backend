@@ -243,6 +243,17 @@ const validateEditPackageByName = request => {
   return joi.validate(request, schema)
 }
 
+const validateShowMyPackages = request => {
+  const schema = {
+    Account: joi
+      .object({
+        id: joi.number().required()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
+
 module.exports = {
   validateAddBooking,
   validateShowBookings,
@@ -256,5 +267,6 @@ module.exports = {
   validateEditBooking,
   validateEditPackageByCode,
   validateEditPackageByName,
-  validateBookingWithPackage
+  validateBookingWithPackage,
+  validateShowMyPackages
 }
