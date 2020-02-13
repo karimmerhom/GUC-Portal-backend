@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 const axios = require('axios')
 const AccountModel = require('../models/account.model')
 const errorCodes = require('../api/constants/errorCodes')
