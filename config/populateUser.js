@@ -21,7 +21,7 @@ const populate_users = async () => {
   })
   await axios({
     method: 'post',
-    url: 'http://18.185.138.12:2003/contacts/createcontact',
+    url: 'https://cubexs.net/contacts/createcontact',
     data: {
       header: {
         accessKey: contactAccessKey
@@ -49,7 +49,7 @@ const populate_users = async () => {
   })
   await axios({
     method: 'post',
-    url: 'http://18.185.138.12:2003/contacts/createcontact',
+    url: 'https://cubexs.net/contacts/createcontact',
     data: {
       header: {
         accessKey: contactAccessKey
@@ -77,7 +77,7 @@ const populate_users = async () => {
   })
   await axios({
     method: 'post',
-    url: 'http://18.185.138.12:2003/contacts/createcontact',
+    url: 'https://cubexs.net/contacts/createcontact',
     data: {
       header: {
         accessKey: contactAccessKey
@@ -105,7 +105,7 @@ const populate_users = async () => {
   })
   await axios({
     method: 'post',
-    url: 'http://18.185.138.12:2003/contacts/createcontact',
+    url: 'https://cubexs.net/contacts/createcontact',
     data: {
       header: {
         accessKey: contactAccessKey
