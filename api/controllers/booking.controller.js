@@ -406,8 +406,7 @@ const booking_details = async (req, res) => {
 
 const cancel_pending = async (req, res) => {
   try {
-    let slots = []
-    const isValid = validator.validateEditBooking(req.body)
+    const isValid = validator.validateCancelBooking(req.body)
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,

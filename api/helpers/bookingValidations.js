@@ -223,6 +223,11 @@ const validateCancelBooking = request => {
         id: joi.number().required(),
         status: joi.string().valid('canceled')
       })
+      .required(),
+    Account: joi
+      .object({
+        id: joi.number().required()
+      })
       .required()
   }
   return joi.validate(request, schema)
@@ -308,5 +313,6 @@ module.exports = {
   validateBookingWithPackage,
   validateShowMyPackages,
   validateGiftPackage,
-  validateBookingDetails
+  validateBookingDetails,
+  validateCancelBooking
 }
