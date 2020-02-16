@@ -45,10 +45,10 @@ const explore = (req, res) => {
   return res.json(result)
 }
 
-app.use('/api/accounts', account)
-app.use('/api/bookings', booking)
-app.use('/api/packages', package)
-app.use('/explore', explore)
+app.use('/tbhapp/accounts', account)
+app.use('/tbhapp/bookings', booking)
+app.use('/tbhapp/packages', package)
+app.use('tbhapp/explore', explore)
 
 app.use((req, res) => {
   res.status(404).send({ err: 'No such url' })

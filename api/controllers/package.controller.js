@@ -236,11 +236,27 @@ const view_packages_for_user = async (req, res) => {
   }
 }
 
+const view_all_packages = async (req, res) => {
+  try {
+    const isValid = validator.validateShowMyPackages(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    return res.json({ code: errorCodes.success, packages })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
 module.exports = {
   create_package,
   view_package_by_code,
   edit_package_by_code,
   calculate_package_price,
   view_pricings,
-  view_packages_for_user
+  view_packages_for_user,
+  view_all_packages
 }

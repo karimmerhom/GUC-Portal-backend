@@ -9,11 +9,13 @@ const {
   edit_package_by_code,
   calculate_package_price,
   view_pricings,
-  view_packages_for_user
+  view_packages_for_user,
+  view_all_packages
 } = packageController
 
 const { verifyUser } = require('../../config/authUser')
 const { verifyToken } = require('../../config/AuthenticationMiddleWare')
+const { verifyAdmin } = require('../../config/AdminAuthentication')
 
 router.post('/addpackage', create_package)
 router.post('/calculatepackageprice', calculate_package_price)
@@ -26,5 +28,6 @@ router.post(
   verifyUser,
   view_packages_for_user
 )
+router.post('/viewallpackages', verifyAdmin, view_all_packages)
 
 module.exports = router
