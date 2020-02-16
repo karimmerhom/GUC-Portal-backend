@@ -5,6 +5,7 @@ const PackageModel = require('../../models/package.model')
 const { generateOTP } = require('../helpers/helpers')
 const VerificationCode = require('../../models/verificationCodes')
 const pricingModel = require('../../models/pricing.model')
+const accountModel = require('../../models/account.model')
 
 const create_package = async (req, res) => {
   try {
@@ -15,7 +16,16 @@ const create_package = async (req, res) => {
         error: isValid.error.details[0].message
       })
     }
-    const { Package } = req.body
+    const { Package, Account } = req.body
+    const account = await accountModel.findOne({
+      where: { id: Account.id }
+    })
+    if (!account) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'User not found'
+      })
+    }
     const checkPrice = await pricingModel.findOne({
       where: { code: Package.package }
     })
@@ -96,7 +106,16 @@ const calculate_package_price = async (req, res) => {
         error: isValid.error.details[0].message
       })
     }
-    const { Package } = req.body
+    const { Package, Account } = req.body
+    const account = await accountModel.findOne({
+      where: { id: Account.id }
+    })
+    if (!account) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'User not found'
+      })
+    }
     const checkPrice = await pricingModel.findOne({
       where: { code: Package.package }
     })
@@ -238,14 +257,47 @@ const view_packages_for_user = async (req, res) => {
 
 const view_all_packages = async (req, res) => {
   try {
-    const isValid = validator.validateShowMyPackages(req.body)
+    const packages = await PackageModel.findAll()
+    return res.json({ code: errorCodes.success, packages })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const gift_package = async (req, res) => {
+  try {
+    const isValid = validator.validateGiftPackage(req.body)
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
         error: isValid.error.details[0].message
       })
     }
-    return res.json({ code: errorCodes.success, packages })
+    const { Package } = req.body
+    const account = await accountModel.findOne({
+      where: { id: Package.accountId }
+    })
+    if (!account) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'User not found'
+      })
+    }
+    const code = await generateOTP()
+    await VerificationCode.create({
+      code,
+      date: new Date()
+    })
+    await PackageModel.create({
+      code,
+      remaining: Package.numberOfHours,
+      status: accountStatus.ACTIVE,
+      package: 'custom',
+      price: 0,
+      roomType: Package.roomType,
+      accountId: Package.accountId
+    })
+    return res.json({ code: errorCodes.success })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
@@ -258,5 +310,6 @@ module.exports = {
   calculate_package_price,
   view_pricings,
   view_packages_for_user,
-  view_all_packages
+  view_all_packages,
+  gift_package
 }

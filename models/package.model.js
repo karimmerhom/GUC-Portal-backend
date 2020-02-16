@@ -44,7 +44,8 @@ packageModel.init(
         'MRFRSG',
         'MRFRLG',
         'TRFRSG',
-        'TRFRLG'
+        'TRFRLG',
+        'custom'
       ]
     },
     price: {

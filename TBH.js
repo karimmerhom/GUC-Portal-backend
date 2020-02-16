@@ -48,7 +48,7 @@ const explore = (req, res) => {
 app.use('/tbhapp/accounts', account)
 app.use('/tbhapp/bookings', booking)
 app.use('/tbhapp/packages', package)
-app.use('tbhapp/explore', explore)
+app.use('/tbhapp/explore', explore)
 
 app.use((req, res) => {
   res.status(404).send({ err: 'No such url' })

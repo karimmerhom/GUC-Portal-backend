@@ -113,7 +113,6 @@ const validateCreatePackage = request => {
   const schema = {
     Package: joi
       .object({
-        accountId: joi.number().required(),
         numberOfHours: joi
           .number()
           .positive()
@@ -140,6 +139,11 @@ const validateCreatePackage = request => {
           )
           .required(),
         roomType: joi.string().required()
+      })
+      .required(),
+    Account: joi
+      .object({
+        id: joi.number().required()
       })
       .required()
   }
@@ -254,6 +258,22 @@ const validateShowMyPackages = request => {
   return joi.validate(request, schema)
 }
 
+const validateGiftPackage = request => {
+  const schema = {
+    Package: joi
+      .object({
+        accountId: joi.number().required(),
+        numberOfHours: joi
+          .number()
+          .positive()
+          .required(),
+        roomType: joi.string().required()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
+
 module.exports = {
   validateAddBooking,
   validateShowBookings,
@@ -268,5 +288,6 @@ module.exports = {
   validateEditPackageByCode,
   validateEditPackageByName,
   validateBookingWithPackage,
-  validateShowMyPackages
+  validateShowMyPackages,
+  validateGiftPackage
 }
