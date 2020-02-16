@@ -6,6 +6,7 @@ const BookingModel = require('../../models/booking.model')
 const { accountStatus, slotStatus } = require('../constants/TBH.enum')
 const axios = require('axios')
 const { contactAccessKey } = require('../../config/keys')
+const pricingModel = require('../../models/pricing.model')
 
 const generateOTP = async () => {
   let text = ''
@@ -73,26 +74,28 @@ const checkPrice = async (
     return { code: errorCodes.peopleOverload }
   }
   if (packageCode === '') {
+    let packageFound
     if (amountOfPeople <= 5 && roomType === 'meeting room') {
-      price = hours * 100
+      packageFound = await pricingModel.findOne({ where: { code: 'MRFRSG' } })
     }
     if (
       amountOfPeople > 5 &&
       amountOfPeople <= 10 &&
       roomType === 'meeting room'
     ) {
-      price = hours * 170
+      packageFound = await pricingModel.findOne({ where: { code: 'MRFRLG' } })
     }
     if (amountOfPeople <= 7 && roomType === 'training room') {
-      price = hours * 200
+      packageFound = await pricingModel.findOne({ where: { code: 'TRFRSG' } })
     }
     if (
       amountOfPeople >= 8 &&
       amountOfPeople <= 16 &&
       roomType === 'training room'
     ) {
-      price = hours * 300
+      packageFound = await pricingModel.findOne({ where: { code: 'TRFRSG' } })
     }
+    price = hours * packageFound.price
   }
   let newHours
   if (packageCode !== '') {
@@ -139,29 +142,29 @@ const expireBooking = async (id, status = accountStatus.EXPIRED) => {
   }
   let slots = []
   slots = booking.slot
-  if (booking.packageCode !== '') {
-    const package = await PackageModel.findOne({
-      where: { code: booking.packageCode }
-    })
-    await PackageModel.update(
-      { remaining: package.remaining + slots.length },
-      {
-        where: {
-          code: booking.packageCode
-        }
-      }
-    )
-    if (package.status === accountStatus.USED) {
-      await PackageModel.update(
-        { status: accountStatus.ACTIVE },
-        {
-          where: {
-            code: booking.packageCode
-          }
-        }
-      )
-    }
-  }
+  // if (booking.packageCode !== '' && booking.packageCode !== null) {
+  //   const package = await PackageModel.findOne({
+  //     where: { code: booking.packageCode }
+  //   })
+  //   await PackageModel.update(
+  //     { remaining: package.remaining + slots.length },
+  //     {
+  //       where: {
+  //         code: booking.packageCode
+  //       }
+  //     }
+  //   )
+  //   if (package.status === accountStatus.USED) {
+  //     await PackageModel.update(
+  //       { status: accountStatus.ACTIVE },
+  //       {
+  //         where: {
+  //           code: booking.packageCode
+  //         }
+  //       }
+  //     )
+  //   }
+  // }
   for (i = 0; i < slots.length; i++) {
     await CalendarModel.destroy({
       where: {

@@ -18,7 +18,7 @@ const { verifyToken } = require('../../config/AuthenticationMiddleWare')
 const { verifyAdmin } = require('../../config/AdminAuthentication')
 const { verifyUser } = require('../../config/authUser')
 
-router.post('/validatebooking', verifyToken, validate_booking)
+router.post('/validatebooking', verifyToken, verifyUser, validate_booking)
 router.post('/addbooking', verifyToken, verifyUser, add_booking)
 router.post('/editbooking', verifyAdmin, edit_booking)
 router.post('/showcalendar', show_all_slots_from_to)

@@ -46,12 +46,7 @@ const validateAddBooking = request => {
           .required(),
         roomType: joi
           .string()
-          .valid([
-            'meeting room',
-            'training room',
-            'private office',
-            'virtual office'
-          ])
+          .valid(['meeting room', 'training room'])
           .required(),
         roomNumber: joi
           .string()

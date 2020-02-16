@@ -8,7 +8,10 @@ module.exports = {
       if (!Account) {
         return res.json({ code: authentication, error: 'breach not account' })
       }
-      if (req.data.id !== Account.id && req.data.type !== userTypes.ADMIN) {
+      if (
+        req.data.id !== parseInt(Account.id) &&
+        req.data.type !== userTypes.ADMIN
+      ) {
         return res.json({ code: authentication, error: 'breach breach' })
       }
       return next()

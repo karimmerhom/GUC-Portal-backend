@@ -28,13 +28,9 @@ const validate_booking = async (req, res) => {
       })
     }
     const { Booking, Account } = req.body
-    const { id } = req.data
-    if (parseInt(id) !== parseInt(Account.id)) {
-      return res.json({ code: errorCodes.authentication, error: 'breach' })
-    }
     const account = await AccountModel.findOne({
       where: {
-        id: parseInt(id)
+        id: parseInt(Account.id)
       }
     })
     if (!account) {
@@ -49,7 +45,10 @@ const validate_booking = async (req, res) => {
         error: 'Account must be verified'
       })
     }
-    if (new Date(Booking.date) < new Date()) {
+    if (
+      new Date(Booking.date) < new Date() &&
+      req.data.type !== userTypes.ADMIN
+    ) {
       return res.json({
         code: errorCodes.dateInThePast,
         error: 'Date cannot be in the past'
@@ -166,6 +165,27 @@ const add_booking = async (req, res) => {
       return res.json({
         code: errorCodes.invalidCredentials,
         error: 'User not found'
+      })
+    }
+    if (!account) {
+      return res.json({
+        code: errorCodes.invalidCredentials,
+        error: 'User not found'
+      })
+    }
+    if (account.status === accountStatus.PENDING) {
+      return res.json({
+        code: errorCodes.unVerified,
+        error: 'Account must be verified'
+      })
+    }
+    if (
+      new Date(Booking.date) < new Date() &&
+      req.data.type !== userTypes.ADMIN
+    ) {
+      return res.json({
+        code: errorCodes.dateInThePast,
+        error: 'Date cannot be in the past'
       })
     }
     let slots = []
@@ -420,7 +440,7 @@ const cancel_pending = async (req, res) => {
         id: Booking.id
       }
     })
-    if (!booking || booking.status !== slotStatus.PENDING) {
+    if (!booking) {
       return res.json({
         code: errorCodes.entityNotFound,
         error: 'Booking not found'
@@ -436,16 +456,18 @@ const cancel_pending = async (req, res) => {
       })
     }
 
-    await expireBooking(booking.id, accountStatus.CANCELED)
+    await expireBooking(Booking.id, accountStatus.CANCELED)
     await BookingModel.update(
       { status: accountStatus.CANCELED },
       { where: { id: Booking.id } }
     )
     return res.json({ code: errorCodes.success })
   } catch (exception) {
+    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
+
 module.exports = {
   validate_booking,
   show_all_slots_from_to,
