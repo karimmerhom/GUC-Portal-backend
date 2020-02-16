@@ -71,7 +71,7 @@ const register = async (req, res) => {
     })
     axios({
       method: 'post',
-      url: 'http://18.185.138.12:2003/contacts/createcontact',
+      url: 'https://cubexs.net/contacts/createcontact',
       data: {
         header: {
           accessKey: contactAccessKey
@@ -124,7 +124,7 @@ const update_profile = async (req, res) => {
     }
     axios({
       method: 'post',
-      url: 'http://18.185.138.12:2003/contacts/updatecontact',
+      url: 'https://cubexs.net/contacts/updatecontact',
       data: {
         header: {
           accessKey: contactAccessKey
@@ -186,7 +186,7 @@ const verify = async (req, res) => {
     if (Account.verifyBy === verificationMethods.EMAIL) {
       axios({
         method: 'post',
-        url: 'http://18.185.138.12:2000/emailservice/sendemail',
+        url: 'https://cubexs.net/emailservice/sendemail',
         data: {
           header: {
             accessKey: emailAccessKey
@@ -203,7 +203,7 @@ const verify = async (req, res) => {
     if (Account.verifyBy === verificationMethods.SMS) {
       axios({
         method: 'post',
-        url: 'http://18.185.138.12:2001/epushservice/sendsms',
+        url: 'https://cubexs.net/epushservice/sendsms',
         data: {
           header: {
             accessKey: smsAccessKey
@@ -461,7 +461,7 @@ const change_email = async (req, res) => {
     )
     axios({
       method: 'post',
-      url: 'http://18.185.138.12:2003/contacts/updatecontact',
+      url: 'https://cubexs.net/contacts/updatecontact',
       data: {
         header: {
           accessKey: contactAccessKey
@@ -511,7 +511,7 @@ const change_phone = async (req, res) => {
     )
     axios({
       method: 'post',
-      url: 'http://18.185.138.12:2003/contacts/updatecontact',
+      url: 'https://cubexs.net/contacts/updatecontact',
       data: {
         header: {
           accessKey: contactAccessKey
@@ -561,7 +561,7 @@ const forget_password = async (req, res) => {
 
     axios({
       method: 'post',
-      url: 'http://18.185.138.12:2001/epushservice/sendsms',
+      url: 'https://cubexs.net/epushservice/sendsms',
       data: {
         header: {
           accessKey: smsAccessKey
@@ -683,7 +683,7 @@ const resend_password = async (req, res) => {
     if (Account.verifyBy === verificationMethods.EMAIL) {
       axios({
         method: 'post',
-        url: 'http://18.185.138.12:2000/emailservice/sendemail',
+        url: 'https://cubexs.net/emailservice/sendemail',
         data: {
           header: {
             accessKey: emailAccessKey
@@ -700,7 +700,7 @@ const resend_password = async (req, res) => {
     if (Account.verifyBy === verificationMethods.SMS) {
       axios({
         method: 'post',
-        url: 'http://18.185.138.12:2001/epushservice/sendsms',
+        url: 'https://cubexs.net/epushservice/sendsms',
         data: {
           header: {
             accessKey: smsAccessKey
@@ -754,7 +754,7 @@ const get_profile = async (req, res) => {
     let profile
     await axios({
       method: 'post',
-      url: 'http://18.185.138.12:2003/contacts/getcontact',
+      url: 'https://cubexs.net/contacts/getcontact',
       data: {
         header: {
           accessKey: contactAccessKey
@@ -857,7 +857,7 @@ const get_accounts = async (req, res) => {
   try {
     const allAccounts = await axios({
       method: 'post',
-      url: 'http://18.185.138.12:2003/contacts/getcontacts',
+      url: 'https://cubexs.net/contacts/getcontacts',
       data: { header: { accessKey: contactAccessKey } }
     })
 
