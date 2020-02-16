@@ -212,6 +212,17 @@ const validateEditBooking = request => {
   }
   return joi.validate(request, schema)
 }
+const validateCancelBooking = request => {
+  const schema = {
+    Booking: joi
+      .object({
+        id: joi.number().required(),
+        status: joi.string().valid('canceled')
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
 
 const validateEditPackageByCode = request => {
   const schema = {
@@ -253,6 +264,13 @@ const validateShowMyPackages = request => {
   }
   return joi.validate(request, schema)
 }
+const validateBookingDetails = requesst => {
+  const schema = {
+    Account: joi.object({ id: joi.number().required() }).required(),
+    Booking: joi.object({ id: joi.number().required() }).required()
+  }
+  return joi.validate(request, schema)
+}
 
 module.exports = {
   validateAddBooking,
@@ -268,5 +286,6 @@ module.exports = {
   validateEditPackageByCode,
   validateEditPackageByName,
   validateBookingWithPackage,
-  validateShowMyPackages
+  validateShowMyPackages,
+  validateBookingDetails
 }
