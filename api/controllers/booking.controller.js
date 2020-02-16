@@ -4,7 +4,11 @@ const errorCodes = require('../constants/errorCodes')
 const { Op } = require('sequelize')
 const cron = require('cron')
 const { bookingExpiry } = require('../../config/keys')
-const { accountStatus, slotStatus } = require('../constants/TBH.enum')
+const {
+  accountStatus,
+  slotStatus,
+  userTypes
+} = require('../constants/TBH.enum')
 const {
   checkFreeSlot,
   checkPrice,
@@ -149,7 +153,7 @@ const add_booking = async (req, res) => {
       })
     }
     const { Booking, Account } = req.body
-    const { id } = req.data
+    const { id } = Account
     if (parseInt(id) !== parseInt(Account.id)) {
       return res.json({ code: errorCodes.authentication, error: 'breach' })
     }
@@ -365,11 +369,91 @@ const edit_booking = async (req, res) => {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
+const list_all_bookings = async (req, res) => {
+  try {
+    const allBookings = await BookingModel.findAll()
+    return res.json({ code: errorCodes.success, bookings: allBookings })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
 
+const booking_details = async (req, res) => {
+  try {
+    const isValid = validator.validateEditBooking(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Booking, Account } = req.body
+    const found = await BookingModel.findOne({ where: { id: Booking.id } })
+    if (!found) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'Booking not found'
+      })
+    }
+    if (found.accountId !== Account.id && req.data.type === userTypes.ADMIN) {
+      return res.json({ code: errorCodes.authentication, error: 'breach' })
+    }
+    return res.json({ code: errorCodes.success, booking: found })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const cancel_pending = async (req, res) => {
+  try {
+    let slots = []
+    const isValid = validator.validateEditBooking(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Booking, Account } = req.body
+
+    const booking = await BookingModel.findOne({
+      where: {
+        id: Booking.id
+      }
+    })
+    if (!booking || booking.status !== slotStatus.PENDING) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'Booking not found'
+      })
+    }
+    if (booking.accountId !== Account.id && req.data.type === userTypes.ADMIN) {
+      return res.json({ code: errorCodes.authentication, error: 'breach' })
+    }
+    if (booking.status === accountStatus.CANCELED) {
+      return res.json({
+        code: errorCodes.bookingCanceled,
+        error: 'Cannot edit a canceled booking'
+      })
+    }
+
+    await expireBooking(booking.id, accountStatus.CANCELED)
+    await BookingModel.update(
+      { status: accountStatus.CANCELED },
+      { where: { id: Booking.id } }
+    )
+    return res.json({ code: errorCodes.success })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
 module.exports = {
   validate_booking,
   show_all_slots_from_to,
   add_booking,
   show_my_bookings,
-  edit_booking
+  edit_booking,
+  list_all_bookings,
+  booking_details,
+  cancel_pending
 }

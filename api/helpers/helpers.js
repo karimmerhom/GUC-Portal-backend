@@ -129,7 +129,7 @@ const checkPrice = async (
   return { price, code: errorCodes.success, remainingHours: newHours }
 }
 
-const expireBooking = async id => {
+const expireBooking = async (id, status = accountStatus.EXPIRED) => {
   const booking = await BookingModel.findOne({ where: { id } })
   if (booking.status === accountStatus.CONFIRMED) {
     return {
@@ -171,10 +171,7 @@ const expireBooking = async id => {
       }
     })
   }
-  await BookingModel.update(
-    { status: accountStatus.EXPIRED },
-    { where: { id } }
-  )
+  await BookingModel.update({ status }, { where: { id } })
   return { code: errorCodes.success }
 }
 
