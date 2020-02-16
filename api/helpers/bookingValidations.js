@@ -268,7 +268,7 @@ const validateShowMyPackages = request => {
   }
   return joi.validate(request, schema)
 }
-const validateBookingDetails = requesst => {
+const validateBookingDetails = request => {
   const schema = {
     Account: joi.object({ id: joi.number().required() }).required(),
     Booking: joi.object({ id: joi.number().required() }).required()

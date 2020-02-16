@@ -380,7 +380,7 @@ const list_all_bookings = async (req, res) => {
 
 const booking_details = async (req, res) => {
   try {
-    const isValid = validator.validateEditBooking(req.body)
+    const isValid = validator.validateBookingDetails(req.body)
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
