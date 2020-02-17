@@ -89,7 +89,7 @@ const create_package = async (req, res) => {
       package: Package.package,
       price,
       roomType: Package.roomType,
-      accountId: Package.accountId
+      accountId: Account.id
     })
     return res.json({ code: errorCodes.success, packageCode: code, price })
   } catch (exception) {

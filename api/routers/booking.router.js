@@ -11,7 +11,8 @@ const {
   edit_booking,
   list_all_bookings,
   booking_details,
-  cancel_pending
+  cancel_pending,
+  edit_timing
 } = bookingController
 
 const { verifyToken } = require('../../config/AuthenticationMiddleWare')
@@ -26,5 +27,6 @@ router.post('/showmybookings', verifyToken, show_my_bookings)
 router.post('/listallbookings', verifyAdmin, list_all_bookings)
 router.post('/bookingdetails', verifyToken, verifyUser, booking_details)
 router.post('/cancelpending', verifyToken, verifyUser, cancel_pending)
+router.post('/editbookingtiming', edit_timing)
 
 module.exports = router

@@ -292,6 +292,40 @@ const validateGiftPackage = request => {
   return joi.validate(request, schema)
 }
 
+const validateEditTiming = request => {
+  const schema = {
+    Booking: joi
+      .object({
+        id: joi.number().required(),
+        slot: joi
+          .array()
+          .items(
+            joi
+              .string()
+              .valid([
+                '9AM',
+                '10AM',
+                '11AM',
+                '12PM',
+                '1PM',
+                '2PM',
+                '3PM',
+                '4PM',
+                '5PM',
+                '6PM',
+                '7PM',
+                '8PM',
+                '9PM'
+              ])
+          )
+          .required()
+      })
+      .required(),
+    Account: joi.object({ id: joi.number().required() }).required()
+  }
+  return joi.validate(request, schema)
+}
+
 module.exports = {
   validateAddBooking,
   validateShowBookings,
@@ -309,5 +343,6 @@ module.exports = {
   validateShowMyPackages,
   validateGiftPackage,
   validateBookingDetails,
-  validateCancelBooking
+  validateCancelBooking,
+  validateEditTiming
 }

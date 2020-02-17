@@ -247,7 +247,8 @@ const add_booking = async (req, res) => {
       price: price.price,
       paymentMethod: Booking.paymentMethod,
       status: bookingStatus,
-      accountId: Account.id
+      accountId: Account.id,
+      packageCode: Booking.packageCode
     })
     const bookingDate = new Date(Booking.date)
     const months = [
@@ -416,7 +417,7 @@ const booking_details = async (req, res) => {
       })
     }
     if (found.accountId !== Account.id && req.data.type === userTypes.ADMIN) {
-      return res.json({ code: errorCodes.authentication, error: 'breach' })
+      return res.json({ code: errorCodes.unauthorized, error: 'breach' })
     }
     return res.json({ code: errorCodes.success, booking: found })
   } catch (exception) {
@@ -468,6 +469,190 @@ const cancel_pending = async (req, res) => {
   }
 }
 
+const edit_timing = async (req, res) => {
+  try {
+    const isValid = validator.validateEditTiming(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Account, Booking } = req.body
+    const booking = await BookingModel.findOne({
+      where: {
+        id: Booking.id
+      }
+    })
+    if (!booking) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'Booking not found'
+      })
+    }
+
+    // if (booking.accountId !== Account.id && req.data.type === userTypes.ADMIN) {
+    //   return res.json({ code: errorCodes.unauthorized, error: 'breach' })
+    // }
+
+    let addedHrs = []
+    let deductedHrs = []
+    let i = 0
+    booking.slot.forEach(slot => {
+      if (!Booking.slot.includes(slot)) {
+        deductedHrs.push(slot)
+      }
+    })
+    Booking.slot.forEach(slot => {
+      if (!booking.slot.includes(slot)) {
+        addedHrs.push(slot)
+      }
+    })
+
+    let slotsThatAreNotFree = []
+    for (i = 0; i < addedHrs.length; i++) {
+      const helper = await checkFreeSlot(
+        addedHrs[i],
+        booking.date,
+        booking.roomNumber
+      )
+      if (helper.code === errorCodes.slotNotFree) {
+        slotsThatAreNotFree.push(slots[i])
+      }
+    }
+    if (slotsThatAreNotFree.length !== 0) {
+      return res.json({
+        code: errorCodes.slotNotFree,
+        error: `These slots are not free: ${slotsThatAreNotFree}`
+      })
+    }
+    const bookingDate = new Date(booking.date)
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
+    ]
+    const month = months[bookingDate.getMonth()]
+    for (i = 0; i < deductedHrs.length; i++) {
+      CalendarModel.destroy({
+        where: {
+          slot: deductedHrs[i],
+          date: bookingDate,
+          roomNumber: booking.roomNumber
+        }
+      })
+    }
+    for (i = 0; i < addedHrs.length; i++) {
+      CalendarModel.create({
+        dayNumber: bookingDate.getDate(),
+        month,
+        monthNumber: bookingDate.getMonth(),
+        year: bookingDate.getFullYear(),
+        slot: addedHrs[i],
+        status: slotStatus.PENDING,
+        date: bookingDate,
+        roomNumber: booking.roomNumber
+      })
+    }
+    let package = await PackageModel.findOne({
+      where: { code: booking.packageCode }
+    })
+    const addedPrice = addedHrs.length - deductedHrs.length
+    let newPrice = booking.price
+    console.log('addedPrice:', addedPrice)
+    if (addedPrice > 0) {
+      console.log('package:', package)
+      if (package && package.status === accountStatus.ACTIVE) {
+        if (package && package.remaining - addedPrice > 0) {
+          await PackageModel.update(
+            { remaining: package.remaining - addedPrice },
+            {
+              where: {
+                code: booking.packageCode
+              }
+            }
+          )
+          console.log('package is active')
+          newPrice = 0
+        } else {
+          await PackageModel.update(
+            { remaining: 0, status: accountStatus.USED },
+            {
+              where: {
+                code: booking.packageCode
+              }
+            }
+          )
+          console.log('package became used')
+          const rate = await checkPrice(
+            booking.amountOfPeople,
+            booking.roomType,
+            -1 * (package.remaining - addedPrice),
+            null,
+            booking.accountId
+          )
+          console.log('rate in package used:', rate)
+          newPrice = rate.price * (-1 * (package.remaining - addedPrice))
+          console.log('newPrice:', newPrice)
+        }
+      } else {
+        const rate = await checkPrice(
+          booking.amountOfPeople,
+          booking.roomType,
+          addedPrice,
+          null,
+          booking.accountId
+        )
+        console.log('rate when the package in not active', rate)
+        newPrice = rate.price * addedPrice
+        console.log('newPrice', newPrice)
+      }
+    } else {
+      console.log('booking.price:', booking.price)
+
+      if (booking.price > 0) {
+        const rate = await checkPrice(
+          booking.amountOfPeople,
+          booking.roomType,
+          addedPrice * -1,
+          null,
+          booking.accountId
+        )
+        console.log('rate when addedPrice is negative', rate)
+        newPrice = booking.price - rate.price * addedPrice * -1
+        console.log('newPrice:', newPrice)
+      } else {
+        await PackageModel.update(
+          {
+            remaining: package.remaining - addedPrice,
+            status: accountStatus.ACTIVE
+          },
+          { where: { code: booking.packageCode } }
+        )
+      }
+    }
+    console.log('final price:', newPrice)
+
+    await BookingModel.update(
+      { price: newPrice, slot: Booking.slot },
+      { where: { id: booking.id } }
+    )
+    return res.json({ code: errorCodes.success })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
 module.exports = {
   validate_booking,
   show_all_slots_from_to,
@@ -476,5 +661,6 @@ module.exports = {
   edit_booking,
   list_all_bookings,
   booking_details,
-  cancel_pending
+  cancel_pending,
+  edit_timing
 }

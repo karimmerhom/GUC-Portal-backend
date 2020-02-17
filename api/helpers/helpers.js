@@ -10,8 +10,7 @@ const pricingModel = require('../../models/pricing.model')
 
 const generateOTP = async () => {
   let text = ''
-  const possible =
-    'ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789'
+  const possible = 'abcdefghijkmnopqrstuvwxyz0123456789'
   for (let i = 0; i < 8; i += 1) {
     text += possible.charAt(Math.floor(Math.random() * possible.length))
   }
@@ -73,7 +72,7 @@ const checkPrice = async (
   if (amountOfPeople > 16 && roomType === 'training room') {
     return { code: errorCodes.peopleOverload }
   }
-  if (packageCode === '') {
+  if (packageCode === '' || packageCode === null) {
     let packageFound
     if (amountOfPeople <= 5 && roomType === 'meeting room') {
       packageFound = await pricingModel.findOne({ where: { code: 'MRFRSG' } })
@@ -98,7 +97,7 @@ const checkPrice = async (
     price = hours * packageFound.price
   }
   let newHours
-  if (packageCode !== '') {
+  if (packageCode !== '' && packageCode !== null) {
     const package = await PackageModel.findOne({
       where: { code: packageCode }
     })
