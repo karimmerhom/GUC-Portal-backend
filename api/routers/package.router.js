@@ -25,9 +25,9 @@ router.post(
   verifyUser,
   calculate_package_price
 )
-router.post('/viewpackagebycode', view_package_by_code)
-router.post('/editpackagebycode', edit_package_by_code)
-router.post('/viewpricings', view_pricings)
+router.post('/viewpackagebycode', verifyToken, verifyUser, view_package_by_code)
+router.post('/editpackagebycode', verifyAdmin, edit_package_by_code)
+router.post('/viewpricings', verifyAdmin, view_pricings)
 router.post(
   '/viewpackagesforuser',
   verifyToken,

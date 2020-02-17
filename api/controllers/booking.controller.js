@@ -238,7 +238,7 @@ const add_booking = async (req, res) => {
       statusSlot = slotStatus.BUSY
     }
 
-    await BookingModel.create({
+    const booking = await BookingModel.create({
       date: Booking.date,
       slot: slots,
       roomType: Booking.roomType,
@@ -281,7 +281,7 @@ const add_booking = async (req, res) => {
     const date = new Date().getTime() + bookingExpiry //Enviroment variable
     const expiryDate = new Date(date)
     const scheduleJob = cron.job(expiryDate, async () => {
-      await expireBooking(Booking.id)
+      await expireBooking(booking.id)
     })
     scheduleJob.start()
     return res.json({ code: errorCodes.success })
@@ -301,13 +301,10 @@ const show_my_bookings = async (req, res) => {
       })
     }
     const { Account } = req.body
-    const { id } = req.data
-    if (parseInt(id) !== parseInt(Account.id)) {
-      return res.json({ code: errorCodes.authentication, error: 'breach' })
-    }
+
     const account = await AccountModel.findOne({
       where: {
-        id: parseInt(id)
+        id: parseInt(Account.id)
       }
     })
     if (!account) {
@@ -322,7 +319,9 @@ const show_my_bookings = async (req, res) => {
         error: 'Account must be verified'
       })
     }
-    const bookings = await BookingModel.findAll({ where: { accountId: id } })
+    const bookings = await BookingModel.findAll({
+      where: { accountId: parseInt(Account.id) }
+    })
     const bookingstoShow = bookings.map(element => ({
       date: element.date,
       slot: element.slot,
@@ -438,7 +437,7 @@ const cancel_pending = async (req, res) => {
 
     const booking = await BookingModel.findOne({
       where: {
-        id: Booking.id
+        id: parseInt(Booking.id)
       }
     })
     if (!booking) {
@@ -447,8 +446,14 @@ const cancel_pending = async (req, res) => {
         error: 'Booking not found'
       })
     }
-    if (booking.accountId !== Account.id && req.data.type === userTypes.ADMIN) {
+    if (booking.accountId !== Account.id && req.data.type !== userTypes.ADMIN) {
       return res.json({ code: errorCodes.authentication, error: 'breach' })
+    }
+    if (booking.status === accountStatus.CONFIRMED) {
+      return res.json({
+        code: errorCodes.bookingConfirmed,
+        error: 'Cannot edit a confirmed booking'
+      })
     }
     if (booking.status === accountStatus.CANCELED) {
       return res.json({
@@ -456,7 +461,6 @@ const cancel_pending = async (req, res) => {
         error: 'Cannot edit a canceled booking'
       })
     }
-
     await expireBooking(Booking.id, accountStatus.CANCELED)
     await BookingModel.update(
       { status: accountStatus.CANCELED },
@@ -464,7 +468,6 @@ const cancel_pending = async (req, res) => {
     )
     return res.json({ code: errorCodes.success })
   } catch (exception) {
-    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }

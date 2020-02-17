@@ -107,8 +107,11 @@ const checkPrice = async (
         error: 'Package not found'
       }
     }
-    if (package.status === accountStatus.CANCELED) {
-      return { code: errorCodes.packageCanceled, error: 'Package canceled' }
+    if (package.status !== accountStatus.ACTIVE) {
+      return {
+        code: errorCodes.packageCanceled,
+        error: 'Package is not active'
+      }
     }
     if (parseInt(package.accountId) !== parseInt(accountId)) {
       return { code: errorCodes.invalidPackage, error: 'Invalid package' }
