@@ -280,12 +280,16 @@ const validateGiftPackage = request => {
   const schema = {
     Package: joi
       .object({
-        accountId: joi.number().required(),
         numberOfHours: joi
           .number()
           .positive()
           .required(),
         roomType: joi.string().required()
+      })
+      .required(),
+    Account: joi
+      .object({
+        id: joi.number().required()
       })
       .required()
   }

@@ -9,5 +9,5 @@ module.exports = {
     'U2FsdGVkX1+qg3LDQcAbEPooS4vnkODpaYuOK3OGMTelyzSpkLxfVJdFfMCHEaGv',
   contactAccessKey:
     'U2FsdGVkX1+ePycHjuV4bc5VZCnpcFFxYucCcgGLoNnp53Ux1f1n3MDhzPFfGvtt',
-  bookingExpiry: 2000
+  bookingExpiry: 86400000
 }

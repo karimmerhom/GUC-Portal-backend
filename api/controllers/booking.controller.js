@@ -415,7 +415,7 @@ const booking_details = async (req, res) => {
         error: 'Booking not found'
       })
     }
-    if (found.accountId !== Account.id && req.data.type === userTypes.ADMIN) {
+    if (found.accountId !== Account.id && req.data.type !== userTypes.ADMIN) {
       return res.json({ code: errorCodes.unauthorized, error: 'breach' })
     }
     return res.json({ code: errorCodes.success, booking: found })
@@ -643,10 +643,15 @@ const edit_timing = async (req, res) => {
         )
       }
     }
-    console.log('final price:', newPrice)
+    let bookingStatus
+    if (newPrice > 0) {
+      bookingStatus = accountStatus.PENDING
+    } else {
+      bookingStatus = accountStatus.CONFIRMED
+    }
 
     await BookingModel.update(
-      { price: newPrice, slot: Booking.slot },
+      { price: newPrice, slot: Booking.slot, status: bookingStatus },
       { where: { id: booking.id } }
     )
     return res.json({ code: errorCodes.success })

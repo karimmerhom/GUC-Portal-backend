@@ -1,6 +1,10 @@
 const validator = require('../helpers/bookingValidations')
 const errorCodes = require('../constants/errorCodes')
-const { accountStatus, slotStatus } = require('../constants/TBH.enum')
+const {
+  accountStatus,
+  slotStatus,
+  userTypes
+} = require('../constants/TBH.enum')
 const PackageModel = require('../../models/package.model')
 const { generateOTP } = require('../helpers/helpers')
 const VerificationCode = require('../../models/verificationCodes')
@@ -24,6 +28,12 @@ const create_package = async (req, res) => {
       return res.json({
         code: errorCodes.entityNotFound,
         error: 'User not found'
+      })
+    }
+    if (account.status === accountStatus.PENDING) {
+      return res.json({
+        code: errorCodes.unVerified,
+        error: 'Account must be verified'
       })
     }
     const checkPrice = await pricingModel.findOne({
@@ -116,6 +126,12 @@ const calculate_package_price = async (req, res) => {
         error: 'User not found'
       })
     }
+    if (account.status === accountStatus.PENDING) {
+      return res.json({
+        code: errorCodes.unVerified,
+        error: 'Account must be verified'
+      })
+    }
     const checkPrice = await pricingModel.findOne({
       where: { code: Package.package }
     })
@@ -188,6 +204,12 @@ const view_package_by_code = async (req, res) => {
         code: Package.code
       }
     })
+    if (
+      package.accountId !== req.data.id &&
+      req.data.type !== userTypes.ADMIN
+    ) {
+      return res.json({ code: errorCodes.unauthorized, error: 'breach' })
+    }
     return res.json({ code: errorCodes.success, package })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
@@ -214,6 +236,12 @@ const edit_package_by_code = async (req, res) => {
         code: errorCodes.entityNotFound,
         error: 'Package not found'
       })
+    }
+    if (
+      package.accountId !== req.data.id &&
+      req.data.type !== userTypes.ADMIN
+    ) {
+      return res.json({ code: errorCodes.unauthorized, error: 'breach' })
     }
     await PackageModel.update(
       {
@@ -273,9 +301,9 @@ const gift_package = async (req, res) => {
         error: isValid.error.details[0].message
       })
     }
-    const { Package } = req.body
+    const { Package, Account } = req.body
     const account = await accountModel.findOne({
-      where: { id: Package.accountId }
+      where: { id: Account.id }
     })
     if (!account) {
       return res.json({
@@ -295,7 +323,7 @@ const gift_package = async (req, res) => {
       package: 'custom',
       price: 0,
       roomType: Package.roomType,
-      accountId: Package.accountId
+      accountId: Account.id
     })
     return res.json({ code: errorCodes.success })
   } catch (exception) {
