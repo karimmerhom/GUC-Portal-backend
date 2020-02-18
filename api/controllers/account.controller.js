@@ -259,6 +259,13 @@ const login = async (req, res) => {
       })
     }
 
+    if (account.status === accountStatus.SUSPENDED) {
+      return res.json({
+        code: errorCodes.alreadySuspended,
+        error: 'Wrong Credentials'
+      })
+    }
+
     // if (account.status === accountStatus.PENDING) {
     //   return res.json({ code: errorCodes.unVerified })
     // }
