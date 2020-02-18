@@ -316,7 +316,7 @@ const gift_package = async (req, res) => {
       code,
       date: new Date()
     })
-    await PackageModel.create({
+    const packageCreated = await PackageModel.create({
       code,
       remaining: Package.numberOfHours,
       status: accountStatus.ACTIVE,
@@ -325,7 +325,7 @@ const gift_package = async (req, res) => {
       roomType: Package.roomType,
       accountId: Account.id
     })
-    return res.json({ code: errorCodes.success })
+    return res.json({ code: errorCodes.success, packageCode: code })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }

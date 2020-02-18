@@ -18,6 +18,7 @@ const {
 } = require('../constants/TBH.enum')
 const VerificationCode = require('../../models/verificationCodes')
 const { generateOTP } = require('../helpers/helpers')
+const { gift_package } = require('./package.controller')
 
 const register = async (req, res) => {
   try {
@@ -85,7 +86,23 @@ const register = async (req, res) => {
         }
       }
     })
-    return res.json({ code: errorCodes.success })
+    let packageCode
+    await axios({
+      method: 'post',
+      url: 'https://cubexs.net/tbhapp/packages/giftpackage',
+      data: {
+        Package: {
+          numberOfHours: 10,
+          roomType: 'meeting room'
+        },
+        Account: {
+          id: parseInt(accountCreated.id)
+        }
+      }
+    }).then(res => {
+      packageCode = res.data.packageCode
+    })
+    return res.json({ code: errorCodes.success, giftPackage: packageCode })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
@@ -262,7 +279,7 @@ const login = async (req, res) => {
     if (account.status === accountStatus.SUSPENDED) {
       return res.json({
         code: errorCodes.alreadySuspended,
-        error: 'Wrong Credentials'
+        error: 'Account suspended'
       })
     }
 
