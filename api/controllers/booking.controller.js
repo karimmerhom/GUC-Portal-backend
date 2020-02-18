@@ -415,7 +415,7 @@ const booking_details = async (req, res) => {
         error: 'Booking not found'
       })
     }
-    if (found.accountId !== Account.id && req.data.type === userTypes.ADMIN) {
+    if (found.accountId !== Account.id && req.data.type !== userTypes.ADMIN) {
       return res.json({ code: errorCodes.unauthorized, error: 'breach' })
     }
     return res.json({ code: errorCodes.success, booking: found })
@@ -520,7 +520,7 @@ const edit_timing = async (req, res) => {
         booking.roomNumber
       )
       if (helper.code === errorCodes.slotNotFree) {
-        slotsThatAreNotFree.push(slots[i])
+        slotsThatAreNotFree.push(addedHrs[i])
       }
     }
     if (slotsThatAreNotFree.length !== 0) {
@@ -566,16 +566,16 @@ const edit_timing = async (req, res) => {
         roomNumber: booking.roomNumber
       })
     }
-    let package = await PackageModel.findOne({
+    const package = (await PackageModel.findOne({
       where: { code: booking.packageCode }
-    })
+    })) || { remaining: 0, status: accountStatus.USED }
     const addedPrice = addedHrs.length - deductedHrs.length
     let newPrice = booking.price
     console.log('addedPrice:', addedPrice)
     if (addedPrice > 0) {
       console.log('package:', package)
-      if (package && package.status === accountStatus.ACTIVE) {
-        if (package && package.remaining - addedPrice > 0) {
+      if (package.status !== accountStatus.USED) {
+        if (package.remaining - addedPrice > 0) {
           await PackageModel.update(
             { remaining: package.remaining - addedPrice },
             {
@@ -604,7 +604,7 @@ const edit_timing = async (req, res) => {
             booking.accountId
           )
           console.log('rate in package used:', rate)
-          newPrice = rate.price * (-1 * (package.remaining - addedPrice))
+          newPrice = rate.price
           console.log('newPrice:', newPrice)
         }
       } else {
@@ -616,7 +616,7 @@ const edit_timing = async (req, res) => {
           booking.accountId
         )
         console.log('rate when the package in not active', rate)
-        newPrice = rate.price * addedPrice
+        newPrice = rate.price + booking.price
         console.log('newPrice', newPrice)
       }
     } else {
@@ -631,7 +631,7 @@ const edit_timing = async (req, res) => {
           booking.accountId
         )
         console.log('rate when addedPrice is negative', rate)
-        newPrice = booking.price - rate.price * addedPrice * -1
+        newPrice = booking.price - rate.price
         console.log('newPrice:', newPrice)
       } else {
         await PackageModel.update(
@@ -643,10 +643,15 @@ const edit_timing = async (req, res) => {
         )
       }
     }
-    console.log('final price:', newPrice)
+    let bookingStatus
+    if (newPrice > 0) {
+      bookingStatus = accountStatus.PENDING
+    } else {
+      bookingStatus = accountStatus.CONFIRMED
+    }
 
     await BookingModel.update(
-      { price: newPrice, slot: Booking.slot },
+      { price: newPrice, slot: Booking.slot, status: bookingStatus },
       { where: { id: booking.id } }
     )
     return res.json({ code: errorCodes.success })
