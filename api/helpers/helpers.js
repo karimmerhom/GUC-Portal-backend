@@ -7,6 +7,7 @@ const { accountStatus, slotStatus } = require('../constants/TBH.enum')
 const axios = require('axios')
 const { contactAccessKey } = require('../../config/keys')
 const pricingModel = require('../../models/pricing.model')
+const accountModel = require('../../models/account.model')
 
 const generateOTP = async () => {
   let text = ''
@@ -199,10 +200,42 @@ const eraseDatabaseOnSyncContacts = async () => {
   }
 }
 
+const gift_package = async (numberOfHours, roomType, accountId) => {
+  try {
+    const account = await accountModel.findOne({
+      where: { id: parseInt(accountId) }
+    })
+    if (!account) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'User not found'
+      })
+    }
+    const code = await generateOTP()
+    await VerificationCode.create({
+      code,
+      date: new Date()
+    })
+    const packageCreated = await PackageModel.create({
+      code,
+      remaining: numberOfHours,
+      status: accountStatus.ACTIVE,
+      package: 'custom',
+      price: 0,
+      roomType: roomType,
+      accountId: parseInt(accountId)
+    })
+    return { code: errorCodes.success, packageCode: code }
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
 module.exports = {
   generateOTP,
   checkFreeSlot,
   checkPrice,
   expireBooking,
-  eraseDatabaseOnSyncContacts
+  eraseDatabaseOnSyncContacts,
+  gift_package
 }

@@ -17,8 +17,7 @@ const {
   userTypes
 } = require('../constants/TBH.enum')
 const VerificationCode = require('../../models/verificationCodes')
-const { generateOTP } = require('../helpers/helpers')
-const { gift_package } = require('./package.controller')
+const { generateOTP, gift_package } = require('../helpers/helpers')
 
 const register = async (req, res) => {
   try {
@@ -86,23 +85,7 @@ const register = async (req, res) => {
         }
       }
     })
-    let packageCode
-    await axios({
-      method: 'post',
-      url: 'https://cubexs.net/tbhapp/packages/giftpackage',
-      data: {
-        Package: {
-          numberOfHours: 10,
-          roomType: 'meeting room'
-        },
-        Account: {
-          id: parseInt(accountCreated.id)
-        }
-      }
-    }).then(res => {
-      packageCode = res.data.packageCode
-    })
-    return res.json({ code: errorCodes.success, giftPackage: packageCode })
+    return res.json({ code: errorCodes.success })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
@@ -388,6 +371,8 @@ const confirm_verify = async (req, res) => {
           }
         }
       )
+      gift_package(5, 'meeting room', parseInt(id))
+      gift_package(5, 'training room', parseInt(id))
       return res.json({
         code: errorCodes.success,
         state: accountStatus.VERIFIED
