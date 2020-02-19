@@ -830,24 +830,31 @@ const suspend_account = async (req, res) => {
     }
     const account = await AccountModel.findOne({
       where: {
-        id: parseInt(id)
+        id: parseInt(Account.id)
       }
     })
     if (!account) {
       return res.json({
-        code: errorCodes.invalidCredentials,
-        error: 'Wrong credentials'
+        code: errorCodes.entityNotFound,
+        error: 'User not found'
       })
     }
-    if (account.type === accountStatus.SUSPENDED) {
+    if (account.type === userTypes.ADMIN) {
       return res.json({
-        code: errorCodes.alreadySuspendeds,
+        code: errorCodes.unauthorized,
+        error: 'Cannot suspend an admin'
+      })
+    }
+
+    if (account.status === accountStatus.SUSPENDED) {
+      return res.json({
+        code: errorCodes.alreadySuspended,
         error: 'User already suspended'
       })
     }
     await AccountModel.update(
-      { type: accountStatus.SUSPENDED },
-      { WHERE: { id: Account.id } }
+      { status: accountStatus.SUSPENDED },
+      { where: { id: Account.id } }
     )
     return res.json({ code: errorCodes.success })
   } catch (exception) {
@@ -878,6 +885,12 @@ const unsuspend_account = async (req, res) => {
         error: 'Wrong credentials'
       })
     }
+    if (account.type === userTypes.ADMIN) {
+      return res.json({
+        code: errorCodes.unauthorized,
+        error: 'Cannot suspend an admin account'
+      })
+    }
     if (account.status === accountStatus.ACTIVE) {
       return res.json({
         code: errorCodes.alreadySuspended,
@@ -885,11 +898,12 @@ const unsuspend_account = async (req, res) => {
       })
     }
     await AccountModel.update(
-      { type: accountStatus.ACTIVE },
-      { WHERE: { id: Account.id } }
+      { status: accountStatus.VERIFIED },
+      { where: { id: Account.id } }
     )
     return res.json({ code: errorCodes.success })
   } catch (exception) {
+    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
