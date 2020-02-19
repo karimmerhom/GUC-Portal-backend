@@ -869,7 +869,7 @@ const unsuspend_account = async (req, res) => {
     }
     const account = await AccountModel.findOne({
       where: {
-        id: parseInt(id)
+        id: parseInt(Account.id)
       }
     })
     if (!account) {
