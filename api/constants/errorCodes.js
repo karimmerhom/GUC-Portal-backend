@@ -52,6 +52,8 @@ const alreadySuspended = 125
 
 const contactsError = 126
 
+const underAge = 127
+
 module.exports = {
   success,
   validation,
@@ -79,5 +81,6 @@ module.exports = {
   unauthorized,
   bookingConfirmed,
   alreadySuspended,
-  contactsError
+  contactsError,
+  underAge
 }

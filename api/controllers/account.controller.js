@@ -17,7 +17,11 @@ const {
   userTypes
 } = require('../constants/TBH.enum')
 const VerificationCode = require('../../models/verificationCodes')
-const { generateOTP, gift_package } = require('../helpers/helpers')
+const {
+  generateOTP,
+  gift_package,
+  underAgeValidate
+} = require('../helpers/helpers')
 
 const register = async (req, res) => {
   try {
@@ -122,6 +126,13 @@ const update_profile = async (req, res) => {
         error: 'Account must be verified'
       })
     }
+    if (Account.birthdate) {
+      const check = new Date(Account.birthdate)
+      const helper = await underAgeValidate(check)
+      if (helper) {
+        return res.json({ code: errorCodes.underAge, error: 'Must be over 18' })
+      }
+    }
     axios({
       method: 'post',
       url: 'https://cubexs.net/contacts/updatecontact',
@@ -143,6 +154,7 @@ const update_profile = async (req, res) => {
     })
     return res.json({ code: errorCodes.success })
   } catch (exception) {
+    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }

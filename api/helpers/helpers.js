@@ -231,11 +231,26 @@ const gift_package = async (numberOfHours, roomType, accountId) => {
   }
 }
 
+function underAgeValidate(birthday) {
+  // set current day on 01:00:00 hours GMT+0100 (CET)
+  var currentDate = new Date().toJSON().slice(0, 10) + ' 01:00:00'
+
+  // calculate age comparing current date and borthday
+  var myAge = ~~((Date.now(currentDate) - birthday) / 31557600000)
+  console.log(myAge)
+  if (myAge < 18) {
+    return true
+  } else {
+    return false
+  }
+}
+
 module.exports = {
   generateOTP,
   checkFreeSlot,
   checkPrice,
   expireBooking,
   eraseDatabaseOnSyncContacts,
-  gift_package
+  gift_package,
+  underAgeValidate
 }
