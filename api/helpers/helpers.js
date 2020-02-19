@@ -238,7 +238,7 @@ function underAgeValidate(birthday) {
   // calculate age comparing current date and borthday
   var myAge = ~~((Date.now(currentDate) - birthday) / 31557600000)
   console.log(myAge)
-  if (myAge < 18) {
+  if (myAge <=  18) {
     return true
   } else {
     return false
