@@ -17,6 +17,7 @@ const {
   update_profile,
   get_profile,
   suspend_account,
+  unsuspend_account,
   get_accounts
 } = accountController
 
@@ -36,6 +37,7 @@ router.post('/resendpassword', verifyToken, resend_password)
 router.post('/updateprofile', verifyToken, update_profile)
 router.post('/getprofile', verifyToken, verifyUser, get_profile)
 router.post('/suspendAccount', verifyAdmin, suspend_account)
+router.post('/unsuspendAccount', verifyAdmin, unsuspend_account)
 router.post('/getAccounts', verifyAdmin, get_accounts)
 
 module.exports = router

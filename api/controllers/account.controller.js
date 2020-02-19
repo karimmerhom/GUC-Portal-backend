@@ -128,7 +128,7 @@ const update_profile = async (req, res) => {
     }
     if (Account.birthdate) {
       const check = new Date(Account.birthdate)
-      const helper = await underAgeValidate(check)
+      const helper = underAgeValidate(check)
       if (helper) {
         return res.json({ code: errorCodes.underAge, error: 'Must be over 18' })
       }
