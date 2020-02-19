@@ -499,9 +499,9 @@ const edit_timing = async (req, res) => {
       })
     }
 
-    // if (booking.accountId !== Account.id && req.data.type === userTypes.ADMIN) {
-    //   return res.json({ code: errorCodes.unauthorized, error: 'breach' })
-    // }
+    if (booking.accountId !== Account.id && req.data.type === userTypes.ADMIN) {
+      return res.json({ code: errorCodes.unauthorized, error: 'breach' })
+    }
 
     let addedHrs = []
     let deductedHrs = []
