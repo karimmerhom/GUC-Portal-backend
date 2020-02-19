@@ -878,7 +878,7 @@ const unsuspend_account = async (req, res) => {
         error: 'Wrong credentials'
       })
     }
-    if (account.type === accountStatus.ACTIVE) {
+    if (account.status === accountStatus.ACTIVE) {
       return res.json({
         code: errorCodes.alreadySuspended,
         error: 'User already active'
