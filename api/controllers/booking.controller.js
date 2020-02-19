@@ -45,10 +45,9 @@ const validate_booking = async (req, res) => {
         error: 'Account must be verified'
       })
     }
-    if (
-      new Date(Booking.date) < new Date() &&
-      req.data.type !== userTypes.ADMIN
-    ) {
+    const dateCheck = new Date().getDate() - new Date(Booking.date).getDate()
+    console.log(dateCheck)
+    if (dateCheck > 0 && req.data.type !== userTypes.ADMIN) {
       return res.json({
         code: errorCodes.dateInThePast,
         error: 'Date cannot be in the past'
@@ -179,6 +178,7 @@ const add_booking = async (req, res) => {
         error: 'Account must be verified'
       })
     }
+
     if (
       new Date(Booking.date) < new Date() &&
       req.data.type !== userTypes.ADMIN
