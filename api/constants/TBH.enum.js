@@ -17,7 +17,8 @@ const userTypes = {
 const paymentMethods = {
   CASH: 'cash',
   FAWRY: 'fawry',
-  CC: 'credit card'
+  CC: 'credit card',
+  VODAFONECASH: 'vodafone cash'
 }
 
 const gender = {

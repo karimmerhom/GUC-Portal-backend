@@ -94,7 +94,7 @@ const validateVerify = request => {
         id: joi.number().required(),
         verifyBy: joi
           .string()
-          .valid(['sms', 'email'])
+          .valid(['sms'])
           .required()
       })
       .required()

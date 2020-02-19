@@ -91,34 +91,34 @@ const populate_users = async () => {
       }
     }
   })
-  password = 'Hooda1234'
-  hashed_pass = bcrypt.hashSync(password, saltKey)
-  accountCreated = await AccountModel.create({
-    username: 'hooda',
-    password: hashed_pass,
-    firstName: 'Hooda',
-    lastName: 'Mahmoud',
-    phone: '01005599171',
-    email: 'elhobbakhaless@gmail.com',
-    status: accountStatus.VERIFIED,
-    type: userTypes.USER
-  })
-  await axios({
-    method: 'post',
-    url: 'https://cubexs.net/contacts/createcontact',
-    data: {
-      header: {
-        accessKey: contactAccessKey
-      },
-      body: {
-        firstName: 'Hooda',
-        lastName: 'Mahmoud',
-        email: 'elhobbakhaless@gmail.com',
-        phoneNumber: '01005599171',
-        ownerId: parseInt(accountCreated.id)
-      }
-    }
-  })
+  // password = 'Hooda1234'
+  // hashed_pass = bcrypt.hashSync(password, saltKey)
+  // accountCreated = await AccountModel.create({
+  //   username: 'hooda',
+  //   password: hashed_pass,
+  //   firstName: 'Hooda',
+  //   lastName: 'Mahmoud',
+  //   phone: '01005599171',
+  //   email: 'elhobbakhaless@gmail.com',
+  //   status: accountStatus.VERIFIED,
+  //   type: userTypes.USER
+  // })
+  // await axios({
+  //   method: 'post',
+  //   url: 'https://cubexs.net/contacts/createcontact',
+  //   data: {
+  //     header: {
+  //       accessKey: contactAccessKey
+  //     },
+  //     body: {
+  //       firstName: 'Hooda',
+  //       lastName: 'Mahmoud',
+  //       email: 'elhobbakhaless@gmail.com',
+  //       phoneNumber: '01005599171',
+  //       ownerId: parseInt(accountCreated.id)
+  //     }
+  //   }
+  // })
   return { code: errorCodes.success }
 }
 

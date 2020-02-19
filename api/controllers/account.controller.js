@@ -183,22 +183,22 @@ const verify = async (req, res) => {
       code,
       date: new Date()
     })
-    if (Account.verifyBy === verificationMethods.EMAIL) {
-      axios({
-        method: 'post',
-        url: 'https://cubexs.net/emailservice/sendemail',
-        data: {
-          header: {
-            accessKey: emailAccessKey
-          },
-          body: {
-            receiverMail: account.email,
-            body: code,
-            subject: 'Verify your account'
-          }
-        }
-      })
-    }
+    // if (Account.verifyBy === verificationMethods.EMAIL) {
+    //   axios({
+    //     method: 'post',
+    //     url: 'https://cubexs.net/emailservice/sendemail',
+    //     data: {
+    //       header: {
+    //         accessKey: emailAccessKey
+    //       },
+    //       body: {
+    //         receiverMail: account.email,
+    //         body: code,
+    //         subject: 'Verify your account'
+    //       }
+    //     }
+    //   })
+    // }
 
     if (Account.verifyBy === verificationMethods.SMS) {
       axios({
@@ -508,9 +508,29 @@ const change_phone = async (req, res) => {
         error: 'Phone Already exists'
       })
     }
+    const code = await generateOTP()
+    await VerificationCode.create({
+      code,
+      date: new Date()
+    })
+    axios({
+      method: 'post',
+      url: 'https://cubexs.net/epushservice/sendsms',
+      data: {
+        header: {
+          accessKey: smsAccessKey
+        },
+        body: {
+          receiverPhone: Account.phoneNumber,
+          body: code
+        }
+      }
+    })
     await AccountModel.update(
       {
-        phone: Account.phoneNumber
+        phone: Account.phoneNumber,
+        status: accountStatus.PENDING,
+        verificationCode: code
       },
       {
         where: {
