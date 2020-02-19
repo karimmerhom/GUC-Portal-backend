@@ -880,7 +880,7 @@ const unsuspend_account = async (req, res) => {
     }
     if (account.type === accountStatus.ACTIVE) {
       return res.json({
-        code: errorCodes.alreadySuspendeds,
+        code: errorCodes.alreadySuspended,
         error: 'User already active'
       })
     }
