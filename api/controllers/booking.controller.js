@@ -45,8 +45,9 @@ const validate_booking = async (req, res) => {
         error: 'Account must be verified'
       })
     }
-    const dateCheck = new Date().getDate() - new Date(Booking.date).getDate()
-    console.log(dateCheck)
+    const dateCheck =
+      new Date().setHours(0, 0, 0, 0) -
+      new Date(Booking.date).setHours(0, 0, 0, 0)
     if (dateCheck > 0 && req.data.type !== userTypes.ADMIN) {
       return res.json({
         code: errorCodes.dateInThePast,
@@ -108,7 +109,10 @@ const show_all_slots_from_to = async (req, res) => {
     const { BookingDate } = req.body
     const dateFrom = new Date(BookingDate.from)
     const dateTo = new Date(BookingDate.to)
-    if (dateTo < new Date() || dateFrom < new Date()) {
+    const dateCheck =
+      new Date().setHours(0, 0, 0, 0) -
+      new Date(BookingDate.from).setHours(0, 0, 0, 0)
+    if (dateCheck > 0) {
       return res.json({
         code: errorCodes.dateInThePast,
         error: 'Date cannot be in the past'
@@ -137,6 +141,7 @@ const show_all_slots_from_to = async (req, res) => {
       bookings
     })
   } catch (exception) {
+    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -179,10 +184,10 @@ const add_booking = async (req, res) => {
       })
     }
 
-    if (
-      new Date(Booking.date) < new Date() &&
-      req.data.type !== userTypes.ADMIN
-    ) {
+    const dateCheck =
+      new Date().setHours(0, 0, 0, 0) -
+      new Date(Booking.date).setHours(0, 0, 0, 0)
+    if (dateCheck > 0 && req.data.type !== userTypes.ADMIN) {
       return res.json({
         code: errorCodes.dateInThePast,
         error: 'Date cannot be in the past'
