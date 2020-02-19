@@ -1,5 +1,7 @@
 const joi = require('joi')
 
+const { paymentMethods } = require('../constants/TBH.enum')
+
 const validateBookingWithPackage = request => {
   const schema = {
     Booking: joi
@@ -55,7 +57,7 @@ const validateAddBooking = request => {
         amountOfPeople: joi.number().required(),
         paymentMethod: joi
           .string()
-          .valid(['cash', 'credit card', 'fawry'])
+          .valid([paymentMethods.CASH, paymentMethods.VODAFONECASH])
           .required(),
         packageCode: joi
           .string()

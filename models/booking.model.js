@@ -38,7 +38,7 @@ booking.init(
     },
     paymentMethod: {
       type: Sequelize.ENUM,
-      values: [paymentMethods.CASH, paymentMethods.FAWRY, paymentMethods.CC]
+      values: [paymentMethods.CASH, paymentMethods.VODAFONECASH]
     },
     packageCode: {
       type: Sequelize.STRING
