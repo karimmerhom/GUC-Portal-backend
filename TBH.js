@@ -71,7 +71,7 @@ app.use((req, res, next) => {
   next()
 })
 
-const eraseDatabaseOnSync = true
+const eraseDatabaseOnSync = false
 const { eraseDatabaseOnSyncContacts } = require('./api/helpers/helpers')
 const { populate_admins } = require('./config/populateAdmins')
 const { populate_users } = require('./config/populateUser')
