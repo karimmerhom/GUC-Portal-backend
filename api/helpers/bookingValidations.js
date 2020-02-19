@@ -238,7 +238,7 @@ const validateEditPackageByCode = request => {
         code: joi.string().required(),
         status: joi
           .string()
-          .valid(['canceled', 'active', 'used'])
+          .valid(['canceled', 'active', 'used', 'pending'])
           .required()
       })
       .required()
