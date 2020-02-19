@@ -43,7 +43,7 @@ booking.init(
     packageCode: {
       type: Sequelize.STRING
     },
-    datecreated: {
+    dateCreated: {
       type: Sequelize.DATE
     },
     dateModified: {
