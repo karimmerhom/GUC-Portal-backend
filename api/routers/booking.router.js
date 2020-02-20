@@ -29,6 +29,6 @@ router.post('/listallbookings', verifyAdmin, list_all_bookings)
 router.post('/bookingdetails', verifyToken, verifyUser, booking_details)
 router.post('/cancelpending', verifyToken, verifyUser, cancel_pending)
 router.post('/editbookingtiming', verifyToken, verifyUser, edit_timing)
-router.post('/showallcalendar', verifyAdmin, show_all_slots)
+router.post('/showallcalendar', show_all_slots)
 
 module.exports = router
