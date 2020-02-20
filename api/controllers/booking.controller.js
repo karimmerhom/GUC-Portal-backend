@@ -146,6 +146,46 @@ const show_all_slots_from_to = async (req, res) => {
   }
 }
 
+const show_all_slots = async (req, res) => {
+  try {
+    const isValid = validator.validateShowBookings(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { BookingDate } = req.body
+    const dateFrom = new Date(BookingDate.from)
+    const dateTo = new Date(BookingDate.to)
+    if (dateTo < dateFrom) {
+      return res.json({
+        code: errorCodes.invalidDateInput,
+        error: 'Invalid date input'
+      })
+    }
+    const bookingsFiltered = await CalendarModel.findAll({
+      where: {
+        date: { [Op.between]: [dateFrom, dateTo] }
+      }
+    })
+    const bookings = bookingsFiltered.map(element => ({
+      day: element.dayNumber,
+      month: element.month,
+      year: element.year,
+      slot: element.slot,
+      status: element.status
+    }))
+    return res.json({
+      code: errorCodes.success,
+      bookings
+    })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
 const add_booking = async (req, res) => {
   try {
     const isValid = validator.validateAddBooking(req.body)
@@ -675,5 +715,6 @@ module.exports = {
   list_all_bookings,
   booking_details,
   cancel_pending,
-  edit_timing
+  edit_timing,
+  show_all_slots
 }
