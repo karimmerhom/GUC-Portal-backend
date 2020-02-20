@@ -287,7 +287,10 @@ const validateGiftPackage = request => {
           .number()
           .positive()
           .required(),
-        roomType: joi.string().required()
+        roomType: joi
+          .string()
+          .valid('meeting room', 'training room')
+          .required()
       })
       .required(),
     Account: joi

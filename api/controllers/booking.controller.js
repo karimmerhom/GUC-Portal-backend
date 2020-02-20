@@ -293,7 +293,8 @@ const add_booking = async (req, res) => {
       paymentMethod: Booking.paymentMethod,
       status: bookingStatus,
       accountId: Account.id,
-      packageCode: Booking.packageCode
+      packageCode: Booking.packageCode,
+      dateCreated: new Date()
     })
     const bookingDate = new Date(Booking.date)
     const months = [
@@ -696,7 +697,12 @@ const edit_timing = async (req, res) => {
     }
 
     await BookingModel.update(
-      { price: newPrice, slot: Booking.slot, status: bookingStatus },
+      {
+        price: newPrice,
+        slot: Booking.slot,
+        status: bookingStatus,
+        dateModified: new Date()
+      },
       { where: { id: booking.id } }
     )
     return res.json({ code: errorCodes.success })
