@@ -335,6 +335,22 @@ const validateEditTiming = request => {
   }
   return joi.validate(request, schema)
 }
+const validateCreateEvent = request => {
+  const schema = {
+    Account: joi.object({ id: joi.number().required() }).required(),
+    Event: joi
+      .object({
+        name: joi.string().required(),
+        dateFrom: joi.date().required(),
+        dateTo: joi.date().required(),
+        description: joi.string().required(),
+        type: joi.string().required(),
+        price: joi.number().required()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
 
 module.exports = {
   validateAddBooking,
@@ -354,5 +370,6 @@ module.exports = {
   validateGiftPackage,
   validateBookingDetails,
   validateCancelBooking,
-  validateEditTiming
+  validateEditTiming,
+  validateCreateEvent
 }
