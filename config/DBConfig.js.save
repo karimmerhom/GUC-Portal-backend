@@ -1,9 +1,0 @@
-const Sequelize = require('sequelize')
-const keys = require('./keys')
-
-// Connecting to local database
-const sequelize = new Sequelize(keys.postgresU)
-// Connecting to online database
-// const sequelize = new Sequelize(keys.postgresURI)
-
-module.exports = sequelize

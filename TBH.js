@@ -8,6 +8,7 @@ const app = express()
 const account = require('./api/routers/account.router')
 const booking = require('./api/routers/booking.router')
 const package = require('./api/routers/package.router')
+const event = require('./api/routers/event.router')
 
 // import db configuration
 const sequelize = require('./config/DBConfig')
@@ -48,6 +49,7 @@ const explore = (req, res) => {
 app.use('/tbhapp/accounts', account)
 app.use('/tbhapp/bookings', booking)
 app.use('/tbhapp/packages', package)
+app.use('/tbhapp/events', event)
 app.use('/tbhapp/explore', explore)
 
 app.use((req, res) => {
