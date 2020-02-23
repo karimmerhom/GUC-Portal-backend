@@ -29,7 +29,11 @@ Account.init(
     },
     status: {
       type: Sequelize.ENUM,
-      values: [accountStatus.VERIFIED, accountStatus.PENDING, accountStatus.SUSPENDED]
+      values: [
+        accountStatus.VERIFIED,
+        accountStatus.PENDING,
+        accountStatus.SUSPENDED
+      ]
     },
     verificationCode: {
       type: Sequelize.STRING
@@ -37,6 +41,12 @@ Account.init(
     type: {
       type: Sequelize.ENUM,
       values: [userTypes.ADMIN, userTypes.USER]
+    },
+    facebookId: {
+      type: Sequelize.STRING
+    },
+    googleId: {
+      type: Sequelize.STRING
     }
   },
   {

@@ -9,5 +9,13 @@ module.exports = {
     'U2FsdGVkX1+qg3LDQcAbEPooS4vnkODpaYuOK3OGMTelyzSpkLxfVJdFfMCHEaGv',
   contactAccessKey:
     'U2FsdGVkX1+ePycHjuV4bc5VZCnpcFFxYucCcgGLoNnp53Ux1f1n3MDhzPFfGvtt',
-  bookingExpiry: 86400000
+  bookingExpiry: 86400000,
+  facebookAuth: {
+    clientID: '2576795732450033',
+    clientSecret: '3ae578321ec74ea2871c329d7464a925',
+    callbackURL: 'http://localhost:5000/config/facebook/callback',
+    profileURL:
+      'https://graph.facebook.com/v2.5/me?fields=first_name,last_name,email',
+    profileFields: ['id', 'email', 'name'] // For requesting permissions from Facebook API
+  }
 }
