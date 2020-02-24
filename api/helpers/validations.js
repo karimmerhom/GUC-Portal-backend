@@ -87,6 +87,17 @@ const validateLogin = request => {
   return joi.validate(request, schema)
 }
 
+const validateEmail = request => {
+  const schema = {
+    Account: joi
+      .object({
+        id: joi.number().required()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
+
 const validateVerify = request => {
   const schema = {
     Account: joi
@@ -237,5 +248,6 @@ module.exports = {
   validateConfirmVerify,
   validateUpdateProfile,
   validateGetProfile,
-  validateSuspendAccount
+  validateSuspendAccount,
+  validateEmail
 }

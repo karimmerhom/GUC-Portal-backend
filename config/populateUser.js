@@ -16,7 +16,7 @@ const populate_users = async () => {
     lastName: 'Shokry',
     phone: '01149196419',
     email: 'aisha.shokry@lirten.com',
-    status: accountStatus.PENDING,
+    status: accountStatus.VERIFIED,
     type: userTypes.USER
   })
   await axios({

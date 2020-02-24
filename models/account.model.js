@@ -42,6 +42,9 @@ Account.init(
       type: Sequelize.ENUM,
       values: [userTypes.ADMIN, userTypes.USER]
     },
+    emailVerified: {
+      type: Sequelize.BOOLEAN
+    },
     facebookId: {
       type: Sequelize.STRING
     },

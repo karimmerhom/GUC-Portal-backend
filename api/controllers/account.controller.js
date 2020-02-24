@@ -22,7 +22,23 @@ const {
   gift_package,
   underAgeValidate
 } = require('../helpers/helpers')
+const { google } = require('googleapis')
+const OAuth2Data = require('../../config/google')
 
+const CLIENT_ID = OAuth2Data.client.id
+const CLIENT_SECRET = OAuth2Data.client.secret
+const REDIRECT_URL = OAuth2Data.client.redirect
+
+const oAuth2Client = new google.auth.OAuth2(
+  CLIENT_ID,
+  CLIENT_SECRET,
+  REDIRECT_URL
+)
+
+oAuth2Client.setCredentials({
+  access_token:
+    'ya29.Il-_B6z1TpbqY7bRA7DSn-E17V208rP-JfJDzjveZdKZQwa8u8BCf437Omg_ufRzW74V1hSqAknxlj98YeBWVuSMAhIhceufwl1PoBmxhljZ1mszOONZi7CpKAnB-ahIbQ'
+})
 const register = async (req, res) => {
   try {
     const { Account } = req.body
@@ -60,7 +76,11 @@ const register = async (req, res) => {
         error: 'Phone number already exists'
       })
     }
-
+    const code = await generateOTP()
+    await VerificationCode.create({
+      code,
+      date: new Date()
+    })
     const saltKey = bcrypt.genSaltSync(10)
     const hashed_pass = bcrypt.hashSync(Account.password, saltKey)
     const accountCreated = await AccountModel.create({
@@ -71,7 +91,8 @@ const register = async (req, res) => {
       phone: Account.phoneNumber,
       email: Account.email.toString().toLowerCase(),
       status: accountStatus.PENDING,
-      type: userTypes.USER
+      type: userTypes.USER,
+      verificationCode: code
     })
     axios({
       method: 'post',
@@ -154,7 +175,6 @@ const update_profile = async (req, res) => {
     })
     return res.json({ code: errorCodes.success })
   } catch (exception) {
-    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -190,11 +210,7 @@ const verify = async (req, res) => {
         error: 'Already verified'
       })
     }
-    const code = await generateOTP()
-    await VerificationCode.create({
-      code,
-      date: new Date()
-    })
+
     // if (Account.verifyBy === verificationMethods.EMAIL) {
     //   axios({
     //     method: 'post',
@@ -222,20 +238,58 @@ const verify = async (req, res) => {
           },
           body: {
             receiverPhone: account.phone,
-            body: code
+            body: account.verificationCode
           }
         }
       })
     }
-    await AccountModel.update(
-      { verificationCode: code },
-      {
-        where: {
-          [Op.or]: {
-            id
-          }
+    return res.json({ code: errorCodes.success })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const verify_email = async (req, res) => {
+  try {
+    const { Account } = req.body
+    const isValid = validator.validateVerify({ Account })
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const account = await AccountModel.findOne({ where: { id: Account.id } })
+    const link =
+      'http://localhost:5000/tbhapp/accounts/confirmverifyemail' +
+      account.verificationCode
+    axios({
+      method: 'post',
+      url: 'https://cubexs.net/emailservice/sendemail',
+      data: {
+        header: {
+          accessKey: emailAccessKey
+        },
+        body: {
+          receiverMail: account.email,
+          body: link,
+          subject: 'Verify your email'
         }
       }
+    })
+    return res.json({ code: errorCodes.success })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+const verify_confirm_email = async (req, res) => {
+  try {
+    const { verificationCode } = req.params
+    await AccountModel.update(
+      { emailVerified: true },
+      { where: { verificationCode } }
     )
     return res.json({ code: errorCodes.success })
   } catch (exception) {
@@ -472,7 +526,8 @@ const change_email = async (req, res) => {
     }
     await AccountModel.update(
       {
-        email: Account.email
+        email: Account.email,
+        emailVerified: false
       },
       {
         where: {
@@ -922,6 +977,78 @@ const get_accounts = async (req, res) => {
   }
 }
 
+const google_login = (req, res) => {
+  let authed = true
+  if (!authed) {
+    // Generate an OAuth URL and redirect there
+    const url = oAuth2Client.generateAuthUrl({
+      access_type: 'offline',
+      scope: 'https://www.googleapis.com/auth/gmail.readonly'
+    })
+    console.log(url)
+    res.json(url)
+  } else {
+    const gmail = google.gmail({ version: 'v1', auth: oAuth2Client })
+    gmail.users.labels.list(
+      {
+        userId: 'me'
+      },
+      (err, res) => {
+        if (err) return console.log('The API returned an error: ' + err)
+        const labels = res.data.labels
+        console.log(labels)
+        if (labels.length) {
+          console.log('Labels:')
+          labels.forEach(label => {
+            console.log(`- ${label.name}`)
+          })
+        } else {
+          console.log('No labels found.')
+        }
+      }
+    )
+    res.json('Logged in')
+  }
+}
+
+const google_callback = async (req, res) => {
+  const code = req.query.code
+  if (code) {
+    console.log(code)
+    // Get an access token based on our OAuth code
+    oAuth2Client.getToken(code, async function(err, tokens) {
+      if (err) {
+        console.log('Error authenticating')
+        console.log(err)
+      } else {
+        const service = google.people({ version: 'v1', auth })
+        service.people.connections.list(
+          {
+            resourceName: 'people/me',
+            pageSize: 10,
+            personFields: 'names,emailAddresses'
+          },
+          (err, res) => {
+            if (err) return console.error('The API returned an error: ' + err)
+            const connections = res.data.connections
+            if (connections) {
+              console.log('Connections:')
+              connections.forEach(person => {
+                if (person.names && person.names.length > 0) {
+                  console.log(person.names[0].displayName)
+                } else {
+                  console.log('No display name found for connection.')
+                }
+              })
+            } else {
+              console.log('No connections found.')
+            }
+          }
+        )
+      }
+    })
+  }
+}
 module.exports = {
   register,
   login,
@@ -937,5 +1064,9 @@ module.exports = {
   get_profile,
   suspend_account,
   unsuspend_account,
-  get_accounts
+  get_accounts,
+  google_login,
+  google_callback,
+  verify_confirm_email,
+  verify_email
 }

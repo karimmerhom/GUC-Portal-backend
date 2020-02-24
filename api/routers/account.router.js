@@ -18,7 +18,11 @@ const {
   get_profile,
   suspend_account,
   unsuspend_account,
-  get_accounts
+  get_accounts,
+  google_login,
+  google_callback,
+  verify_email,
+  verify_confirm_email
 } = accountController
 
 const { verifyToken } = require('../../config/AuthenticationMiddleWare')
@@ -39,5 +43,9 @@ router.post('/getprofile', verifyToken, verifyUser, get_profile)
 router.post('/suspendAccount', verifyAdmin, suspend_account)
 router.post('/unsuspendAccount', verifyAdmin, unsuspend_account)
 router.post('/getAccounts', verifyAdmin, get_accounts)
+router.get('/googlelogin', google_login)
+router.get('/googlecallback', google_callback)
+router.post('/verifyemail', verifyToken, verifyUser, verify_email)
+router.get('/confirmverifyemail:verificationCode', verify_confirm_email)
 
 module.exports = router
