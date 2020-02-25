@@ -37,8 +37,9 @@ const urlGoogle = async (req, res) => {
   return res.json({ url })
 }
 
-const callback = (req, res) => {
-  getGoogleAccountFromCode(req.query.code)
+const callback = async (req, res) => {
+  const info = await getGoogleAccountFromCode(req.data.code)
+  return res.json({ info })
 }
 
 const getGoogleAccountFromCode = async code => {
@@ -56,46 +57,34 @@ const getGoogleAccountFromCode = async code => {
     await oAuthClient.userinfo.get().then(res => {
       userData = res.data
     })
-    console.log(userData)
-    // axios({
-    //   method: 'post',
-    //   url: 'http://localhost:5000/tbhapp/accounts/registergoogle',
-    //   data: {
-    //     Account: {
-    //       id: userData.id,
-    //       firstName: userData.given_name,
-    //       lastName: userData.family_name,
-    //       email: userData.email,
-    //       phoneNumber: '01158280719',
-    //       username: 'hosss'
-    //     }
-    //   }
-    // }).then(res => console.log(res))
-    axios({
-      method: 'post',
-      url: 'http://localhost:5000/tbhapp/accounts/logingoogle',
-      data: {
-        Account: {
-          id: userData.id
-          // firstName: userData.given_name,
-          // lastName: userData.family_name,
-          // email: userData.email,
-          // phoneNumber: '01158280719',
-          // username: 'hosss'
-        }
-      }
-    }).then(res => console.log(res))
-    return { code: errorCodes.success }
+    return { userData }
   } catch (exception) {
     console.log(exception)
     return { code: errorCodes.unknown, error: 'Something went wrong' }
   }
 }
 
+const register_google = async () => {
+  axios({
+    method: 'post',
+    url: 'https://cubexs.net/tbhapp/accounts/registergoogle',
+    data: {
+      Account: {
+        id: userData.id,
+        firstName: userData.given_name,
+        lastName: userData.family_name,
+        email: userData.email,
+        phoneNumber: '01158280719',
+        username: 'hosss'
+      }
+    }
+  }).then(res => console.log(res))
+  return { code: errorCodes.success }
+}
 const login_google = async () => {
   axios({
     method: 'post',
-    url: 'http://localhost:5000/tbhapp/accounts/registergoogle',
+    url: 'https://cubexs.net/tbhapp/accounts/registergoogle',
     data: {
       Account: {
         id: userData.id,
