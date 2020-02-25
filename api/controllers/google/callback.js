@@ -38,7 +38,7 @@ const urlGoogle = async (req, res) => {
 }
 
 const callback = async (req, res) => {
-  const info = await getGoogleAccountFromCode(req.data.code)
+  const info = await getGoogleAccountFromCode(req.body.code)
   return res.json({ info })
 }
 
