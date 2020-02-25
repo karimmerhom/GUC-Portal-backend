@@ -11,11 +11,8 @@ module.exports = {
     'U2FsdGVkX1+ePycHjuV4bc5VZCnpcFFxYucCcgGLoNnp53Ux1f1n3MDhzPFfGvtt',
   bookingExpiry: 86400000,
   facebookAuth: {
-    client_id: '2576795732450033',
-    client_secret: '3ae578321ec74ea2871c329d7464a925',
-    redirect_uri: 'http://localhost:5000/config/facebook/callback',
-    profileURL:
-      'https://graph.facebook.com/v2.5/me?fields=first_name,last_name,email',
-    profileFields: ['id', 'email', 'name'] // For requesting permissions from Facebook API
+    client_id: '238318560516660',
+    client_secret: 'ef2931b0354502b636049074bc1f7bd1',
+    redirect_uri: 'http://localhost:5000/tbhapp/accounts/facebookcallback'
   }
 }

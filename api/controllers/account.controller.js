@@ -977,78 +977,6 @@ const get_accounts = async (req, res) => {
   }
 }
 
-const google_login = (req, res) => {
-  let authed = true
-  if (!authed) {
-    // Generate an OAuth URL and redirect there
-    const url = oAuth2Client.generateAuthUrl({
-      access_type: 'offline',
-      scope: 'https://www.googleapis.com/auth/gmail.readonly'
-    })
-    console.log(url)
-    res.json(url)
-  } else {
-    const gmail = google.gmail({ version: 'v1', auth: oAuth2Client })
-    gmail.users.labels.list(
-      {
-        userId: 'me'
-      },
-      (err, res) => {
-        if (err) return console.log('The API returned an error: ' + err)
-        const labels = res.data.labels
-        console.log(labels)
-        if (labels.length) {
-          console.log('Labels:')
-          labels.forEach(label => {
-            console.log(`- ${label.name}`)
-          })
-        } else {
-          console.log('No labels found.')
-        }
-      }
-    )
-    res.json('Logged in')
-  }
-}
-
-const google_callback = async (req, res) => {
-  const code = req.query.code
-  if (code) {
-    console.log(code)
-    // Get an access token based on our OAuth code
-    oAuth2Client.getToken(code, async function(err, tokens) {
-      if (err) {
-        console.log('Error authenticating')
-        console.log(err)
-      } else {
-        const service = google.people({ version: 'v1', auth })
-        service.people.connections.list(
-          {
-            resourceName: 'people/me',
-            pageSize: 10,
-            personFields: 'names,emailAddresses'
-          },
-          (err, res) => {
-            if (err) return console.error('The API returned an error: ' + err)
-            const connections = res.data.connections
-            if (connections) {
-              console.log('Connections:')
-              connections.forEach(person => {
-                if (person.names && person.names.length > 0) {
-                  console.log(person.names[0].displayName)
-                } else {
-                  console.log('No display name found for connection.')
-                }
-              })
-            } else {
-              console.log('No connections found.')
-            }
-          }
-        )
-      }
-    })
-  }
-}
 module.exports = {
   register,
   login,
@@ -1065,8 +993,6 @@ module.exports = {
   suspend_account,
   unsuspend_account,
   get_accounts,
-  google_login,
-  google_callback,
   verify_confirm_email,
   verify_email
 }

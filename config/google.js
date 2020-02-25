@@ -1,8 +1,8 @@
 module.exports = {
   client: {
     id:
-      '312499848496-hh26q7dvinva5ofsg14han70t0dpbc3v.apps.googleusercontent.com',
-    secret: 'ArObRI1B3vA57WyYEunUTNUW',
+      '312499848496-1af18a8fr6dqdi6pe1nd1p1llailg7e1.apps.googleusercontent.com',
+    secret: 'cxRecxM25soJ-MzHNgUa-f23',
     redirect: 'http://localhost:5000/tbhapp/accounts/googlecallback'
   },
 
