@@ -25,6 +25,8 @@ const {
   verify_confirm_email
 } = accountController
 
+const { get_url, facebook_callback } = require('../../config/facebook/callback')
+
 const { verifyToken } = require('../../config/AuthenticationMiddleWare')
 const { verifyAdmin } = require('../../config/AdminAuthentication')
 const { verifyUser } = require('../../config/authUser')
@@ -44,6 +46,8 @@ router.post('/suspendAccount', verifyAdmin, suspend_account)
 router.post('/unsuspendAccount', verifyAdmin, unsuspend_account)
 router.post('/getAccounts', verifyAdmin, get_accounts)
 router.get('/googlelogin', google_login)
+router.get('/facebooklogin', get_url)
+router.get('/facebookcallback', facebook_callback)
 router.get('/googlecallback', google_callback)
 router.post('/verifyemail', verifyToken, verifyUser, verify_email)
 router.get('/confirmverifyemail:verificationCode', verify_confirm_email)

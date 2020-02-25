@@ -3,114 +3,63 @@ var https = require('https')
 var queryString = require('querystring')
 var fs = require('fs')
 const { facebookAuth } = require('../keys_dev')
+const axios = require('axios')
 var { client_id, client_secret, redirect_uri } = facebookAuth
 
-function getCookies(email, password, callback) {
-  var data = queryString.stringify({
-    email: email,
-    pass: password,
-    default_persistent: '1',
-    timezone: '-120'
+const get_url = (req, res) => {
+  const stringifiedParams = queryString.stringify({
+    client_id: '238318560516660',
+    redirect_uri: 'http://localhost:5000/tbhapp/accounts/facebookcallback',
+    scope: ['email', 'user_friends'].join(','), // comma seperated string
+    response_type: 'code',
+    auth_type: 'rerequest',
+    display: 'popup'
   })
+  const facebookLoginUrl = `https://www.facebook.com/v4.0/dialog/oauth?${stringifiedParams}`
+  res.json(facebookLoginUrl)
+}
 
-  var fbGetCookieHeaders = {
-    'User-Agent':
-      'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-    Cookie: '_js_reg_fb_gate=null',
-    Host: 'www.facebook.com',
-    'Content-Type': 'application/x-www-form-urlencoded',
-    'Content-Length': Buffer.byteLength(data)
-  }
+const facebook_callback = (req, res) => {
+  getAccessTokenFromCode(req.query.code)
+}
 
-  var fbGetCookieOptions = {
-    protocol: 'https:',
-    hostname: 'www.facebook.com',
-    path: '/login.php?login_attempt=1&lwv=110',
-    method: 'POST',
-    headers: fbGetCookieHeaders
-  }
-
-  function findCookie(name, cookies) {
-    return new RegExp(name + '=(.+?);').exec(cookies)
-  }
-
-  var req = https.request(fbGetCookieOptions, res => {
-    var cookies = res.headers['set-cookie'].toString()
-    var c_user = findCookie('c_user', cookies)
-    var xs = findCookie('xs', cookies)
-    callback({ c_user: c_user, xs: xs })
+async function getAccessTokenFromCode(code) {
+  let access_token
+  await axios({
+    url: 'https://graph.facebook.com/v4.0/oauth/access_token',
+    method: 'get',
+    params: {
+      client_id: '238318560516660',
+      client_secret: 'ef2931b0354502b636049074bc1f7bd1',
+      redirect_uri: 'http://localhost:5000/tbhapp/accounts/facebookcallback',
+      code
+    }
   })
-
-  req.write(data)
-  req.end()
-}
-
-function logIn(cookies, callback) {
-  var fbHeaders = {
-    'User-Agent':
-      'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-    Cookie: 'c_user=' + cookies.c_user + '; xs=' + cookies.xs,
-    Host: 'www.facebook.com'
-  }
-
-  var fbOptions = {
-    protocol: 'https:',
-    hostname: 'www.facebook.com',
-    path:
-      '/dialog/oauth?client_id=' + client_id + '&redirect_uri=' + redirect_uri,
-    headers: fbHeaders
-  }
-
-  https
-    .request(fbOptions)
-    .on('response', response => {
-      var loginCode = url.parse(response.headers.location, true).query.code
-      callback(loginCode)
+    .then(res => {
+      console.log(res.data.access_token)
+      access_token = res.data.access_token
     })
-    .end()
+    .catch(err => console.log(err))
+  getFacebookUserData(access_token)
+}
+let facebookId, firstName, lastName, email
+async function getFacebookUserData(accesstoken) {
+  await axios({
+    url: 'https://graph.facebook.com/me',
+    method: 'get',
+    params: {
+      fields: ['id', 'email', 'first_name', 'last_name'].join(','),
+      access_token: accesstoken
+    }
+  }).then(res => {
+    let { data } = res
+    facebookId = data.id
+    firstName = data.first_name
+    lastName = data.last_name
+    email = data.email
+    console.log(facebookId, firstName, lastName, email)
+  })
+  return { info: { facebookId, firstName, lastName, email } }
 }
 
-function getAccessToken(loginCode, callback) {
-  var graphHeaders = {
-    'User-Agent':
-      'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-    Host: 'graph.facebook.com'
-  }
-
-  var graphOptions = {
-    protocol: 'https:',
-    hostname: 'graph.facebook.com',
-    path:
-      '/v2.3/oauth/access_token?client_id=' +
-      client_id +
-      '&redirect_uri=' +
-      redirect_uri +
-      '/&client_secret=' +
-      client_secret +
-      '&code=' +
-      loginCode,
-    headers: graphHeaders
-  }
-
-  https
-    .request(graphOptions, response => {
-      response.on('data', function(chunk) {
-        callback(JSON.parse(chunk.toString('utf-8')).access_token)
-      })
-    })
-    .end()
-}
-
-getCookies('mohamedhoss_1998@hotmail.com', '', receivedCookies)
-
-function receivedCookies(cookies) {
-  logIn(cookies, loggedIn)
-}
-
-function loggedIn(loginCode) {
-  getAccessToken(loginCode, receivedToken)
-}
-
-function receivedToken(accessToken) {
-  console.log(accessToken)
-}
+module.exports = { get_url, facebook_callback }
