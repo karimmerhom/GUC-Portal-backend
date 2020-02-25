@@ -25,20 +25,6 @@ const {
 const { google } = require('googleapis')
 const OAuth2Data = require('../../config/google')
 
-const CLIENT_ID = OAuth2Data.client.id
-const CLIENT_SECRET = OAuth2Data.client.secret
-const REDIRECT_URL = OAuth2Data.client.redirect
-
-const oAuth2Client = new google.auth.OAuth2(
-  CLIENT_ID,
-  CLIENT_SECRET,
-  REDIRECT_URL
-)
-
-oAuth2Client.setCredentials({
-  access_token:
-    'ya29.Il-_B6z1TpbqY7bRA7DSn-E17V208rP-JfJDzjveZdKZQwa8u8BCf437Omg_ufRzW74V1hSqAknxlj98YeBWVuSMAhIhceufwl1PoBmxhljZ1mszOONZi7CpKAnB-ahIbQ'
-})
 const register = async (req, res) => {
   try {
     const { Account } = req.body
@@ -343,6 +329,136 @@ const login = async (req, res) => {
       })
     }
 
+    const payLoad = {
+      id: account.id,
+      firstName: account.firstName,
+      lastName: account.lastName,
+      username: account.username,
+      phone: account.phone,
+      email: account.email,
+      status: account.status,
+      type: account.type
+    }
+
+    const token = jwt.sign(payLoad, secretOrKey, {
+      expiresIn: '8h'
+    })
+
+    return res.json({
+      code: errorCodes.success,
+      token,
+      id: account.id,
+      username: account.username,
+      state: account.status
+    })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const register_google = async (req, res) => {
+  try {
+    const isValid = validator.validateAccountGoogle(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Account } = req.body
+    const account = await accountModel.findOne({
+      where: { googleId: Account.id }
+    })
+    if (account) {
+      return res.json({
+        code: errorCodes.emailExists,
+        error: 'Account already exists'
+      })
+    }
+    const findEmail = await AccountModel.findOne({
+      where: { email: Account.email.toString().toLowerCase() }
+    })
+    if (findEmail) {
+      return res.json({
+        code: errorCodes.emailExists,
+        error: 'Email already exists'
+      })
+    }
+    const findUsername = await AccountModel.findOne({
+      where: { username: Account.username.toString().toLowerCase() }
+    })
+    if (findUsername) {
+      return res.json({
+        code: errorCodes.emailExists,
+        error: 'Username already exists'
+      })
+    }
+    const findPhone = await AccountModel.findOne({
+      where: { phone: Account.phoneNumber }
+    })
+    if (findPhone) {
+      return res.json({
+        code: errorCodes.emailExists,
+        error: 'Phone number already exists'
+      })
+    }
+    const code = await generateOTP()
+    await VerificationCode.create({
+      code,
+      date: new Date()
+    })
+    const accountCreated = await AccountModel.create({
+      username: Account.username.toString().toLowerCase(),
+      firstName: Account.firstName,
+      lastName: Account.lastName,
+      phone: Account.phoneNumber,
+      email: Account.email.toString().toLowerCase(),
+      status: accountStatus.PENDING,
+      type: userTypes.USER,
+      verificationCode: code
+    })
+    axios({
+      method: 'post',
+      url: 'https://cubexs.net/contacts/createcontact',
+      data: {
+        header: {
+          accessKey: contactAccessKey
+        },
+        body: {
+          firstName: Account.firstName,
+          lastName: Account.lastName,
+          email: Account.email,
+          phoneNumber: Account.phoneNumber,
+          ownerId: parseInt(accountCreated.id)
+        }
+      }
+    })
+    return res.json({ code: errorCodes.success })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const login_google = async (req, res) => {
+  try {
+    const isValid = validator.validateAccountGoogle(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Account } = req.body
+    const account = await accountModel.findOne({
+      where: { googleId: Account.googleId }
+    })
+    if (!account) {
+      return res.json({
+        code: errorCodes.emailExists,
+        error: 'Account already exists'
+      })
+    }
     const payLoad = {
       id: account.id,
       firstName: account.firstName,
@@ -994,5 +1110,7 @@ module.exports = {
   unsuspend_account,
   get_accounts,
   verify_confirm_email,
-  verify_email
+  verify_email,
+  register_google,
+  login_google
 }

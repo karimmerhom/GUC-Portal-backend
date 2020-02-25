@@ -1,5 +1,6 @@
 const { google } = require('googleapis')
-const accountModel = require('../../../models/account.model')
+const errorCodes = require('../../constants/errorCodes')
+const axios = require('axios')
 
 const createConnection = () => {
   return new google.auth.OAuth2(
@@ -41,30 +42,33 @@ const callback = (req, res) => {
 }
 
 const getGoogleAccountFromCode = async code => {
-  const auth = createConnection()
+  try {
+    const auth = createConnection()
 
-  const data = await auth.getToken(code)
-  const tokens = data.tokens
-  auth.setCredentials(tokens)
-  const oAuthClient = google.oauth2({
-    auth,
-    version: 'v2'
-  })
-  let userData
-  await oAuthClient.userinfo.get().then(res => {
-    userData = res.data
-  })
-  const account = await accountModel.findOne({
-    where: { googleId: userData.id }
-  })
-  if (!account) {
-    accountModel.create({
-      googleId: userData.id,
-      emailVerified: userData.verified_email,
-      firstName: userData.given_name,
-      lastName: userData.last_name,
-      email: userData.email
+    const data = await auth.getToken(code)
+    const tokens = data.tokens
+    auth.setCredentials(tokens)
+    const oAuthClient = google.oauth2({
+      auth,
+      version: 'v2'
     })
+    let userData
+    await oAuthClient.userinfo.get().then(res => {
+      userData = res.data
+    })
+    axios({
+      method: 'post',
+      url: 'http://localhost:5000/tbhapp/accounts/registergoogle',
+      data: {
+        Account: {
+          userData
+        }
+      }
+    }).then(res => console.log(res))
+    return { code: errorCodes.success }
+  } catch (exception) {
+    console.log(exception)
+    return { code: errorCodes.unknown, error: 'Something went wrong' }
   }
 }
 
