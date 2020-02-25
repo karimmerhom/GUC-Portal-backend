@@ -35,34 +35,34 @@ const populate_users = async () => {
       }
     }
   })
-  password = 'Radwa123'
-  hashed_pass = bcrypt.hashSync(password, saltKey)
-  accountCreated = await AccountModel.create({
-    username: 'radwa',
-    password: hashed_pass,
-    firstName: 'Radwa',
-    lastName: 'Ragab',
-    phone: '01142340509',
-    email: 'radwa.ragab@lirten.com',
-    status: accountStatus.PENDING,
-    type: userTypes.USER
-  })
-  await axios({
-    method: 'post',
-    url: 'https://cubexs.net/contacts/createcontact',
-    data: {
-      header: {
-        accessKey: contactAccessKey
-      },
-      body: {
-        firstName: 'Radwa',
-        lastName: 'Ragab',
-        email: 'radwa.ragab@lirten.com',
-        phoneNumber: '01142340509',
-        ownerId: parseInt(accountCreated.id)
-      }
-    }
-  })
+  // password = 'Radwa123'
+  // hashed_pass = bcrypt.hashSync(password, saltKey)
+  // accountCreated = await AccountModel.create({
+  //   username: 'radwa',
+  //   password: hashed_pass,
+  //   firstName: 'Radwa',
+  //   lastName: 'Ragab',
+  //   phone: '01142340509',
+  //   email: 'radwa.ragab@lirten.com',
+  //   status: accountStatus.PENDING,
+  //   type: userTypes.USER
+  // })
+  // await axios({
+  //   method: 'post',
+  //   url: 'https://cubexs.net/contacts/createcontact',
+  //   data: {
+  //     header: {
+  //       accessKey: contactAccessKey
+  //     },
+  //     body: {
+  //       firstName: 'Radwa',
+  //       lastName: 'Ragab',
+  //       email: 'radwa.ragab@lirten.com',
+  //       phoneNumber: '01142340509',
+  //       ownerId: parseInt(accountCreated.id)
+  //     }
+  //   }
+  // })
   password = 'Noura123'
   hashed_pass = bcrypt.hashSync(password, saltKey)
   accountCreated = await AccountModel.create({
