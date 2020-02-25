@@ -53,7 +53,7 @@ router.post('/getAccounts', verifyAdmin, get_accounts)
 router.get('/getgoogleurl', urlGoogle) //request url google
 router.get('/getfacebookurl', get_url) //request url facebook
 router.get('/facebookcallback', facebook_callback)
-router.get('/googlecallback', callback)
+router.post('/googlecallback', callback)
 router.post('/verifyemail', verifyToken, verifyUser, verify_email)
 router.post('/registergoogle', register_google)
 router.post('/logingoogle', login_google)
