@@ -6,7 +6,7 @@ const createConnection = () => {
   return new google.auth.OAuth2(
     '312499848496-1af18a8fr6dqdi6pe1nd1p1llailg7e1.apps.googleusercontent.com',
     'cxRecxM25soJ-MzHNgUa-f23',
-    'http://localhost:5000/tbhapp/accounts/googlecallback',
+    'http://localhost:3000/googlesignup',
     defaultScope
   )
 }
@@ -56,12 +56,32 @@ const getGoogleAccountFromCode = async code => {
     await oAuthClient.userinfo.get().then(res => {
       userData = res.data
     })
+    console.log(userData)
+    // axios({
+    //   method: 'post',
+    //   url: 'http://localhost:5000/tbhapp/accounts/registergoogle',
+    //   data: {
+    //     Account: {
+    //       id: userData.id,
+    //       firstName: userData.given_name,
+    //       lastName: userData.family_name,
+    //       email: userData.email,
+    //       phoneNumber: '01158280719',
+    //       username: 'hosss'
+    //     }
+    //   }
+    // }).then(res => console.log(res))
     axios({
       method: 'post',
-      url: 'http://localhost:5000/tbhapp/accounts/registergoogle',
+      url: 'http://localhost:5000/tbhapp/accounts/logingoogle',
       data: {
         Account: {
-          userData
+          id: userData.id
+          // firstName: userData.given_name,
+          // lastName: userData.family_name,
+          // email: userData.email,
+          // phoneNumber: '01158280719',
+          // username: 'hosss'
         }
       }
     }).then(res => console.log(res))
@@ -70,6 +90,24 @@ const getGoogleAccountFromCode = async code => {
     console.log(exception)
     return { code: errorCodes.unknown, error: 'Something went wrong' }
   }
+}
+
+const login_google = async () => {
+  axios({
+    method: 'post',
+    url: 'http://localhost:5000/tbhapp/accounts/registergoogle',
+    data: {
+      Account: {
+        id: userData.id,
+        firstName: userData.given_name,
+        lastName: userData.family_name,
+        email: userData.email,
+        phoneNumber: '01158280719',
+        username: 'hosss'
+      }
+    }
+  }).then(res => console.log(res))
+  return { code: errorCodes.success }
 }
 
 module.exports = { urlGoogle, getGoogleAccountFromCode, callback }

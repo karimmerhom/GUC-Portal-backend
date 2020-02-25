@@ -21,7 +21,8 @@ const {
   get_accounts,
   verify_email,
   verify_confirm_email,
-  register_google
+  register_google,
+  login_google
 } = accountController
 
 const {
@@ -49,12 +50,13 @@ router.post('/getprofile', verifyToken, verifyUser, get_profile)
 router.post('/suspendAccount', verifyAdmin, suspend_account)
 router.post('/unsuspendAccount', verifyAdmin, unsuspend_account)
 router.post('/getAccounts', verifyAdmin, get_accounts)
-router.get('/googlelogin', urlGoogle)
-router.get('/facebooklogin', get_url)
+router.get('/getgoogleurl', urlGoogle) //request url google
+router.get('/getfacebookurl', get_url) //request url facebook
 router.get('/facebookcallback', facebook_callback)
 router.get('/googlecallback', callback)
 router.post('/verifyemail', verifyToken, verifyUser, verify_email)
 router.post('/registergoogle', register_google)
+router.post('/logingoogle', login_google)
 router.get('/confirmverifyemail:verificationCode', verify_confirm_email)
 
 module.exports = router

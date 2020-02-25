@@ -366,9 +366,10 @@ const register_google = async (req, res) => {
       })
     }
     const { Account } = req.body
-    const account = await accountModel.findOne({
+    const account = await AccountModel.findOne({
       where: { googleId: Account.id }
     })
+    console.log(account)
     if (account) {
       return res.json({
         code: errorCodes.emailExists,
@@ -415,7 +416,8 @@ const register_google = async (req, res) => {
       email: Account.email.toString().toLowerCase(),
       status: accountStatus.PENDING,
       type: userTypes.USER,
-      verificationCode: code
+      verificationCode: code,
+      googleId: Account.id
     })
     axios({
       method: 'post',
@@ -442,7 +444,7 @@ const register_google = async (req, res) => {
 
 const login_google = async (req, res) => {
   try {
-    const isValid = validator.validateAccountGoogle(req.body)
+    const isValid = validator.validateLoginGoogle(req.body)
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
@@ -450,8 +452,8 @@ const login_google = async (req, res) => {
       })
     }
     const { Account } = req.body
-    const account = await accountModel.findOne({
-      where: { googleId: Account.googleId }
+    const account = await AccountModel.findOne({
+      where: { googleId: Account.id }
     })
     if (!account) {
       return res.json({
@@ -471,7 +473,7 @@ const login_google = async (req, res) => {
     }
 
     const token = jwt.sign(payLoad, secretOrKey, {
-      expiresIn: '8h'
+      expiresIn: '999999h'
     })
 
     return res.json({
@@ -482,6 +484,7 @@ const login_google = async (req, res) => {
       state: account.status
     })
   } catch (exception) {
+    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
