@@ -277,6 +277,15 @@ const validateLoginGoogle = request => {
   }
   return joi.validate(request, schema)
 }
+const validateCallbackGoogle = request => {
+  const schema = {
+    state: joi
+      .string()
+      .valid('signIn', 'signUp')
+      .required()
+  }
+  return joi.validate(request, schema)
+}
 
 module.exports = {
   validateAccount,
@@ -294,5 +303,6 @@ module.exports = {
   validateSuspendAccount,
   validateEmail,
   validateAccountGoogle,
-  validateLoginGoogle
+  validateLoginGoogle,
+  validateCallbackGoogle
 }

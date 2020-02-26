@@ -1,12 +1,13 @@
 const { google } = require('googleapis')
 const errorCodes = require('../../constants/errorCodes')
 const axios = require('axios')
+const validator = require('../../helpers/validations')
 
-const createConnection = () => {
+const createConnection = uri => {
   return new google.auth.OAuth2(
     '312499848496-1af18a8fr6dqdi6pe1nd1p1llailg7e1.apps.googleusercontent.com',
     'cxRecxM25soJ-MzHNgUa-f23',
-    'http://localhost:3000/googlesignup',
+    uri,
     defaultScope
   )
 }
@@ -32,19 +33,49 @@ const getConnectionUrl = auth => {
 }
 
 const urlGoogle = async (req, res) => {
-  const auth = createConnection() // this is from previous step
+  const isValid = validator.validateCallbackGoogle(req.body)
+  if (isValid.error) {
+    return res.json({
+      code: errorCodes.validation,
+      error: isValid.error.details[0].message
+    })
+  }
+  let uri
+  const { state } = req.body
+  if (state === 'signUp') {
+    uri = 'http://localhost:3000/googlesignup'
+  }
+  if (state === 'signIn') {
+    uri = 'http://localhost:3000/login'
+  }
+  const auth = createConnection(uri) // this is from previous step
   const url = getConnectionUrl(auth)
   return res.json({ url })
 }
 
 const callback = async (req, res) => {
-  const info = await getGoogleAccountFromCode(req.query.code)
+  const isValid = validator.validateCallbackGoogle(req.body)
+  if (isValid.error) {
+    return res.json({
+      code: errorCodes.validation,
+      error: isValid.error.details[0].message
+    })
+  }
+  const { state } = req.body
+  const info = await getGoogleAccountFromCode(req.query.code, state)
   return res.json({ info })
 }
 
-const getGoogleAccountFromCode = async code => {
+const getGoogleAccountFromCode = async (code, state) => {
   try {
-    const auth = createConnection()
+    let uri
+    if (state === 'signUp') {
+      uri = 'http://localhost:3000/googlesignup'
+    }
+    if (state === 'signIn') {
+      uri = 'http://localhost:3000/login'
+    }
+    const auth = createConnection(uri)
 
     const data = await auth.getToken(code)
     const tokens = data.tokens
@@ -62,41 +93,6 @@ const getGoogleAccountFromCode = async code => {
     console.log(exception)
     return { code: errorCodes.unknown, error: 'Something went wrong' }
   }
-}
-
-const register_google = async () => {
-  axios({
-    method: 'post',
-    url: 'https://cubexs.net/tbhapp/accounts/registergoogle',
-    data: {
-      Account: {
-        id: userData.id,
-        firstName: userData.given_name,
-        lastName: userData.family_name,
-        email: userData.email,
-        phoneNumber: '01158280719',
-        username: 'hosss'
-      }
-    }
-  }).then(res => console.log(res))
-  return { code: errorCodes.success }
-}
-const login_google = async () => {
-  axios({
-    method: 'post',
-    url: 'https://cubexs.net/tbhapp/accounts/registergoogle',
-    data: {
-      Account: {
-        id: userData.id,
-        firstName: userData.given_name,
-        lastName: userData.family_name,
-        email: userData.email,
-        phoneNumber: '01158280719',
-        username: 'hosss'
-      }
-    }
-  }).then(res => console.log(res))
-  return { code: errorCodes.success }
 }
 
 module.exports = { urlGoogle, getGoogleAccountFromCode, callback }
