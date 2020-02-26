@@ -336,6 +336,7 @@ const validateEditTiming = request => {
   return joi.validate(request, schema)
 }
 const validateCreateEvent = request => {
+  
   const schema = {
     Account: joi.object({ id: joi.number().required() }).required(),
     Event: joi
