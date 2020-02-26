@@ -458,7 +458,7 @@ const login_google = async (req, res) => {
     if (!account) {
       return res.json({
         code: errorCodes.emailExists,
-        error: 'Account already exists'
+        error: 'User not found'
       })
     }
     const payLoad = {

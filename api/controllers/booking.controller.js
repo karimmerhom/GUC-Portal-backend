@@ -2,8 +2,9 @@ const AccountModel = require('../../models/account.model')
 const validator = require('../helpers/bookingValidations')
 const errorCodes = require('../constants/errorCodes')
 const { Op } = require('sequelize')
+const axios = require('axios')
 const cron = require('cron')
-const { bookingExpiry } = require('../../config/keys')
+const { bookingExpiry, emailAccessKey } = require('../../config/keys')
 const {
   accountStatus,
   slotStatus,
@@ -14,6 +15,7 @@ const {
   checkPrice,
   expireBooking
 } = require('../helpers/helpers')
+
 const BookingModel = require('../../models/booking.model')
 const CalendarModel = require('../../models/calendar.model')
 const PackageModel = require('../../models/package.model')
@@ -330,6 +332,20 @@ const add_booking = async (req, res) => {
       await expireBooking(booking.id)
     })
     scheduleJob.start()
+    axios({
+      method: 'post',
+      url: 'https://cubexs.net/emailservice/sendemail',
+      data: {
+        header: {
+          accessKey: emailAccessKey
+        },
+        body: {
+          receiverMail: 'info@thebusinesshub.space',
+          body: ` Booking id: ${booking.id} \n Booking date: ${booking.date} \n Slots: ${booking.slot}, \n Room type: ${booking.roomType} \n Room number ${booking.roomNumber} \n Amount of people: ${booking.amountOfPeople} \n Price: ${booking.price} \n Package: ${booking.packageCode} \n Payment method: ${booking.paymentMethod} \n Account ID: ${booking.accountId} \n Name: ${account.firstName} ${account.lastName}`,
+          subject: 'New booking'
+        }
+      }
+    })
     return res.json({ code: errorCodes.success })
   } catch (exception) {
     console.log(exception)
