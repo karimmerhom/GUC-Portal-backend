@@ -68,7 +68,7 @@ const create_event = async (req, res) => {
       )
     }
     data['body'] = JSON.stringify({
-      receiverMail: 'elhobbakhaless@gmail.com',
+      receiverMail: 'info@thebusinesshub.space',
       body: text,
       subject: 'New Event Announcement'
     })
