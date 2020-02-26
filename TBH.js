@@ -4,6 +4,19 @@ const passport = require('passport')
 const allRoutes = require('express-list-endpoints')
 const bodyParser = require('body-parser')
 const fileUpload = require('express-fileupload')
+const accountModel = require('./models/account.model')
+const bookingModel = require('./models/booking.model')
+const calendarModel = require('./models/calendar.model')
+const eventModel = require('./models/events.model')
+const packageModel = require('./models/package.model')
+const pricingModel = require('./models/pricing.model')
+const purchaseModel = require('./models/purchase')
+const verCodeModel = require('./models/verificationCodes')
+
+const { eraseDatabaseOnSyncContacts } = require('./api/helpers/helpers')
+const { populate_admins } = require('./config/populateAdmins')
+const { populate_users } = require('./config/populateUser')
+const { populate_pricing } = require('./config/populatePricing')
 
 const app = express()
 
@@ -60,6 +73,22 @@ app.use('/tbhapp/packages', package)
 app.use('/tbhapp/events', event)
 app.use('/tbhapp/explore', explore)
 
+app.get('/dropdb', async (req, res) => {
+  sequelize
+    .sync({ force: true })
+    .then(() => console.log('Synced models with database'))
+    .then(() => {
+      if (true) {
+        eraseDatabaseOnSyncContacts()
+        populate_admins()
+        populate_users()
+        populate_pricing()
+      }
+    })
+    .catch(error => console.log('Could not sync models with database', error))
+  return res.json({ msg: 'dropped' })
+})
+
 app.use((req, res) => {
   res.status(404).send({ err: 'No such url' })
 })
@@ -83,10 +112,7 @@ app.use((req, res, next) => {
 })
 
 const eraseDatabaseOnSync = false
-const { eraseDatabaseOnSyncContacts } = require('./api/helpers/helpers')
-const { populate_admins } = require('./config/populateAdmins')
-const { populate_users } = require('./config/populateUser')
-const { populate_pricing } = require('./config/populatePricing')
+
 sequelize
   .sync({ force: eraseDatabaseOnSync })
   .then(() => console.log('Synced models with database'))

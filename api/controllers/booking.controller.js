@@ -287,7 +287,6 @@ const add_booking = async (req, res) => {
     if (price.packageStatus === accountStatus.PENDING) {
       bookingStatus = accountStatus.PENDING
     }
-
     const booking = await BookingModel.create({
       date: Booking.date,
       slot: slots,
