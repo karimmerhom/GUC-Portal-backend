@@ -73,7 +73,7 @@ app.use('/tbhapp/packages', package)
 app.use('/tbhapp/events', event)
 app.use('/tbhapp/explore', explore)
 
-app.get('/dropdb', async (req, res) => {
+app.get('/tbhapp/dropdb', async (req, res) => {
   sequelize
     .sync({ force: true })
     .then(() => console.log('Synced models with database'))
