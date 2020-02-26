@@ -9,5 +9,10 @@ module.exports = {
     'U2FsdGVkX1+qg3LDQcAbEPooS4vnkODpaYuOK3OGMTelyzSpkLxfVJdFfMCHEaGv',
   contactAccessKey:
     'U2FsdGVkX1+ePycHjuV4bc5VZCnpcFFxYucCcgGLoNnp53Ux1f1n3MDhzPFfGvtt',
-  bookingExpiry: 86400000
+  bookingExpiry: 86400000,
+  facebookAuth: {
+    client_id: '238318560516660',
+    client_secret: 'ef2931b0354502b636049074bc1f7bd1',
+    redirect_uri: 'http://localhost:5000/tbhapp/accounts/facebookcallback'
+  }
 }

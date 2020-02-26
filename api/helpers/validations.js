@@ -87,6 +87,17 @@ const validateLogin = request => {
   return joi.validate(request, schema)
 }
 
+const validateEmail = request => {
+  const schema = {
+    Account: joi
+      .object({
+        id: joi.number().required()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
+
 const validateVerify = request => {
   const schema = {
     Account: joi
@@ -224,6 +235,58 @@ const validateSuspendAccount = request => {
   return joi.validate(request, schema)
 }
 
+const validateAccountGoogle = request => {
+  const usernamePattern = /^[a-zA-Z0-9!#_$%&*]{3,25}$/
+  const schema = {
+    Account: joi
+      .object({
+        id: joi.string().required(),
+        username: joi
+          .string()
+          .regex(usernamePattern)
+          .required(),
+        firstName: joi
+          .string()
+          .min(3)
+          .required(),
+        lastName: joi
+          .string()
+          .min(3)
+          .required(),
+        phoneNumber: joi
+          .string()
+          .trim()
+          .regex(/^[0-9]{11,11}$/)
+          .required(),
+        email: joi
+          .string()
+          .email()
+          .required()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
+const validateLoginGoogle = request => {
+  const schema = {
+    Account: joi
+      .object({
+        id: joi.string().required()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
+const validateCallbackGoogle = request => {
+  const schema = {
+    state: joi
+      .string()
+      .valid('signIn', 'signUp')
+      .required()
+  }
+  return joi.validate(request, schema)
+}
+
 module.exports = {
   validateAccount,
   validateLogin,
@@ -237,5 +300,9 @@ module.exports = {
   validateConfirmVerify,
   validateUpdateProfile,
   validateGetProfile,
-  validateSuspendAccount
+  validateSuspendAccount,
+  validateEmail,
+  validateAccountGoogle,
+  validateLoginGoogle,
+  validateCallbackGoogle
 }

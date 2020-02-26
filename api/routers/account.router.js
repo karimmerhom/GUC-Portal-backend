@@ -18,8 +18,19 @@ const {
   get_profile,
   suspend_account,
   unsuspend_account,
-  get_accounts
+  get_accounts,
+  verify_email,
+  verify_confirm_email,
+  register_google,
+  login_google
 } = accountController
+
+const {
+  get_url,
+  facebook_callback
+} = require('../controllers/facebook/callback')
+
+const { urlGoogle, callback } = require('../controllers/google/callback')
 
 const { verifyToken } = require('../../config/AuthenticationMiddleWare')
 const { verifyAdmin } = require('../../config/AdminAuthentication')
@@ -39,5 +50,13 @@ router.post('/getprofile', verifyToken, verifyUser, get_profile)
 router.post('/suspendAccount', verifyAdmin, suspend_account)
 router.post('/unsuspendAccount', verifyAdmin, unsuspend_account)
 router.post('/getAccounts', verifyAdmin, get_accounts)
+router.post('/getgoogleurl', urlGoogle) //request url google
+router.get('/getfacebookurl', get_url) //request url facebook
+router.get('/facebookcallback', facebook_callback)
+router.post('/googlecallback', callback)
+router.post('/verifyemail', verifyToken, verifyUser, verify_email)
+router.post('/registergoogle', register_google)
+router.post('/logingoogle', login_google)
+router.get('/confirmverifyemail:verificationCode', verify_confirm_email)
 
 module.exports = router
