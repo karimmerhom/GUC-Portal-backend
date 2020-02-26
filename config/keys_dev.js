@@ -14,5 +14,12 @@ module.exports = {
     client_id: '238318560516660',
     client_secret: 'ef2931b0354502b636049074bc1f7bd1',
     redirect_uri: 'http://localhost:5000/tbhapp/accounts/facebookcallback'
+  },
+  googleAuth: {
+    client_id:
+      '312499848496-1af18a8fr6dqdi6pe1nd1p1llailg7e1.apps.googleusercontent.com',
+    client_secret: 'cxRecxM25soJ-MzHNgUa-f23',
+    loginURI: 'http://localhost:3000/login',
+    signUpURI: 'http://localhost:3000/googlesignup'
   }
 }
