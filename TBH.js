@@ -2,6 +2,8 @@ const express = require('express')
 const cors = require('cors')
 const passport = require('passport')
 const allRoutes = require('express-list-endpoints')
+const bodyParser = require('body-parser')
+const fileUpload = require('express-fileupload')
 
 const app = express()
 
@@ -13,10 +15,16 @@ const event = require('./api/routers/event.router')
 // import db configuration
 const sequelize = require('./config/DBConfig')
 
-// init middleware
-app.use(express.json())
-app.use(express.urlencoded({ extended: false }))
+app.use(
+  fileUpload({
+    createParentPath: true
+  })
+)
+// add other middleware
 app.use(cors())
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
+// init middleware
 app.use(passport.initialize())
 
 // test postgres connection
@@ -65,6 +73,7 @@ app.use((req, res) => {
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Origin', 'GET, POST, OPTIONS')
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
   res.header(
     'Access-Control-Allow-Headers',

@@ -1,12 +1,18 @@
-const axios = require('axios')
+const request = require('request')
+const fs = require('fs')
 
 const EventModel = require('../../models/events.model')
 const errorCodes = require('../constants/errorCodes')
 const validator = require('../helpers/bookingValidations')
 const { emailAccessKey } = require('../../config/keys')
+const { IsJsonString } = require('../helpers/helpers')
 
 const create_event = async (req, res) => {
   try {
+    if (IsJsonString(req.body.Event)) {
+      req.body.Event = JSON.parse(req.body.Event)
+      req.body.Account = JSON.parse(req.body.Account)
+    }
     const isValid = validator.validateCreateEvent(req.body)
     if (isValid.error) {
       return res.json({
@@ -38,22 +44,57 @@ const create_event = async (req, res) => {
       description: Event.description,
       price: Event.price
     })
-    axios({
-      method: 'post',
-      url: 'https://cubexs.net/emailservice/sendemail',
-      data: {
-        header: {
-          accessKey: emailAccessKey
-        },
-        body: {
-          receiverMail: 'elhobbakhaless@gmail.com',
-          body: text,
-          subject: 'New Event Announcement'
-        }
-      }
+    for (var key in req.files) {
+      var item = req.files[key]
+      await new Promise(resolve => {
+        fs.writeFile(
+          `${__dirname}/tbhappfiles/${item.name}`,
+          item.data,
+          function(err) {
+            if (err) {
+              resolve(err)
+            }
+            resolve('The file was saved!')
+          }
+        )
+      })
+    }
+
+    let data = {}
+    for (var key in req.files) {
+      var item = req.files[key]
+      data[item.name] = fs.createReadStream(
+        `${__dirname}/tbhappfiles/${item.name}`
+      )
+    }
+    data['body'] = JSON.stringify({
+      receiverMail: 'elhobbakhaless@gmail.com',
+      body: text,
+      subject: 'New Event Announcement'
     })
-    return res.json({ code: errorCodes.success })
+    data['header'] = JSON.stringify({
+      accessKey: emailAccessKey
+    })
+
+    request(
+      {
+        url: 'http://localhost:2000/emailservice/sendemailattachment',
+        method: 'POST',
+        formData: data,
+        json: true
+      },
+      (err, resp, body) => {
+        console.log(err, resp, body)
+      }
+    )
+    for (var key in req.files) {
+      var item = req.files[key]
+      fs.unlinkSync(`${__dirname}/tbhappfiles/${item.name}`)
+    }
+
+    return res.json({ code: 0 })
   } catch (exception) {
+    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }

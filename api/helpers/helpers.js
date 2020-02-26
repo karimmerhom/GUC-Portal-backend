@@ -238,11 +238,20 @@ function underAgeValidate(birthday) {
   // calculate age comparing current date and borthday
   var myAge = ~~((Date.now(currentDate) - birthday) / 31557600000)
   console.log(myAge)
-  if (myAge <=  18) {
+  if (myAge <= 18) {
     return true
   } else {
     return false
   }
+}
+
+function IsJsonString(str) {
+  try {
+    JSON.parse(str)
+  } catch (e) {
+    return false
+  }
+  return true
 }
 
 module.exports = {
@@ -252,5 +261,6 @@ module.exports = {
   expireBooking,
   eraseDatabaseOnSyncContacts,
   gift_package,
-  underAgeValidate
+  underAgeValidate,
+  IsJsonString
 }
