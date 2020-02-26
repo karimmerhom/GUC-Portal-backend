@@ -1,12 +1,11 @@
 const { google } = require('googleapis')
 const errorCodes = require('../../constants/errorCodes')
-const axios = require('axios')
 const validator = require('../../helpers/validations')
-
+const { googleAuth } = require('../../../config/keys')
 const createConnection = uri => {
   return new google.auth.OAuth2(
-    '312499848496-1af18a8fr6dqdi6pe1nd1p1llailg7e1.apps.googleusercontent.com',
-    'cxRecxM25soJ-MzHNgUa-f23',
+    googleAuth.client_id,
+    googleAuth.client_secret,
     uri,
     defaultScope
   )
@@ -43,10 +42,10 @@ const urlGoogle = async (req, res) => {
   let uri
   const { state } = req.body
   if (state === 'signUp') {
-    uri = 'http://localhost:3000/googlesignup'
+    uri = googleAuth.signUpURI
   }
   if (state === 'signIn') {
-    uri = 'http://localhost:3000/login'
+    uri = googleAuth.loginURI
   }
   const auth = createConnection(uri) // this is from previous step
   const url = getConnectionUrl(auth)
@@ -70,10 +69,10 @@ const getGoogleAccountFromCode = async (code, state) => {
   try {
     let uri
     if (state === 'signUp') {
-      uri = 'http://localhost:3000/googlesignup'
+      uri = googleAuth.signUpURI
     }
     if (state === 'signIn') {
-      uri = 'http://localhost:3000/login'
+      uri = googleAuth.loginURI
     }
     const auth = createConnection(uri)
 

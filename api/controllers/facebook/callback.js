@@ -1,5 +1,5 @@
 var queryString = require('querystring')
-const { facebookAuth } = require('../../../config/keys_dev')
+const { facebookAuth } = require('../../../config/keys')
 const axios = require('axios')
 var { client_id, client_secret, redirect_uri } = facebookAuth
 const errorCodes = require('../../constants/errorCodes')

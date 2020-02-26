@@ -22,8 +22,6 @@ const {
   gift_package,
   underAgeValidate
 } = require('../helpers/helpers')
-const { google } = require('googleapis')
-const OAuth2Data = require('../../config/google')
 
 const register = async (req, res) => {
   try {
