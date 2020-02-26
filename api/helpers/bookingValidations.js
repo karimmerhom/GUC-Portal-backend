@@ -54,7 +54,10 @@ const validateAddBooking = request => {
           .string()
           .valid(['1', '2', '3', '4'])
           .required(),
-        amountOfPeople: joi.number().required(),
+        amountOfPeople: joi
+          .number()
+          .positive()
+          .required(),
         paymentMethod: joi
           .string()
           .valid([paymentMethods.CASH, paymentMethods.VODAFONECASH])
@@ -336,7 +339,6 @@ const validateEditTiming = request => {
   return joi.validate(request, schema)
 }
 const validateCreateEvent = request => {
-  
   const schema = {
     Account: joi.object({ id: joi.number().required() }).required(),
     Event: joi
