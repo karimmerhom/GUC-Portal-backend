@@ -98,6 +98,7 @@ const checkPrice = async (
     price = hours * packageFound.price
   }
   let newHours
+  let packageStatus
   if (packageCode !== '' && packageCode !== null) {
     const package = await PackageModel.findOne({
       where: { code: packageCode }
@@ -108,11 +109,11 @@ const checkPrice = async (
         error: 'Package not found'
       }
     }
-    if (package.status !== accountStatus.ACTIVE) {
-      return {
-        code: errorCodes.packageCanceled,
-        error: 'Package is not active'
-      }
+    if (package.status === accountStatus.CANCELED) {
+      return { code: errorCodes.packageCanceled, error: 'Package Canceled' }
+    }
+    if (package.status === accountStatus.PENDING) {
+      packageStatus = accountStatus.PENDING
     }
     if (parseInt(package.accountId) !== parseInt(accountId)) {
       return { code: errorCodes.invalidPackage, error: 'Invalid package' }
@@ -132,7 +133,12 @@ const checkPrice = async (
     }
   }
 
-  return { price, code: errorCodes.success, remainingHours: newHours }
+  return {
+    price,
+    code: errorCodes.success,
+    remainingHours: newHours,
+    packageStatus
+  }
 }
 
 const expireBooking = async (id, status = accountStatus.EXPIRED) => {
