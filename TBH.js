@@ -4,14 +4,6 @@ const passport = require('passport')
 const allRoutes = require('express-list-endpoints')
 const bodyParser = require('body-parser')
 const fileUpload = require('express-fileupload')
-const accountModel = require('./models/account.model')
-const bookingModel = require('./models/booking.model')
-const calendarModel = require('./models/calendar.model')
-const eventModel = require('./models/events.model')
-const packageModel = require('./models/package.model')
-const pricingModel = require('./models/pricing.model')
-const purchaseModel = require('./models/purchase')
-const verCodeModel = require('./models/verificationCodes')
 
 const { eraseDatabaseOnSyncContacts } = require('./api/helpers/helpers')
 const { populate_admins } = require('./config/populateAdmins')
@@ -111,7 +103,7 @@ app.use((req, res, next) => {
   next()
 })
 
-const eraseDatabaseOnSync = false
+const eraseDatabaseOnSync = true
 
 sequelize
   .sync({ force: eraseDatabaseOnSync })

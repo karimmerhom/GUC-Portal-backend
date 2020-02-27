@@ -14,7 +14,7 @@ const populate_users = async () => {
     password: hashed_pass,
     firstName: 'Aisha',
     lastName: 'Shokry',
-    phone: '01149196419',
+    phone: '010000000000',
     email: 'aisha.shokry@lirten.com',
     status: accountStatus.VERIFIED,
     type: userTypes.USER
@@ -30,7 +30,7 @@ const populate_users = async () => {
         firstName: 'Aisha',
         lastName: 'Shokry',
         email: 'aisha.shokry@lirten.com',
-        phoneNumber: '01149196419',
+        phoneNumber: '010000000000',
         ownerId: parseInt(accountCreated.id)
       }
     }
