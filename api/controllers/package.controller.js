@@ -5,11 +5,13 @@ const {
   slotStatus,
   userTypes
 } = require('../constants/TBH.enum')
+const { Op } = require('sequelize')
 const PackageModel = require('../../models/package.model')
 const { generateOTP } = require('../helpers/helpers')
 const VerificationCode = require('../../models/verificationCodes')
 const pricingModel = require('../../models/pricing.model')
 const accountModel = require('../../models/account.model')
+const bookingModel = require('../../models/booking.model')
 
 const create_package = async (req, res) => {
   try {
@@ -248,6 +250,16 @@ const edit_package_by_code = async (req, res) => {
         status: Package.status
       },
       { where: { code: Package.code } }
+    )
+    await bookingModel.update(
+      { status: accountStatus.CONFIRMED },
+      {
+        where: {
+          status: accountStatus.PENDING,
+          price: 0,
+          packageCode: Package.code
+        }
+      }
     )
     return res.json({ code: errorCodes.success })
   } catch (exception) {

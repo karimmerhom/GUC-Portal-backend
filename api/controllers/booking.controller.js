@@ -387,6 +387,7 @@ const show_my_bookings = async (req, res) => {
       where: { accountId: parseInt(Account.id) }
     })
     const bookingstoShow = bookings.map(element => ({
+      id: element.id,
       date: element.date,
       slot: element.slot,
       period: element.period,
