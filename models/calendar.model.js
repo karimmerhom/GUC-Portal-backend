@@ -37,7 +37,22 @@ calendar.init(
       type: Sequelize.INTEGER
     },
     slot: {
-      type: Sequelize.STRING
+      type: Sequelize.STRING,
+      values: [
+        '09AM',
+        '10AM',
+        '11AM',
+        '12PM',
+        '01PM',
+        '02PM',
+        '03PM',
+        '04PM',
+        '05PM',
+        '06PM',
+        '07PM',
+        '08PM',
+        '09PM'
+      ]
     },
     status: {
       type: Sequelize.ENUM,

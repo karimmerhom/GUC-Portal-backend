@@ -30,19 +30,19 @@ const validateAddBooking = request => {
             joi
               .string()
               .valid([
-                '9AM',
+                '09AM',
                 '10AM',
                 '11AM',
                 '12PM',
-                '1PM',
-                '2PM',
-                '3PM',
-                '4PM',
-                '5PM',
-                '6PM',
-                '7PM',
-                '8PM',
-                '9PM'
+                '01PM',
+                '02PM',
+                '03PM',
+                '04PM',
+                '05PM',
+                '06PM',
+                '07PM',
+                '08PM',
+                '09PM'
               ])
           )
           .required(),
@@ -316,19 +316,19 @@ const validateEditTiming = request => {
             joi
               .string()
               .valid([
-                '9AM',
+                '09AM',
                 '10AM',
                 '11AM',
                 '12PM',
-                '1PM',
-                '2PM',
-                '3PM',
-                '4PM',
-                '5PM',
-                '6PM',
-                '7PM',
-                '8PM',
-                '9PM'
+                '01PM',
+                '02PM',
+                '03PM',
+                '04PM',
+                '05PM',
+                '06PM',
+                '07PM',
+                '08PM',
+                '09PM'
               ])
           )
           .required()

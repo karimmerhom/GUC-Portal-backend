@@ -136,14 +136,15 @@ const show_all_slots_from_to = async (req, res) => {
       month: element.month,
       year: element.year,
       slot: element.slot,
-      status: element.status
+      status: element.status,
+      roomNumber: element.roomNumber,
+      date: element.date
     }))
     return res.json({
       code: errorCodes.success,
       bookings
     })
   } catch (exception) {
-    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -176,7 +177,9 @@ const show_all_slots = async (req, res) => {
       month: element.month,
       year: element.year,
       slot: element.slot,
-      status: element.status
+      status: element.status,
+      roomNumber: element.roomNumber,
+      date: element.date
     }))
     return res.json({
       code: errorCodes.success,
