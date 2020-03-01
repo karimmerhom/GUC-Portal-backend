@@ -771,16 +771,24 @@ const validate_edit = async (req, res) => {
     let addedHrs = []
     let deductedHrs = []
     let i = 0
-    booking.slot.forEach(slot => {
-      if (!Booking.slot.includes(slot)) {
-        deductedHrs.push(slot)
-      }
-    })
-    Booking.slot.forEach(slot => {
-      if (!booking.slot.includes(slot)) {
-        addedHrs.push(slot)
-      }
-    })
+    if (
+      new Date(booking.date).setHours(0, 0, 0, 0) ===
+      new Date(Booking.date).setHours(0, 0, 0, 0)
+    ) {
+      booking.slot.forEach(slot => {
+        if (!Booking.slot.includes(slot)) {
+          deductedHrs.push(slot)
+        }
+      })
+      Booking.slot.forEach(slot => {
+        if (!booking.slot.includes(slot)) {
+          addedHrs.push(slot)
+        }
+      })
+    } else {
+      addedHrs = Booking.slot
+      deductedHrs = booking.slot
+    }
 
     let slotsThatAreNotFree = []
     for (i = 0; i < addedHrs.length; i++) {
