@@ -43,7 +43,8 @@ Account.init(
       values: [userTypes.ADMIN, userTypes.USER]
     },
     emailVerified: {
-      type: Sequelize.BOOLEAN
+      type: Sequelize.BOOLEAN,
+      defaultValue: false
     },
     facebookId: {
       type: Sequelize.STRING

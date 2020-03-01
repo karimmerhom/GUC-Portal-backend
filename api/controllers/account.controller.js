@@ -194,7 +194,11 @@ const verify = async (req, res) => {
         error: 'Already verified'
       })
     }
-
+    const code = await generateOTP()
+    await VerificationCode.create({
+      code,
+      date: new Date()
+    })
     // if (Account.verifyBy === verificationMethods.EMAIL) {
     //   axios({
     //     method: 'post',
@@ -211,7 +215,10 @@ const verify = async (req, res) => {
     //     }
     //   })
     // }
-
+    await AccountModel.update(
+      { verificationCode: code },
+      { where: { id: Account.id } }
+    )
     if (Account.verifyBy === verificationMethods.SMS) {
       axios({
         method: 'post',
@@ -222,14 +229,13 @@ const verify = async (req, res) => {
           },
           body: {
             receiverPhone: account.phone,
-            body: account.verificationCode
+            body: code
           }
         }
       })
     }
     return res.json({ code: errorCodes.success })
   } catch (exception) {
-    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -335,7 +341,8 @@ const login = async (req, res) => {
       phone: account.phone,
       email: account.email,
       status: account.status,
-      type: account.type
+      type: account.type,
+      emailVerified: account.emailVerified
     }
 
     const token = jwt.sign(payLoad, secretOrKey, {
@@ -347,7 +354,8 @@ const login = async (req, res) => {
       token,
       id: account.id,
       username: account.username,
-      state: account.status
+      state: account.status,
+      emailVerified: account.emailVerified
     })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
@@ -581,9 +589,6 @@ const change_password = async (req, res) => {
       })
     }
     const { id } = Account
-    // if (parseInt(id, 10) !== parseInt(Credentials.id, 10)) {
-    //   return res.json({ code: errorCodes.authentication, error: 'breach' })
-    // }
     const account = await AccountModel.findOne({
       where: {
         id: parseInt(id, 10)
@@ -798,145 +803,6 @@ const forget_password = async (req, res) => {
     )
     return res.json({ code: errorCodes.success })
   } catch (exception) {
-    console.log(exception)
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
-  }
-}
-
-const reset_password = async (req, res) => {
-  try {
-    const { Account } = req.body
-    const isValid = validator.validateResetPassword({ Account })
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message
-      })
-    }
-    const account = await AccountModel.findOne({
-      where: {
-        [Op.or]: {
-          username: Account.username.toString().toLowerCase(),
-          email: Account.username.toString().toLowerCase()
-        }
-      }
-    })
-
-    if (!account) {
-      return res.json({
-        code: errorCodes.invalidCredentials,
-        error: 'User not found'
-      })
-    }
-
-    if (account.password !== null) {
-      return res.json({
-        code: errorCodes.notAccessibleNow,
-        error: 'Cannot reset password now'
-      })
-    }
-    const saltKey = bcrypt.genSaltSync(10)
-    const hashed_pass = bcrypt.hashSync(Account.password, saltKey)
-    await AccountModel.update(
-      {
-        password: hashed_pass
-      },
-      {
-        where: {
-          [Op.or]: {
-            username: Account.username.toString().toLowerCase(),
-            email: Account.username.toString().toLowerCase()
-          }
-        }
-      }
-    )
-    return res.json({ code: errorCodes.success })
-  } catch (exception) {
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
-  }
-}
-
-const resend_password = async (req, res) => {
-  try {
-    const { Account } = req.body
-    const isValid = validator.validateResendPassword({ Account })
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message
-      })
-    }
-    const { id } = req.data
-    if (parseInt(id) !== parseInt(Account.id)) {
-      return res.json({ code: errorCodes.authentication, error: 'breach' })
-    }
-    const account = await AccountModel.findOne({
-      where: {
-        id: parseInt(id)
-      }
-    })
-
-    if (!account) {
-      return res.json({
-        code: errorCodes.invalidCredentials,
-        error: 'User not found'
-      })
-    }
-    if (account.status === accountStatus.VERIFIED) {
-      return res.json({
-        code: errorCodes.alreadyVerified,
-        error: 'Already verified'
-      })
-    }
-    const code = await generateOTP()
-    await VerificationCode.create({
-      code,
-      date: new Date()
-    })
-    if (Account.verifyBy === verificationMethods.EMAIL) {
-      axios({
-        method: 'post',
-        url: 'https://cubexs.net/emailservice/sendemail',
-        data: {
-          header: {
-            accessKey: emailAccessKey
-          },
-          body: {
-            receiverMail: account.email,
-            body: code,
-            subject: 'Verify your account'
-          }
-        }
-      })
-    }
-
-    if (Account.verifyBy === verificationMethods.SMS) {
-      axios({
-        method: 'post',
-        url: 'https://cubexs.net/epushservice/sendsms',
-        data: {
-          header: {
-            accessKey: smsAccessKey
-          },
-          body: {
-            receiverPhone: account.phone,
-            body: code
-          }
-        }
-      })
-    }
-    await AccountModel.update(
-      {
-        verificationCode: code
-      },
-      {
-        where: {
-          id: parseInt(id)
-        }
-      }
-    )
-    return res.json({ code: errorCodes.success })
-  } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -1102,8 +968,6 @@ module.exports = {
   change_email,
   change_phone,
   forget_password,
-  reset_password,
-  resend_password,
   confirm_verify,
   update_profile,
   get_profile,
