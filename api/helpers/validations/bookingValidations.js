@@ -331,7 +331,8 @@ const validateEditTiming = request => {
                 '09PM'
               ])
           )
-          .required()
+          .required(),
+        date: joi.date().required()
       })
       .required(),
     Account: joi.object({ id: joi.number().required() }).required()
