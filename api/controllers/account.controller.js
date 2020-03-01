@@ -120,7 +120,7 @@ const register = async (req, res) => {
             },
             body: {
               receiverPhone: accountCreated.phone,
-              body: accountCreated.verificationCode
+              body: `Your TBH confirmation code is\n ${accountCreated.verificationCode}`
             }
           }
         })
@@ -251,7 +251,7 @@ const verify = async (req, res) => {
           },
           body: {
             receiverPhone: account.phone,
-            body: code
+            body: `Your TBH confirmation code is\n ${code}`
           }
         }
       })
@@ -265,7 +265,7 @@ const verify = async (req, res) => {
 const verify_email = async (req, res) => {
   try {
     const { Account } = req.body
-    const isValid = validator.validateVerify({ Account })
+    const isValid = validator.validateEmail({ Account })
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
@@ -273,6 +273,12 @@ const verify_email = async (req, res) => {
       })
     }
     const account = await AccountModel.findOne({ where: { id: Account.id } })
+    if (account.emailVerified) {
+      return res.json({
+        code: errorCodes.alreadyVerified,
+        code: 'Email already verified'
+      })
+    }
     const link =
       'https://cubexs.net/tbhapp/accounts/confirmverifyemail' +
       account.verificationCode
