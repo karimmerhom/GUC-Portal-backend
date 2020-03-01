@@ -799,43 +799,7 @@ const validate_edit = async (req, res) => {
         error: `These slots are not free: ${slotsThatAreNotFree}`
       })
     }
-    const bookingDate = new Date(booking.date)
-    const months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December'
-    ]
-    const month = months[bookingDate.getMonth()]
-    for (i = 0; i < deductedHrs.length; i++) {
-      CalendarModel.destroy({
-        where: {
-          slot: deductedHrs[i],
-          date: bookingDate,
-          roomNumber: booking.roomNumber
-        }
-      })
-    }
-    for (i = 0; i < addedHrs.length; i++) {
-      CalendarModel.create({
-        dayNumber: bookingDate.getDate(),
-        month,
-        monthNumber: bookingDate.getMonth(),
-        year: bookingDate.getFullYear(),
-        slot: addedHrs[i],
-        status: slotStatus.PENDING,
-        date: bookingDate,
-        roomNumber: booking.roomNumber
-      })
-    }
+
     const package = (await PackageModel.findOne({
       where: { code: booking.packageCode }
     })) || { remaining: 0, status: accountStatus.USED }
