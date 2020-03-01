@@ -12,7 +12,6 @@ const {
   change_email,
   change_phone,
   forget_password,
-  resend_password,
   confirm_verify,
   update_profile,
   get_profile,
@@ -44,7 +43,6 @@ router.post('/changePassword', verifyToken, verifyUser, change_password)
 router.post('/changeEmail', verifyToken, verifyUser, change_email)
 router.post('/changePhone', verifyToken, verifyUser, change_phone)
 router.post('/forgetpassword', forget_password)
-router.post('/resendpassword', verifyToken, resend_password)
 router.post('/updateprofile', verifyToken, update_profile)
 router.post('/getprofile', verifyToken, verifyUser, get_profile)
 router.post('/suspendAccount', verifyAdmin, suspend_account)
