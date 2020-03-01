@@ -1,5 +1,5 @@
 const AccountModel = require('../../models/account.model')
-const validator = require('../helpers/bookingValidations')
+const bookingValidator = require('../helpers/validations/bookingValidations')
 const errorCodes = require('../constants/errorCodes')
 const { Op } = require('sequelize')
 const axios = require('axios')
@@ -22,7 +22,7 @@ const PackageModel = require('../../models/package.model')
 
 const validate_booking = async (req, res) => {
   try {
-    const isValid = validator.validateAddBooking(req.body)
+    const isValid = bookingValidator.validateAddBooking(req.body)
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
@@ -101,7 +101,7 @@ const validate_booking = async (req, res) => {
 
 const show_all_slots_from_to = async (req, res) => {
   try {
-    const isValid = validator.validateShowBookings(req.body)
+    const isValid = bookingValidator.validateShowBookings(req.body)
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
@@ -151,7 +151,7 @@ const show_all_slots_from_to = async (req, res) => {
 
 const show_all_slots = async (req, res) => {
   try {
-    const isValid = validator.validateShowBookings(req.body)
+    const isValid = bookingValidator.validateShowBookings(req.body)
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
@@ -193,7 +193,7 @@ const show_all_slots = async (req, res) => {
 
 const add_booking = async (req, res) => {
   try {
-    const isValid = validator.validateAddBooking(req.body)
+    const isValid = bookingValidator.validateAddBooking(req.body)
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
@@ -360,7 +360,7 @@ const add_booking = async (req, res) => {
 
 const show_my_bookings = async (req, res) => {
   try {
-    const isValid = validator.validateShowMyBooking(req.body)
+    const isValid = bookingValidator.validateShowMyBooking(req.body)
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
@@ -408,7 +408,7 @@ const show_my_bookings = async (req, res) => {
 
 const edit_booking = async (req, res) => {
   try {
-    const isValid = validator.validateEditBooking(req.body)
+    const isValid = bookingValidator.validateEditBooking(req.body)
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
@@ -468,7 +468,7 @@ const list_all_bookings = async (req, res) => {
 
 const booking_details = async (req, res) => {
   try {
-    const isValid = validator.validateBookingDetails(req.body)
+    const isValid = bookingValidator.validateBookingDetails(req.body)
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
@@ -494,7 +494,7 @@ const booking_details = async (req, res) => {
 
 const cancel_pending = async (req, res) => {
   try {
-    const isValid = validator.validateCancelBooking(req.body)
+    const isValid = bookingValidator.validateCancelBooking(req.body)
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
@@ -542,7 +542,7 @@ const cancel_pending = async (req, res) => {
 
 const edit_timing = async (req, res) => {
   try {
-    const isValid = validator.validateEditTiming(req.body)
+    const isValid = bookingValidator.validateEditTiming(req.body)
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,

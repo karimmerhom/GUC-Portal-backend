@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs')
 const axios = require('axios')
 const jwt = require('jsonwebtoken')
 const AccountModel = require('../../models/account.model')
-const validator = require('../helpers/validations')
+const validator = require('../helpers/validations/accountValidations')
 const errorCodes = require('../constants/errorCodes')
 const { Op } = require('sequelize')
 const {
@@ -237,22 +237,6 @@ const verify = async (req, res) => {
       code,
       date: new Date()
     })
-    // if (Account.verifyBy === verificationMethods.EMAIL) {
-    //   axios({
-    //     method: 'post',
-    //     url: 'https://cubexs.net/emailservice/sendemail',
-    //     data: {
-    //       header: {
-    //         accessKey: emailAccessKey
-    //       },
-    //       body: {
-    //         receiverMail: account.email,
-    //         body: code,
-    //         subject: 'Verify your account'
-    //       }
-    //     }
-    //   })
-    // }
     await AccountModel.update(
       { verificationCode: code },
       { where: { id: Account.id } }
@@ -413,7 +397,6 @@ const register_google = async (req, res) => {
     const account = await AccountModel.findOne({
       where: { googleId: Account.id }
     })
-    console.log(account)
     if (account) {
       return res.json({
         code: errorCodes.emailExists,
@@ -463,7 +446,7 @@ const register_google = async (req, res) => {
       verificationCode: code,
       googleId: Account.id
     })
-    axios({
+    return await axios({
       method: 'post',
       url: 'https://cubexs.net/contacts/createcontact',
       data: {
@@ -475,13 +458,51 @@ const register_google = async (req, res) => {
           lastName: Account.lastName,
           email: Account.email,
           phoneNumber: Account.phoneNumber,
-          ownerId: parseInt(accountCreated.id)
+          ownerId: parseInt(accountCreated.id),
+          googleId: Account.id
         }
       }
     })
-    return res.json({ code: errorCodes.success })
+      .then(resp => {
+        const link =
+          'https://cubexs.net/tbhapp/accounts/confirmverifyemail' + code
+        axios({
+          method: 'post',
+          url: 'https://cubexs.net/emailservice/sendemail',
+          data: {
+            header: {
+              accessKey: emailAccessKey
+            },
+            body: {
+              receiverMail: accountCreated.email,
+              body: link,
+              subject: 'Verify your email'
+            }
+          }
+        })
+        axios({
+          method: 'post',
+          url: 'https://cubexs.net/epushservice/sendsms',
+          data: {
+            header: {
+              accessKey: smsAccessKey
+            },
+            body: {
+              receiverPhone: accountCreated.phone,
+              body: accountCreated.verificationCode
+            }
+          }
+        })
+        return res.json({ code: errorCodes.success })
+      })
+      .catch(err => {
+        AccountModel.destroy({ where: { id: accountCreated.id } })
+        return res.json({
+          code: errorCodes.unknown,
+          error: 'Something went wrong'
+        })
+      })
   } catch (exception) {
-    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }

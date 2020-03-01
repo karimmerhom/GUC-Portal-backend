@@ -1,6 +1,6 @@
 const joi = require('joi')
 
-const { paymentMethods } = require('../constants/TBH.enum')
+const { paymentMethods } = require('../../constants/TBH.enum')
 
 const validateBookingWithPackage = request => {
   const schema = {

@@ -3,7 +3,7 @@ const fs = require('fs')
 
 const EventModel = require('../../models/events.model')
 const errorCodes = require('../constants/errorCodes')
-const validator = require('../helpers/bookingValidations')
+const validator = require('../helpers/validations/bookingValidations')
 const { emailAccessKey } = require('../../config/keys')
 const { IsJsonString } = require('../helpers/helpers')
 

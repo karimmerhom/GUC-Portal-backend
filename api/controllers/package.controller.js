@@ -1,4 +1,4 @@
-const validator = require('../helpers/bookingValidations')
+const packageValidator = require('../helpers/validations/packageValidations')
 const errorCodes = require('../constants/errorCodes')
 const {
   accountStatus,
@@ -15,7 +15,7 @@ const bookingModel = require('../../models/booking.model')
 
 const create_package = async (req, res) => {
   try {
-    const isValid = validator.validateCreatePackage(req.body)
+    const isValid = packageValidator.validateCreatePackage(req.body)
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
@@ -111,7 +111,7 @@ const create_package = async (req, res) => {
 
 const calculate_package_price = async (req, res) => {
   try {
-    const isValid = validator.validateCreatePackage(req.body)
+    const isValid = packageValidator.validateCreatePackage(req.body)
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
@@ -193,7 +193,7 @@ const calculate_package_price = async (req, res) => {
 
 const view_package_by_code = async (req, res) => {
   try {
-    const isValid = validator.validateViewPackageByCode(req.body)
+    const isValid = packageValidator.validateViewPackageByCode(req.body)
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
@@ -220,7 +220,7 @@ const view_package_by_code = async (req, res) => {
 
 const edit_package_by_code = async (req, res) => {
   try {
-    const isValid = validator.validateEditPackageByCode(req.body)
+    const isValid = packageValidator.validateEditPackageByCode(req.body)
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
@@ -278,7 +278,7 @@ const view_pricings = async (req, res) => {
 
 const view_packages_for_user = async (req, res) => {
   try {
-    const isValid = validator.validateShowMyPackages(req.body)
+    const isValid = packageValidator.validateShowMyPackages(req.body)
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
@@ -306,7 +306,7 @@ const view_all_packages = async (req, res) => {
 
 const gift_package = async (req, res) => {
   try {
-    const isValid = validator.validateGiftPackage(req.body)
+    const isValid = packageValidator.validateGiftPackage(req.body)
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,

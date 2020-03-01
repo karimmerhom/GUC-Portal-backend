@@ -1,6 +1,6 @@
 const { google } = require('googleapis')
 const errorCodes = require('../../constants/errorCodes')
-const validator = require('../../helpers/validations')
+const validator = require('../../helpers/validations/accountValidations')
 const { googleAuth } = require('../../../config/keys')
 const createConnection = uri => {
   return new google.auth.OAuth2(
