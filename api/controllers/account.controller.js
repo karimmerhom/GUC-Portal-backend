@@ -78,7 +78,7 @@ const register = async (req, res) => {
       type: userTypes.USER,
       verificationCode: code
     })
-    axios({
+    return await axios({
       method: 'post',
       url: 'https://cubexs.net/contacts/createcontact',
       data: {
@@ -94,7 +94,45 @@ const register = async (req, res) => {
         }
       }
     })
-    return res.json({ code: errorCodes.success })
+      .then(resp => {
+        const link =
+          'https://cubexs.net/tbhapp/accounts/confirmverifyemail' + code
+        axios({
+          method: 'post',
+          url: 'https://cubexs.net/emailservice/sendemail',
+          data: {
+            header: {
+              accessKey: emailAccessKey
+            },
+            body: {
+              receiverMail: accountCreated.email,
+              body: link,
+              subject: 'Verify your email'
+            }
+          }
+        })
+        axios({
+          method: 'post',
+          url: 'https://cubexs.net/epushservice/sendsms',
+          data: {
+            header: {
+              accessKey: smsAccessKey
+            },
+            body: {
+              receiverPhone: accountCreated.phone,
+              body: accountCreated.verificationCode
+            }
+          }
+        })
+        return res.json({ code: errorCodes.success })
+      })
+      .catch(err => {
+        AccountModel.destroy({ where: { id: accountCreated.id } })
+        return res.json({
+          code: errorCodes.unknown,
+          error: 'Something went wrong'
+        })
+      })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
@@ -252,7 +290,7 @@ const verify_email = async (req, res) => {
     }
     const account = await AccountModel.findOne({ where: { id: Account.id } })
     const link =
-      'http://localhost:5000/tbhapp/accounts/confirmverifyemail' +
+      'https://cubexs.net/tbhapp/accounts/confirmverifyemail' +
       account.verificationCode
     axios({
       method: 'post',
@@ -960,6 +998,46 @@ const get_accounts = async (req, res) => {
   }
 }
 
+const make_user_verified = async (req, res) => {
+  try {
+    const isValid = validator.validateSuspendAccount({ Account })
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Account } = req.body
+    const { id } = Account
+    const account = await AccountModel.findOne({ where: { id } })
+    if (!account) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'User not found'
+      })
+    }
+    if (account.status === accountStatus.VERIFIED) {
+      return res.json({
+        code: errorCodes.alreadyVerified,
+        error: 'User already verified'
+      })
+    }
+    await AccountModel.update(
+      {
+        status: accountStatus.VERIFIED
+      },
+      {
+        where: {
+          id
+        }
+      }
+    )
+    return res.json({ code: errorCodes.success })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
 module.exports = {
   register,
   login,
@@ -977,5 +1055,6 @@ module.exports = {
   verify_confirm_email,
   verify_email,
   register_google,
-  login_google
+  login_google,
+  make_user_verified
 }
