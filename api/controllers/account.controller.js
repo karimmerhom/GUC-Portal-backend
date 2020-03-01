@@ -1094,6 +1094,46 @@ const get_accounts = async (req, res) => {
   }
 }
 
+const make_user_verified = async (req, res) => {
+  try {
+    const isValid = validator.validateSuspendAccount({ Account })
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Account } = req.body
+    const { id } = Account
+    const account = await AccountModel.findOne({ where: { id } })
+    if (!account) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'User not found'
+      })
+    }
+    if (account.status === accountStatus.VERIFIED) {
+      return res.json({
+        code: errorCodes.alreadyVerified,
+        error: 'User already verified'
+      })
+    }
+    await AccountModel.update(
+      {
+        status: accountStatus.VERIFIED
+      },
+      {
+        where: {
+          id
+        }
+      }
+    )
+    return res.json({ code: errorCodes.success })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
 module.exports = {
   register,
   login,
@@ -1113,5 +1153,6 @@ module.exports = {
   verify_confirm_email,
   verify_email,
   register_google,
-  login_google
+  login_google,
+  make_user_verified
 }
