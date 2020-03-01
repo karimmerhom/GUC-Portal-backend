@@ -562,23 +562,31 @@ const edit_timing = async (req, res) => {
       })
     }
 
-    if (booking.accountId !== Account.id && req.data.type === userTypes.ADMIN) {
+    if (booking.accountId !== Account.id && req.data.type !== userTypes.ADMIN) {
       return res.json({ code: errorCodes.unauthorized, error: 'breach' })
     }
-
     let addedHrs = []
     let deductedHrs = []
+    if (
+      new Date(booking.date).setHours(0, 0, 0, 0) ===
+      new Date(Booking.date).setHours(0, 0, 0, 0)
+    ) {
+      booking.slot.forEach(slot => {
+        if (!Booking.slot.includes(slot)) {
+          deductedHrs.push(slot)
+        }
+      })
+      Booking.slot.forEach(slot => {
+        if (!booking.slot.includes(slot)) {
+          addedHrs.push(slot)
+        }
+      })
+    } else {
+      addedHrs = Booking.slot
+      deductedHrs = booking.slot
+    }
+
     let i = 0
-    booking.slot.forEach(slot => {
-      if (!Booking.slot.includes(slot)) {
-        deductedHrs.push(slot)
-      }
-    })
-    Booking.slot.forEach(slot => {
-      if (!booking.slot.includes(slot)) {
-        addedHrs.push(slot)
-      }
-    })
 
     let slotsThatAreNotFree = []
     for (i = 0; i < addedHrs.length; i++) {
@@ -598,6 +606,7 @@ const edit_timing = async (req, res) => {
       })
     }
     const bookingDate = new Date(booking.date)
+    const newBookingDate = new Date(Booking.date)
     const months = [
       'January',
       'February',
@@ -624,13 +633,13 @@ const edit_timing = async (req, res) => {
     }
     for (i = 0; i < addedHrs.length; i++) {
       CalendarModel.create({
-        dayNumber: bookingDate.getDate(),
+        dayNumber: newBookingDate.getDate(),
         month,
-        monthNumber: bookingDate.getMonth(),
-        year: bookingDate.getFullYear(),
+        monthNumber: newBookingDate.getMonth(),
+        year: newBookingDate.getFullYear(),
         slot: addedHrs[i],
         status: slotStatus.PENDING,
-        date: bookingDate,
+        date: newBookingDate,
         roomNumber: booking.roomNumber
       })
     }
@@ -733,6 +742,148 @@ const edit_timing = async (req, res) => {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
+const validate_edit = async (req, res) => {
+  try {
+    const isValid = validator.validateEditTiming(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Account, Booking } = req.body
+    const booking = await BookingModel.findOne({
+      where: {
+        id: Booking.id
+      }
+    })
+    if (!booking) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'Booking not found'
+      })
+    }
+
+    if (booking.accountId !== Account.id && req.data.type !== userTypes.ADMIN) {
+      return res.json({ code: errorCodes.unauthorized, error: 'breach' })
+    }
+
+    let addedHrs = []
+    let deductedHrs = []
+    let i = 0
+    booking.slot.forEach(slot => {
+      if (!Booking.slot.includes(slot)) {
+        deductedHrs.push(slot)
+      }
+    })
+    Booking.slot.forEach(slot => {
+      if (!booking.slot.includes(slot)) {
+        addedHrs.push(slot)
+      }
+    })
+
+    let slotsThatAreNotFree = []
+    for (i = 0; i < addedHrs.length; i++) {
+      const helper = await checkFreeSlot(
+        addedHrs[i],
+        booking.date,
+        booking.roomNumber
+      )
+      if (helper.code === errorCodes.slotNotFree) {
+        slotsThatAreNotFree.push(addedHrs[i])
+      }
+    }
+    if (slotsThatAreNotFree.length !== 0) {
+      return res.json({
+        code: errorCodes.slotNotFree,
+        error: `These slots are not free: ${slotsThatAreNotFree}`
+      })
+    }
+    const bookingDate = new Date(booking.date)
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
+    ]
+    const month = months[bookingDate.getMonth()]
+    for (i = 0; i < deductedHrs.length; i++) {
+      CalendarModel.destroy({
+        where: {
+          slot: deductedHrs[i],
+          date: bookingDate,
+          roomNumber: booking.roomNumber
+        }
+      })
+    }
+    for (i = 0; i < addedHrs.length; i++) {
+      CalendarModel.create({
+        dayNumber: bookingDate.getDate(),
+        month,
+        monthNumber: bookingDate.getMonth(),
+        year: bookingDate.getFullYear(),
+        slot: addedHrs[i],
+        status: slotStatus.PENDING,
+        date: bookingDate,
+        roomNumber: booking.roomNumber
+      })
+    }
+    const package = (await PackageModel.findOne({
+      where: { code: booking.packageCode }
+    })) || { remaining: 0, status: accountStatus.USED }
+    const addedPrice = addedHrs.length - deductedHrs.length
+    let newPrice = booking.price
+    console.log('addedPrice:', addedPrice)
+    if (addedPrice > 0) {
+      console.log('package:', package)
+      if (package.status !== accountStatus.USED) {
+        if (package.remaining - addedPrice > 0) {
+          newPrice = 0
+        } else {
+          const rate = await checkPrice(
+            booking.amountOfPeople,
+            booking.roomType,
+            -1 * (package.remaining - addedPrice),
+            null,
+            booking.accountId
+          )
+          newPrice = rate.price
+        }
+      } else {
+        const rate = await checkPrice(
+          booking.amountOfPeople,
+          booking.roomType,
+          addedPrice,
+          null,
+          booking.accountId
+        )
+        newPrice = rate.price + booking.price
+      }
+    } else {
+      if (booking.price > 0) {
+        const rate = await checkPrice(
+          booking.amountOfPeople,
+          booking.roomType,
+          addedPrice * -1,
+          null,
+          booking.accountId
+        )
+        newPrice = booking.price - rate.price
+      }
+    }
+    return res.json({ code: errorCodes.success, price: newPrice })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
 
 module.exports = {
   validate_booking,
@@ -744,5 +895,6 @@ module.exports = {
   booking_details,
   cancel_pending,
   edit_timing,
-  show_all_slots
+  show_all_slots,
+  validate_edit
 }
