@@ -49,7 +49,7 @@ router.post('/suspendAccount', verifyAdmin, suspend_account)
 router.post('/unsuspendAccount', verifyAdmin, unsuspend_account)
 router.post('/getAccounts', verifyAdmin, get_accounts)
 router.post('/getgoogleurl', urlGoogle) //request url google
-router.get('/getfacebookurl', get_url) //request url facebook
+router.post('/getfacebookurl', get_url) //request url facebook
 router.get('/facebookcallback', facebook_callback)
 router.post('/googlecallback', callback)
 router.post('/verifyemail', verifyToken, verifyUser, verify_email)

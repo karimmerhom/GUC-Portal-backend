@@ -75,6 +75,7 @@ const validate_booking = async (req, res) => {
         error: `These slots are not free: ${slotsThatAreNotFree}`
       })
     }
+    let discount = 0
     const price = await checkPrice(
       Booking.amountOfPeople,
       Booking.roomType,
@@ -88,10 +89,28 @@ const validate_booking = async (req, res) => {
         error: price.error
       })
     }
-
+    if (Booking.packageCode !== '') {
+      const priceBefore = await checkPrice(
+        Booking.amountOfPeople,
+        Booking.roomType,
+        slots.length,
+        '',
+        Account.id
+      )
+      if (price.code !== errorCodes.success) {
+        return res.json({
+          code: price.code,
+          error: price.error
+        })
+      }
+      if (price.price === 0) {
+        discount = 100
+      } else discount = 100 - (price.price / priceBefore.price) * 100
+    }
     return res.json({
       code: errorCodes.success,
-      price: price.price
+      price: price.price,
+      discount
     })
   } catch (exception) {
     console.log(exception)
@@ -416,21 +435,6 @@ const edit_booking = async (req, res) => {
       })
     }
     const { Booking } = req.body
-    // const { id } = req.data
-    // if (parseInt(id) !== parseInt(Account.id)) {
-    //   return res.json({ code: errorCodes.authentication, error: 'breach' })
-    // }
-    // const account = await AccountModel.findOne({
-    //   where: {
-    //     id: parseInt(id)
-    //   }
-    // })
-    // if (!account) {
-    //   return res.json({
-    //     code: errorCodes.invalidCredentials,
-    //     error: 'User not found'
-    //   })
-    // }
     const booking = await BookingModel.findOne({
       where: {
         id: Booking.id
@@ -452,6 +456,38 @@ const edit_booking = async (req, res) => {
       { status: Booking.status },
       { where: { id: Booking.id } }
     )
+    const bookingDate = new Date(booking.date)
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
+    ]
+    const month = months[bookingDate.getMonth()]
+    for (i = 0; i < booking.slot.length; i++) {
+      CalendarModel.update(
+        { status: slotStatus.BUSY },
+        {
+          where: {
+            dayNumber: bookingDate.getDate(),
+            month,
+            monthNumber: bookingDate.getMonth(),
+            year: bookingDate.getFullYear(),
+            slot: booking.slot[i],
+            date: bookingDate,
+            roomNumber: booking.roomNumber
+          }
+        }
+      )
+    }
     return res.json({ code: errorCodes.success })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })

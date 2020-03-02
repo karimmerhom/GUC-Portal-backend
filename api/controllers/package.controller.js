@@ -111,7 +111,7 @@ const create_package = async (req, res) => {
 
 const calculate_package_price = async (req, res) => {
   try {
-    const isValid = packageValidator.validateCreatePackage(req.body)
+    const isValid = packageValidator.validatePackage(req.body)
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
@@ -185,7 +185,15 @@ const calculate_package_price = async (req, res) => {
         }
       }
     }
-    return res.json({ code: errorCodes.success, price })
+    let discount = null
+    if (Package.flatRate) {
+      const priceWithFlatRate = await pricingModel.findOne({
+        where: { code: Package.flatRate }
+      })
+      discount =
+        100 - (price / (priceWithFlatRate.price * Package.numberOfHours)) * 100
+    }
+    return res.json({ code: errorCodes.success, price, discount })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }

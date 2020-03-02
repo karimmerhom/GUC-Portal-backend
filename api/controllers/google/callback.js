@@ -81,6 +81,7 @@ const getGoogleAccountFromCode = async (code, state) => {
       uri = googleAuth.loginURI
     }
     const auth = createConnection(uri)
+    console.log(auth)
 
     const data = await auth.getToken(code)
     const tokens = data.tokens

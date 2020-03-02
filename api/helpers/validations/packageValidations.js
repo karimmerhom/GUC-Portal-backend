@@ -41,6 +41,48 @@ const validateCreatePackage = request => {
   return joi.validate(request, schema)
 }
 
+const validatePackage = request => {
+  const schema = {
+    Package: joi
+      .object({
+        numberOfHours: joi
+          .number()
+          .positive()
+          .required(),
+        package: joi
+          .string()
+          .valid(
+            'MRSG10',
+            'MRSG30',
+            'MRSG50',
+            'TRSG10',
+            'TRSG30',
+            'TRSG50',
+            'MRLG10',
+            'MRLG30',
+            'MRLG50',
+            'TRLG10',
+            'TRLG30',
+            'TRLG50',
+            'MRFRSG',
+            'MRFRLG',
+            'TRFRSG',
+            'TRFRLG'
+          )
+          .required(),
+        roomType: joi.string().required(),
+        flatRate: joi.string().valid('MRFRSG', 'MRFRLG', 'TRFRSG', 'TRFRLG')
+      })
+      .required(),
+    Account: joi
+      .object({
+        id: joi.number().required()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
+
 const validateCancelSpecificPackage = request => {
   const schema = {
     Package: joi
@@ -159,5 +201,6 @@ module.exports = {
   validateEditPackageByCode,
   validateEditPackageByName,
   validateShowMyPackages,
-  validateGiftPackage
+  validateGiftPackage,
+  validatePackage
 }
