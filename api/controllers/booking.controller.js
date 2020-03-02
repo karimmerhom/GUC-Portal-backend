@@ -75,6 +75,7 @@ const validate_booking = async (req, res) => {
         error: `These slots are not free: ${slotsThatAreNotFree}`
       })
     }
+    let discount = 0
     const price = await checkPrice(
       Booking.amountOfPeople,
       Booking.roomType,
@@ -88,10 +89,28 @@ const validate_booking = async (req, res) => {
         error: price.error
       })
     }
-
+    if (Booking.packageCode !== '') {
+      const priceBefore = await checkPrice(
+        Booking.amountOfPeople,
+        Booking.roomType,
+        slots.length,
+        '',
+        Account.id
+      )
+      if (price.code !== errorCodes.success) {
+        return res.json({
+          code: price.code,
+          error: price.error
+        })
+      }
+      if (price.price === 0) {
+        discount = 100
+      } else discount = 100 - (price.price / priceBefore.price) * 100
+    }
     return res.json({
       code: errorCodes.success,
-      price: price.price
+      price: price.price,
+      discount
     })
   } catch (exception) {
     console.log(exception)
