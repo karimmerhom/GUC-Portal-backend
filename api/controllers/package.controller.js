@@ -200,20 +200,27 @@ const view_package_by_code = async (req, res) => {
         error: isValid.error.details[0].message
       })
     }
-    const { Package } = req.body
+    const { Package, Account } = req.body
     const package = await PackageModel.findOne({
       where: {
         code: Package.code
       }
     })
+    if (!package) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'Package not found'
+      })
+    }
     if (
-      package.accountId !== req.data.id &&
+      parseInt(package.accountId) !== parseInt(Account.id) &&
       req.data.type !== userTypes.ADMIN
     ) {
       return res.json({ code: errorCodes.unauthorized, error: 'breach' })
     }
     return res.json({ code: errorCodes.success, package })
   } catch (exception) {
+    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }

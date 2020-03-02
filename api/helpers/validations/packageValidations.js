@@ -70,7 +70,7 @@ const validateViewPackageByCode = request => {
         code: joi.string().required()
       })
       .required(),
-    Account: joi.object({ id: joi.number() }).required()
+    Account: joi.object({ id: joi.number().required() }).required()
   }
   return joi.validate(request, schema)
 }

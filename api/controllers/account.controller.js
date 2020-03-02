@@ -124,6 +124,8 @@ const register = async (req, res) => {
             }
           }
         })
+        gift_package(5, 'meeting room', parseInt(id))
+        gift_package(5, 'training room', parseInt(id))
         return res.json({ code: errorCodes.success })
       })
       .catch(err => {
@@ -627,8 +629,6 @@ const confirm_verify = async (req, res) => {
           }
         }
       )
-      gift_package(5, 'meeting room', parseInt(id))
-      gift_package(5, 'training room', parseInt(id))
       return res.json({
         code: errorCodes.success,
         state: accountStatus.VERIFIED
