@@ -124,8 +124,8 @@ const register = async (req, res) => {
             }
           }
         })
-        gift_package(5, 'meeting room', parseInt(id))
-        gift_package(5, 'training room', parseInt(id))
+        gift_package(5, 'meeting room', parseInt(accountCreated.id))
+        gift_package(5, 'training room', parseInt(accountCreated.id))
         return res.json({ code: errorCodes.success })
       })
       .catch(err => {
