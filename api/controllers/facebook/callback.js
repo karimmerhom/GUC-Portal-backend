@@ -1,13 +1,34 @@
 var queryString = require('querystring')
 const { facebookAuth } = require('../../../config/keys')
 const axios = require('axios')
-var { client_id, client_secret, redirect_uri } = facebookAuth
+var {
+  client_id,
+  client_secret,
+  redirect_uri_login,
+  redirect_uri_sign_up
+} = facebookAuth
 const errorCodes = require('../../constants/errorCodes')
+const validator = require('../../helpers/validations/accountValidations')
 
 const get_url = (req, res) => {
+  const isValid = validator.validateCallbackGoogle(req.body)
+  if (isValid.error) {
+    return res.json({
+      code: errorCodes.validation,
+      error: isValid.error.details[0].message
+    })
+  }
+  let uri
+  const { state } = req.body
+  if (state === 'signUp') {
+    uri = redirect_uri_login
+  }
+  if (state === 'signIn') {
+    uri = redirect_uri_sign_up
+  }
   const stringifiedParams = queryString.stringify({
     client_id,
-    redirect_uri,
+    redirect_uri: uri,
     scope: ['email', 'user_friends'].join(','), // comma seperated string
     response_type: 'code',
     auth_type: 'rerequest',
