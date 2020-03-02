@@ -60,6 +60,12 @@ const callback = async (req, res) => {
       error: isValid.error.details[0].message
     })
   }
+  if (!req.query.code) {
+    return res.json({
+      code: errorCodes.validation,
+      error: 'Missing code'
+    })
+  }
   const { state } = req.body
   const info = await getGoogleAccountFromCode(req.query.code, state)
   return res.json({ info })
