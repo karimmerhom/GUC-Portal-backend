@@ -11,7 +11,6 @@ const create_event = async (req, res) => {
   try {
     if (IsJsonString(req.body.Event)) {
       req.body.Event = JSON.parse(req.body.Event)
-      req.body.Account = JSON.parse(req.body.Account)
     }
     const isValid = validator.validateCreateEvent(req.body)
     if (isValid.error) {
@@ -78,7 +77,7 @@ const create_event = async (req, res) => {
 
     request(
       {
-        url: 'http://localhost:2000/emailservice/sendemailattachment',
+        url: 'https://cubexs.net/emailservice/sendemailattachment',
         method: 'POST',
         formData: data,
         json: true
