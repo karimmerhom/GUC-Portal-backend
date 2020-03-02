@@ -77,7 +77,7 @@ const create_event = async (req, res) => {
 
     request(
       {
-        url: 'http://localhost:2000/emailservice/sendemailattachment',
+        url: 'https://cubexs.net/emailservice/sendemailattachment',
         method: 'POST',
         formData: data,
         json: true
