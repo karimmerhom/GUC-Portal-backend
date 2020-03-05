@@ -562,6 +562,177 @@ const login_google = async (req, res) => {
   }
 }
 
+const register_facebook = async (req, res) => {
+  try {
+    const isValid = validator.validateAccountGoogle(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Account } = req.body
+    const account = await AccountModel.findOne({
+      where: { facebookId: Account.id }
+    })
+    if (account) {
+      return res.json({
+        code: errorCodes.emailExists,
+        error: 'Account already exists'
+      })
+    }
+    const findEmail = await AccountModel.findOne({
+      where: { email: Account.email.toString().toLowerCase() }
+    })
+    if (findEmail) {
+      return res.json({
+        code: errorCodes.emailExists,
+        error: 'Email already exists'
+      })
+    }
+    const findUsername = await AccountModel.findOne({
+      where: { username: Account.username.toString().toLowerCase() }
+    })
+    if (findUsername) {
+      return res.json({
+        code: errorCodes.emailExists,
+        error: 'Username already exists'
+      })
+    }
+    const findPhone = await AccountModel.findOne({
+      where: { phone: Account.phoneNumber }
+    })
+    if (findPhone) {
+      return res.json({
+        code: errorCodes.emailExists,
+        error: 'Phone number already exists'
+      })
+    }
+    const code = await generateOTP()
+    await VerificationCode.create({
+      code,
+      date: new Date()
+    })
+    const accountCreated = await AccountModel.create({
+      username: Account.username.toString().toLowerCase(),
+      firstName: Account.firstName,
+      lastName: Account.lastName,
+      phone: Account.phoneNumber,
+      email: Account.email.toString().toLowerCase(),
+      status: accountStatus.PENDING,
+      type: userTypes.USER,
+      verificationCode: code,
+      facebookId: Account.id
+    })
+    return await axios({
+      method: 'post',
+      url: 'https://cubexs.net/contacts/createcontact',
+      data: {
+        header: {
+          accessKey: contactAccessKey
+        },
+        body: {
+          firstName: Account.firstName,
+          lastName: Account.lastName,
+          email: Account.email,
+          phoneNumber: Account.phoneNumber,
+          ownerId: parseInt(accountCreated.id),
+          facebookId: Account.id
+        }
+      }
+    })
+      .then(resp => {
+        const link =
+          'https://cubexs.net/tbhapp/accounts/confirmverifyemail' + code
+        axios({
+          method: 'post',
+          url: 'https://cubexs.net/emailservice/sendemail',
+          data: {
+            header: {
+              accessKey: emailAccessKey
+            },
+            body: {
+              receiverMail: accountCreated.email,
+              body: link,
+              subject: 'Verify your email'
+            }
+          }
+        })
+        axios({
+          method: 'post',
+          url: 'https://cubexs.net/epushservice/sendsms',
+          data: {
+            header: {
+              accessKey: smsAccessKey
+            },
+            body: {
+              receiverPhone: accountCreated.phone,
+              body: accountCreated.verificationCode
+            }
+          }
+        })
+        return res.json({ code: errorCodes.success })
+      })
+      .catch(err => {
+        AccountModel.destroy({ where: { id: accountCreated.id } })
+        console.log(err)
+        return res.json({
+          code: errorCodes.unknown,
+          error: 'Something went wrong'
+        })
+      })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const login_facebook = async (req, res) => {
+  try {
+    const isValid = validator.validateLoginGoogle(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Account } = req.body
+    const account = await AccountModel.findOne({
+      where: { facebookId: Account.id }
+    })
+    if (!account) {
+      return res.json({
+        code: errorCodes.emailExists,
+        error: 'User not found'
+      })
+    }
+    const payLoad = {
+      id: account.id,
+      firstName: account.firstName,
+      lastName: account.lastName,
+      username: account.username,
+      phone: account.phone,
+      email: account.email,
+      status: account.status,
+      type: account.type
+    }
+
+    const token = jwt.sign(payLoad, secretOrKey, {
+      expiresIn: '999999h'
+    })
+
+    return res.json({
+      code: errorCodes.success,
+      token,
+      id: account.id,
+      username: account.username,
+      state: account.status
+    })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
 const confirm_verify = async (req, res) => {
   try {
     const { Account } = req.body
@@ -1083,5 +1254,7 @@ module.exports = {
   verify_email,
   register_google,
   login_google,
-  make_user_verified
+  make_user_verified,
+  register_facebook,
+  login_facebook
 }

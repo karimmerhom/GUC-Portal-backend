@@ -21,7 +21,9 @@ const {
   verify_email,
   verify_confirm_email,
   register_google,
-  login_google
+  login_google,
+  register_facebook,
+  login_facebook
 } = accountController
 
 const {
@@ -52,9 +54,11 @@ router.post('/getgoogleurl', urlGoogle) //request url google
 router.post('/getfacebookurl', get_url) //request url facebook
 router.get('/facebookcallback', facebook_callback)
 router.post('/googlecallback', callback)
-router.post('/verifyemail', verifyToken, verifyUser, verify_email)
 router.post('/registergoogle', register_google)
 router.post('/logingoogle', login_google)
+router.post('/registerfacebook', register_facebook)
+router.post('/loginfacebook', login_facebook)
+router.post('/verifyemail', verifyToken, verifyUser, verify_email)
 router.get('/confirmverifyemail:verificationCode', verify_confirm_email)
 
 module.exports = router

@@ -28,7 +28,7 @@ const get_url = (req, res) => {
   }
   const stringifiedParams = queryString.stringify({
     client_id,
-    redirect_uri: uri,
+    redirect_uri: 'http://localhost:5000',
     scope: ['email', 'user_friends'].join(','), // comma seperated string
     response_type: 'code',
     auth_type: 'rerequest',
@@ -56,7 +56,7 @@ async function getAccessTokenFromCode(code) {
       params: {
         client_id,
         client_secret,
-        redirect_uri,
+        redirect_uri: 'http://localhost:5000/',
         code
       }
     })
@@ -67,7 +67,8 @@ async function getAccessTokenFromCode(code) {
     const data = await getFacebookUserData(access_token)
     return data
   } catch (exception) {
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+    console.log(exception)
+    return { code: errorCodes.unknown, error: 'Something went wrong' }
   }
 }
 async function getFacebookUserData(accesstoken) {
@@ -89,7 +90,7 @@ async function getFacebookUserData(accesstoken) {
     })
     return { facebookId, firstName, lastName, email }
   } catch (exception) {
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+    return { code: errorCodes.unknown, error: 'Something went wrong' }
   }
 }
 
