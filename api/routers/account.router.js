@@ -52,7 +52,7 @@ router.post('/unsuspendAccount', verifyAdmin, unsuspend_account)
 router.post('/getAccounts', verifyAdmin, get_accounts)
 router.post('/getgoogleurl', urlGoogle) //request url google
 router.post('/getfacebookurl', get_url) //request url facebook
-router.get('/facebookcallback', facebook_callback)
+router.post('/facebookcallback', facebook_callback)
 router.post('/googlecallback', callback)
 router.post('/registergoogle', register_google)
 router.post('/logingoogle', login_google)
