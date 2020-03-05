@@ -77,6 +77,7 @@ async function getAccessTokenFromCode(code, state) {
       }
     })
       .then(res => {
+        console.log(res)
         access_token = res.data.access_token
       })
       .catch(err => console.log(err))
