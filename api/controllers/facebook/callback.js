@@ -65,6 +65,7 @@ async function getAccessTokenFromCode(code, state) {
     if (state === 'signIn') {
       uri = redirect_uri_login
     }
+    console.log(uri, state, code)
     await axios({
       url: 'https://graph.facebook.com/v4.0/oauth/access_token',
       method: 'get',
