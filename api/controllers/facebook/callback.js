@@ -21,14 +21,14 @@ const get_url = (req, res) => {
   let uri
   const { state } = req.body
   if (state === 'signUp') {
-    uri = redirect_uri_login
+    uri = redirect_uri_sign_up
   }
   if (state === 'signIn') {
-    uri = redirect_uri_sign_up
+    uri = redirect_uri_login
   }
   const stringifiedParams = queryString.stringify({
     client_id,
-    redirect_uri: 'http://localhost:5000',
+    redirect_uri: uri,
     scope: ['email', 'user_friends'].join(','), // comma seperated string
     response_type: 'code',
     auth_type: 'rerequest',
@@ -40,23 +40,37 @@ const get_url = (req, res) => {
 
 const facebook_callback = async (req, res) => {
   try {
-    const data = await getAccessTokenFromCode(req.query.code)
+    const isValid = validator.validateCallbackGoogle(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { state } = req.body
+    const data = await getAccessTokenFromCode(req.query.code, state)
     return res.json({ code: errorCodes.success, data })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 
-async function getAccessTokenFromCode(code) {
+async function getAccessTokenFromCode(code, state) {
   try {
     let access_token
+    if (state === 'signUp') {
+      uri = redirect_uri_sign_up
+    }
+    if (state === 'signIn') {
+      uri = redirect_uri_login
+    }
     await axios({
       url: 'https://graph.facebook.com/v4.0/oauth/access_token',
       method: 'get',
       params: {
         client_id,
         client_secret,
-        redirect_uri: 'http://localhost:5000/',
+        redirect_uri: uri,
         code
       }
     })
