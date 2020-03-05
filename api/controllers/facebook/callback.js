@@ -58,6 +58,7 @@ const facebook_callback = async (req, res) => {
 async function getAccessTokenFromCode(code, state) {
   try {
     let access_token
+    let uri
     if (state === 'signUp') {
       uri = redirect_uri_sign_up
     }
