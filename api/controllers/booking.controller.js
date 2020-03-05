@@ -417,7 +417,8 @@ const show_my_bookings = async (req, res) => {
       amountOfPeople: element.amountOfPeople,
       paymentMethod: element.paymentMethod,
       packageCode: element.packageCode,
-      status: element.status
+      status: element.status,
+      roomNumber: element.roomNumber
     }))
     return res.json({ code: errorCodes.success, bookings: bookingstoShow })
   } catch (exception) {
