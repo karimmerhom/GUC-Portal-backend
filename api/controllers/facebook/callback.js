@@ -99,6 +99,7 @@ async function getFacebookUserData(accesstoken) {
         access_token: accesstoken
       }
     }).then(res => {
+      console.log(res)
       let { data } = res
       facebookId = data.id
       firstName = data.first_name
