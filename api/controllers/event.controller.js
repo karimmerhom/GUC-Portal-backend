@@ -2,7 +2,9 @@ const request = require('request')
 const fs = require('fs')
 
 const EventModel = require('../../models/events.model')
+const AccountModel = require('../../models/account.model')
 const errorCodes = require('../constants/errorCodes')
+const { accountStatus } = require('../constants/TBH.enum')
 const validator = require('../helpers/validations/bookingValidations')
 const { emailAccessKey } = require('../../config/keys')
 const { IsJsonString } = require('../helpers/helpers')
@@ -20,6 +22,19 @@ const create_event = async (req, res) => {
       })
     }
     const { Account, Event } = req.body
+    const account = await AccountModel.findOne({ where: { id: Account.id } })
+    if (!account) {
+      return res.json({
+        code: errorCodes.invalidCredentials,
+        error: 'User not found'
+      })
+    }
+    if (account.status !== accountStatus.VERIFIED) {
+      return res.json({
+        code: errorCodes.unVerified,
+        error: 'Account must be verified'
+      })
+    }
     const dateCheck =
       new Date().setHours(0, 0, 0, 0) -
       new Date(Event.dateFrom).setHours(0, 0, 0, 0)
