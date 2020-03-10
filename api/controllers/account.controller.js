@@ -95,8 +95,7 @@ const register = async (req, res) => {
       }
     })
       .then(resp => {
-        const link =
-          'https://cubexs.net/tbhapp/accounts/confirmverifyemail' + code
+        const link = 'https://cubexs.net/login?code=' + code
         axios({
           method: 'post',
           url: 'https://cubexs.net/emailservice/sendemail',
@@ -281,9 +280,7 @@ const verify_email = async (req, res) => {
         code: 'Email already verified'
       })
     }
-    const link =
-      'https://cubexs.net/tbhapp/accounts/confirmverifyemail' +
-      account.verificationCode
+    const link = 'https://cubexs.net/login?code=' + account.verificationCode
     axios({
       method: 'post',
       url: 'https://cubexs.net/emailservice/sendemail',
@@ -472,8 +469,7 @@ const register_google = async (req, res) => {
       }
     })
       .then(resp => {
-        const link =
-          'https://cubexs.net/tbhapp/accounts/confirmverifyemail' + code
+        const link = 'https://cubexs.net/login?code=' + code
         axios({
           method: 'post',
           url: 'https://cubexs.net/emailservice/sendemail',
@@ -642,8 +638,7 @@ const register_facebook = async (req, res) => {
       }
     })
       .then(resp => {
-        const link =
-          'https://cubexs.net/tbhapp/accounts/confirmverifyemail' + code
+        const link = 'https://cubexs.net/login?code=' + code
         axios({
           method: 'post',
           url: 'https://cubexs.net/emailservice/sendemail',
