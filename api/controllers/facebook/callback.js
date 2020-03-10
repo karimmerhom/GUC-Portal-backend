@@ -65,7 +65,6 @@ async function getAccessTokenFromCode(code, state) {
     if (state === 'signIn') {
       uri = redirect_uri_login
     }
-    console.log(uri, state, code)
     await axios({
       url: 'https://graph.facebook.com/v4.0/oauth/access_token',
       method: 'get',
@@ -77,14 +76,12 @@ async function getAccessTokenFromCode(code, state) {
       }
     })
       .then(res => {
-        console.log(res)
         access_token = res.data.access_token
       })
       .catch(err => console.log(err))
     const data = await getFacebookUserData(access_token)
     return data
   } catch (exception) {
-    console.log(exception)
     return { code: errorCodes.unknown, error: 'Something went wrong' }
   }
 }
@@ -99,7 +96,6 @@ async function getFacebookUserData(accesstoken) {
         access_token: accesstoken
       }
     }).then(res => {
-      console.log(res)
       let { data } = res
       facebookId = data.id
       firstName = data.first_name

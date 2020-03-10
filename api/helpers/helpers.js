@@ -121,6 +121,12 @@ const checkPrice = async (
     if (package.status === accountStatus.USED || package.remaining === 0) {
       return { code: errorCodes.packageUsed, error: 'Package used' }
     }
+    if (package.roomType !== roomType) {
+      return {
+        code: errorCodes.invalidPackage,
+        error: 'Invalid room type for this package'
+      }
+    }
     newHours = hours - package.remaining
     if (newHours > 0) {
       price = await checkPrice(amountOfPeople, roomType, newHours, '', '')

@@ -372,7 +372,6 @@ const add_booking = async (req, res) => {
     })
     return res.json({ code: errorCodes.success })
   } catch (exception) {
-    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
