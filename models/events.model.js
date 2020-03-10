@@ -2,6 +2,8 @@ const Sequelize = require('sequelize')
 
 const sequelize = require('../config/DBConfig')
 
+const { invitationStatus } = require('../api/constants/TBH.enum')
+
 const { Model } = Sequelize
 const AccountModel = require('./account.model')
 
@@ -25,6 +27,15 @@ Event.init(
     },
     price: {
       type: Sequelize.FLOAT
+    },
+    state: {
+      type: Sequelize.ENUM,
+      values: [
+        invitationStatus.ACCEPTED,
+        invitationStatus.REJECTED,
+        invitationStatus.PENDING
+      ],
+      defaultValue: invitationStatus.PENDING
     }
   },
   {

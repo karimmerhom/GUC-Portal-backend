@@ -69,9 +69,29 @@ const validateEditRegisterToEvent = request => {
   return joi.validate(request, schema)
 }
 
+const validateEditEventAdmin = request => {
+  const schema = {
+    Event: joi
+      .object({
+        id: joi.number().required(),
+        state: joi
+          .string()
+          .valid(
+            invitationStatus.ACCEPTED,
+            invitationStatus.REJECTED,
+            invitationStatus.PENDING
+          )
+          .required()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
+
 module.exports = {
   validateInviteToEvent,
   validateCreateEvent,
   validateRegisterToEvent,
-  validateEditRegisterToEvent
+  validateEditRegisterToEvent,
+  validateEditEventAdmin
 }

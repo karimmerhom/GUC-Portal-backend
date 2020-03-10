@@ -154,10 +154,15 @@ const invite_to_event = async (req, res) => {
         error: 'Event not found'
       })
     }
+    if (findEvent.state !== invitationStatus.ACCEPTED) {
+      return res.json({
+        code: errorCodes.EventNotActive,
+        error: 'Event not active'
+      })
+    }
     const findInvitation = await InvitationsModel.findOne({
       where: { accountId: Account.id, inviteeId: Invitee.id, eventId: Event.id }
     })
-    console.log(findInvitation)
     if (findInvitation) {
       return res.json({
         code: errorCodes.invitationAlreadyExists,
@@ -171,7 +176,6 @@ const invite_to_event = async (req, res) => {
     })
     return res.json({ code: errorCodes.success })
   } catch (exception) {
-    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -205,6 +209,12 @@ const register_to_event = async (req, res) => {
       return res.json({
         code: errorCodes.entityNotFound,
         error: 'Event not found'
+      })
+    }
+    if (findEvent.state !== invitationStatus.ACCEPTED) {
+      return res.json({
+        code: errorCodes.EventNotActive,
+        error: 'Event not active'
       })
     }
     const findRegisteration = await RegisterationModel.findOne({
@@ -256,9 +266,85 @@ const edit_registeration_admin = async (req, res) => {
       })
     }
     await RegisterationModel.update(
-      { state: invitationStatus.REGISTERED },
+      { state: Event.state },
       { where: { accountId: Account.id, eventId: Event.id } }
     )
+    return res.json({ code: errorCodes.success })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+// const accept_reject_invitation = async (req, res) => {
+//   try {
+//     const isValid = validator.validateInviteToEvent(req.body)
+//     if (isValid.error) {
+//       return res.json({
+//         code: errorCodes.validation,
+//         error: isValid.error.details[0].message
+//       })
+//     }
+//     const { Account } = req.body
+//     const account = await AccountModel.findOne({ where: { id: Account.id } })
+
+//     if (!account) {
+//       return res.json({
+//         code: errorCodes.invalidCredentials,
+//         error: 'User not found'
+//       })
+//     }
+//     if (account.status !== accountStatus.VERIFIED) {
+//       return res.json({
+//         code: errorCodes.unVerified,
+//         error: 'Account must be verified'
+//       })
+//     }
+
+//     const findInvitation = await InvitationsModel.findOne({
+//       where: { accountId: Account.id, inviteeId: Account.id, eventId: Event.id }
+//     })
+//     if (!findInvitation) {
+//       return res.json({
+//         code: errorCodes.entityNotFound,
+//         error: 'No invitation found'
+//       })
+//     }
+//     await InvitationsModel.update(
+//       { state: Account.state },
+//       {
+//         where: {
+//           accountId: Account.id,
+//           inviteeId: Invitee.id,
+//           eventId: Event.id
+//         }
+//       }
+//     )
+//     return res.json({ code: errorCodes.success })
+//   } catch (exception) {
+//     console.log(exception)
+//     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+//   }
+// }
+
+const edit_event_admin = async (req, res) => {
+  try {
+    const isValid = validator.validateEditEventAdmin(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Event } = req.body
+    const findEvent = await EventModel.findOne({
+      where: { id: Event.id }
+    })
+    if (!findEvent) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'Event not found'
+      })
+    }
+    await EventModel.update({ state: Event.state }, { where: { id: Event.id } })
     return res.json({ code: errorCodes.success })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
@@ -269,5 +355,6 @@ module.exports = {
   create_event,
   invite_to_event,
   register_to_event,
-  edit_registeration_admin
+  edit_registeration_admin,
+  edit_event_admin
 }
