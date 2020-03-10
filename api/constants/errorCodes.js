@@ -54,6 +54,8 @@ const contactsError = 126
 
 const underAge = 127
 
+const invitationAlreadyExists = 128
+
 module.exports = {
   success,
   validation,
@@ -82,5 +84,6 @@ module.exports = {
   bookingConfirmed,
   alreadySuspended,
   contactsError,
-  underAge
+  underAge,
+  invitationAlreadyExists
 }

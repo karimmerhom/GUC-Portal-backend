@@ -297,7 +297,6 @@ const verify_email = async (req, res) => {
     })
     return res.json({ code: errorCodes.success })
   } catch (exception) {
-    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -308,6 +307,7 @@ const verify_confirm_email = async (req, res) => {
       { emailVerified: true },
       { where: { verificationCode } }
     )
+
     return res.json({ code: errorCodes.success })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })

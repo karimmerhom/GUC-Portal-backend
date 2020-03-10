@@ -197,7 +197,7 @@ const eraseDatabaseOnSyncContacts = async () => {
   try {
     await axios({
       method: 'post',
-      url: 'http://localhost:2003/contacts/dropdatabase',
+      url: 'https://cubexs.net/contacts/dropdatabase',
       data: {
         header: {
           accessKey: contactAccessKey

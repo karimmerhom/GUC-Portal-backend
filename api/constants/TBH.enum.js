@@ -58,6 +58,13 @@ const roomPricing = {
   }
 }
 
+const invitationStatus = {
+  ACCEPTED: 'accepted',
+  REJECTED: 'rejected',
+  PENDING: 'pending',
+  REGISTERED: 'registered'
+}
+
 module.exports = {
   accountStatus,
   paymentMethods,
@@ -65,5 +72,6 @@ module.exports = {
   verificationMethods,
   slotStatus,
   roomPricing,
-  userTypes
+  userTypes,
+  invitationStatus
 }
