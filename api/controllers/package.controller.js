@@ -358,6 +358,68 @@ const gift_package = async (req, res) => {
   }
 }
 
+const cancel_pending = async (req, res) => {
+  try {
+    const isValid = packageValidator.validateCancelPackage(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Package, Account } = req.body
+    const account = await accountModel.findOne({
+      where: { id: Account.id }
+    })
+    if (!account) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'User not found'
+      })
+    }
+    if (account.status !== accountStatus.VERIFIED) {
+      return res.json({
+        code: errorCodes.unVerified,
+        error: 'Account must be verified'
+      })
+    }
+    const package = await PackageModel.findOne({
+      where: {
+        code: Package.code
+      }
+    })
+    if (!package) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'Package not found'
+      })
+    }
+    if (package.accountId !== Account.id && req.data.type !== userTypes.ADMIN) {
+      return res.json({ code: errorCodes.authentication, error: 'breach' })
+    }
+    if (package.status === accountStatus.CONFIRMED) {
+      return res.json({
+        code: errorCodes.bookingConfirmed,
+        error: 'Cannot edit a confirmed package'
+      })
+    }
+    if (package.status === accountStatus.CANCELED) {
+      return res.json({
+        code: errorCodes.bookingCanceled,
+        error: 'Cannot edit a canceled booking'
+      })
+    }
+    await PackageModel.update(
+      { status: accountStatus.CANCELED },
+      { where: { code: Package.code } }
+    )
+    return res.json({ code: errorCodes.success })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
 module.exports = {
   create_package,
   view_package_by_code,
@@ -366,5 +428,6 @@ module.exports = {
   view_pricings,
   view_packages_for_user,
   view_all_packages,
-  gift_package
+  gift_package,
+  cancel_pending
 }

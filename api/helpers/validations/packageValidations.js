@@ -192,6 +192,26 @@ const validateGiftPackage = request => {
   return joi.validate(request, schema)
 }
 
+const validateCancelPackage = request => {
+  const schema = {
+    Package: joi
+      .object({
+        code: joi.string().required(),
+        status: joi
+          .string()
+          .valid('canceled')
+          .required()
+      })
+      .required(),
+    Account: joi
+      .object({
+        id: joi.number().required()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
+
 module.exports = {
   validateCreatePackage,
   validateCancelAllPackages,
@@ -202,5 +222,6 @@ module.exports = {
   validateEditPackageByName,
   validateShowMyPackages,
   validateGiftPackage,
-  validatePackage
+  validatePackage,
+  validateCancelPackage
 }

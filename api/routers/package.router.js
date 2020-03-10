@@ -11,7 +11,8 @@ const {
   view_pricings,
   view_packages_for_user,
   view_all_packages,
-  gift_package
+  gift_package,
+  cancel_pending
 } = packageController
 
 const { verifyUser } = require('../../config/authUser')
@@ -36,5 +37,6 @@ router.post(
 )
 router.post('/viewallpackages', verifyAdmin, view_all_packages)
 router.post('/giftpackage', verifyAdmin, gift_package)
+router.post('/cancelpackage', verifyToken, verifyUser, cancel_pending)
 
 module.exports = router
