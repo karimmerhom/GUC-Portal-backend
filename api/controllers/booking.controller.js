@@ -768,6 +768,7 @@ const edit_timing = async (req, res) => {
         price: newPrice,
         slot: Booking.slot,
         status: bookingStatus,
+        date: newBookingDate,
         dateModified: new Date()
       },
       { where: { id: booking.id } }
