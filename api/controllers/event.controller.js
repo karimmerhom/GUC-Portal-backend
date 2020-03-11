@@ -10,7 +10,11 @@ const errorCodes = require('../constants/errorCodes')
 const { accountStatus, invitationStatus } = require('../constants/TBH.enum')
 const validator = require('../helpers/validations/eventValidations')
 const { emailAccessKey } = require('../../config/keys')
-const { IsJsonString, sendEmailsToInQueue } = require('../helpers/helpers')
+const {
+  IsJsonString,
+  sendEmailsToInQueue,
+  cancelAllRegisterations
+} = require('../helpers/helpers')
 
 const create_event_form = async (req, res) => {
   try {
@@ -230,17 +234,6 @@ const register_to_event = async (req, res) => {
         error: 'Event not found'
       })
     }
-    if (findEvent.amountOfPeople + 1 > findEvent.maxNoOfPeople) {
-      await RegisterationModel.create({
-        accountId: Account.id,
-        eventId: Event.id,
-        state: invitationStatus.INQUEUE
-      })
-      return res.json({
-        code: errorCodes.reachedMaximumAmountOfPeopleEvent,
-        error: 'This event has no remaining places left'
-      })
-    }
     if (findEvent.state !== invitationStatus.ACCEPTED) {
       return res.json({
         code: errorCodes.EventNotActive,
@@ -252,13 +245,25 @@ const register_to_event = async (req, res) => {
     })
     if (
       findRegisteration &&
-      findRegisteration.state === invitationStatus.PENDING
+      findRegisteration.state !== invitationStatus.INQUEUE
     ) {
       return res.json({
         code: errorCodes.invitationAlreadyExists,
         error: 'You already tried to register to this event'
       })
     }
+    if (findEvent.amountOfPeople + 1 > findEvent.maxNoOfPeople) {
+      await RegisterationModel.create({
+        accountId: Account.id,
+        eventId: Event.id,
+        state: invitationStatus.INQUEUE
+      })
+      return res.json({
+        code: errorCodes.reachedMaximumAmountOfPeopleEvent,
+        error: 'This event has no remaining places left'
+      })
+    }
+
     if (
       findRegisteration &&
       findRegisteration.state === invitationStatus.INQUEUE
@@ -273,10 +278,11 @@ const register_to_event = async (req, res) => {
         }
       )
     } else {
-      await RegisterationModel.create({
-        accountId: Account.id,
-        eventId: Event.id
-      })
+      if (!findRegisteration)
+        await RegisterationModel.create({
+          accountId: Account.id,
+          eventId: Event.id
+        })
     }
     await EventModel.update(
       { amountOfPeople: findEvent.amountOfPeople + 1 },
@@ -464,6 +470,9 @@ const edit_event_admin = async (req, res) => {
       })
     }
     await EventModel.update({ state: Event.state }, { where: { id: Event.id } })
+    if (Event.state === invitationStatus.REJECTED) {
+      cancelAllRegisterations(Event.id)
+    }
     return res.json({ code: errorCodes.success })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })

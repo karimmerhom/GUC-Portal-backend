@@ -274,6 +274,17 @@ const sendEmailsToInQueue = async (eventId, eventName) => {
   return { code: errorCodes.success }
 }
 
+const cancelAllRegisterations = async eventId => {
+  await RegisterationModel.update(
+    { state: invitationStatus.REJECTED },
+    {
+      where: {
+        eventId
+      }
+    }
+  )
+  return { code: errorCodes.success }
+}
 function underAgeValidate(birthday) {
   // set current day on 01:00:00 hours GMT+0100 (CET)
   var currentDate = new Date().toJSON().slice(0, 10) + ' 01:00:00'
@@ -306,5 +317,6 @@ module.exports = {
   gift_package,
   underAgeValidate,
   IsJsonString,
-  sendEmailsToInQueue
+  sendEmailsToInQueue,
+  cancelAllRegisterations
 }
