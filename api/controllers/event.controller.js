@@ -1,7 +1,8 @@
 const request = require('request')
 const fs = require('fs')
-
-const EventModel = require('../../models/events.model')
+const axios = require('axios')
+const EventFormModel = require('../../models/eventForm.model')
+const EventModel = require('../../models/event.model')
 const InvitationsModel = require('../../models/invitations.model')
 const RegisterationModel = require('../../models/register.model')
 const AccountModel = require('../../models/account.model')
@@ -9,9 +10,9 @@ const errorCodes = require('../constants/errorCodes')
 const { accountStatus, invitationStatus } = require('../constants/TBH.enum')
 const validator = require('../helpers/validations/eventValidations')
 const { emailAccessKey } = require('../../config/keys')
-const { IsJsonString } = require('../helpers/helpers')
+const { IsJsonString, sendEmailsToInQueue } = require('../helpers/helpers')
 
-const create_event = async (req, res) => {
+const create_event_form = async (req, res) => {
   try {
     if (IsJsonString(req.body.Event)) {
       req.body.Event = JSON.parse(req.body.Event)
@@ -51,7 +52,7 @@ const create_event = async (req, res) => {
     }
     const text = `A new event announcement \nEvent name: ${Event.name} \nDate of event: From: ${Event.dateFrom}, To: ${Event.dateTo} 
     \nDescription: ${Event.description} \nType: ${Event.type} \nPrice: ${Event.price}`
-    EventModel.create({
+    EventFormModel.create({
       accountId: Account.id,
       name: Event.name,
       type: Event.type,
@@ -174,8 +175,26 @@ const invite_to_event = async (req, res) => {
       inviteeId: Invitee.id,
       eventId: Event.id
     })
+    if (inviteeAccount.emailVerified)
+      axios({
+        method: 'post',
+        url: 'https://cubexs.net/emailservice/sendemail',
+        data: {
+          header: {
+            accessKey: emailAccessKey
+          },
+          body: {
+            receiverMail: inviteeAccount.email,
+            body: `${account.firstName} has invited you to this event \n link`,
+            subject: 'Invitation to an event'
+          }
+        }
+      })
+        .then(res => console.log(res))
+        .catch(err => console.log(err))
     return res.json({ code: errorCodes.success })
   } catch (exception) {
+    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -211,6 +230,17 @@ const register_to_event = async (req, res) => {
         error: 'Event not found'
       })
     }
+    if (findEvent.amountOfPeople + 1 > findEvent.maxNoOfPeople) {
+      await RegisterationModel.create({
+        accountId: Account.id,
+        eventId: Event.id,
+        state: invitationStatus.INQUEUE
+      })
+      return res.json({
+        code: errorCodes.reachedMaximumAmountOfPeopleEvent,
+        error: 'This event has no remaining places left'
+      })
+    }
     if (findEvent.state !== invitationStatus.ACCEPTED) {
       return res.json({
         code: errorCodes.EventNotActive,
@@ -229,51 +259,85 @@ const register_to_event = async (req, res) => {
         error: 'You already tried to register to this event'
       })
     }
-    await RegisterationModel.create({
-      accountId: Account.id,
-      eventId: Event.id
-    })
-    return res.json({ code: errorCodes.success })
-  } catch (exception) {
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
-  }
-}
-
-const edit_registeration_admin = async (req, res) => {
-  try {
-    const isValid = validator.validateEditRegisterToEvent(req.body)
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message
+    if (
+      findRegisteration &&
+      findRegisteration.state === invitationStatus.INQUEUE
+    ) {
+      await RegisterationModel.update(
+        { state: invitationStatus.PENDING },
+        {
+          where: {
+            accountId: Account.id,
+            eventId: Event.id
+          }
+        }
+      )
+    } else {
+      await RegisterationModel.create({
+        accountId: Account.id,
+        eventId: Event.id
       })
     }
-    const { Account, Event } = req.body
-    const account = await AccountModel.findOne({ where: { id: Account.id } })
-    if (!account) {
-      return res.json({
-        code: errorCodes.invalidCredentials,
-        error: 'User not found'
-      })
-    }
-    const findRegisteration = await RegisterationModel.findOne({
-      where: { accountId: Account.id, eventId: Event.id }
-    })
-    if (!findRegisteration) {
-      return res.json({
-        code: errorCodes.entityNotFound,
-        error: 'No registeration for this user'
-      })
-    }
-    await RegisterationModel.update(
-      { state: Event.state },
-      { where: { accountId: Account.id, eventId: Event.id } }
+    await EventModel.update(
+      { amountOfPeople: findEvent.amountOfPeople + 1 },
+      { where: { id: Event.id } }
     )
     return res.json({ code: errorCodes.success })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
+
+const show_event = async (req, res) => {
+  try {
+    const isValid = validator.validateShowEvent(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Event } = req.body
+    const events = await EventModel.findOne({ where: { id: Event.id } })
+    return res.json({ code: errorCodes.success, events })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const show_all_events = async (req, res) => {
+  try {
+    const events = await EventModel.findAll({
+      where: { state: invitationStatus.ACCEPTED }
+    })
+    return res.json({ code: errorCodes.success, events })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const show_all_events_accepted = async (req, res) => {
+  try {
+    const events = await EventModel.findAll({
+      where: { state: invitationStatus.ACCEPTED }
+    })
+    return res.json({ code: errorCodes.success, events })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+// const show_my_event_forms = async (req, res) => {
+//   try {
+//     const events = await EventFormModel.findAll({
+//       where: { accountId: req.data.id }
+//     })
+//     return res.json({ code: errorCodes.success, events })
+//   } catch (exception) {
+//     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+//   }
+// }
+
 // const accept_reject_invitation = async (req, res) => {
 //   try {
 //     const isValid = validator.validateInviteToEvent(req.body)
@@ -325,6 +389,61 @@ const edit_registeration_admin = async (req, res) => {
 //   }
 // }
 
+/////////////////////////////ADMIN/////////////////////////////
+const edit_registeration_admin = async (req, res) => {
+  try {
+    const isValid = validator.validateEditRegisterToEvent(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Account, Event } = req.body
+    const account = await AccountModel.findOne({ where: { id: Account.id } })
+    if (!account) {
+      return res.json({
+        code: errorCodes.invalidCredentials,
+        error: 'User not found'
+      })
+    }
+    const findEvent = await EventModel.findOne({ where: { id: Event.id } })
+    if (!findEvent) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'Event not found'
+      })
+    }
+    const findRegisteration = await RegisterationModel.findOne({
+      where: { accountId: Account.id, eventId: Event.id }
+    })
+    if (!findRegisteration) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'No registeration for this user'
+      })
+    }
+    RegisterationModel.update(
+      { state: Event.state },
+      { where: { accountId: Account.id, eventId: Event.id } }
+    )
+
+    if (
+      Event.state === invitationStatus.REJECTED &&
+      findRegisteration.state !== invitationStatus.REJECTED
+    ) {
+      sendEmailsToInQueue(Event.id, findEvent.name)
+      EventModel.update(
+        { amountOfPeople: findEvent.amountOfPeople - 1 },
+        { where: { id: Event.id } }
+      )
+    }
+    return res.json({ code: errorCodes.success })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
 const edit_event_admin = async (req, res) => {
   try {
     const isValid = validator.validateEditEventAdmin(req.body)
@@ -351,10 +470,54 @@ const edit_event_admin = async (req, res) => {
   }
 }
 
+const create_event_admin = async (req, res) => {
+  try {
+    const isValid = validator.validateCreateEventAdmin(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Event } = req.body
+    const dateCheck =
+      new Date().setHours(0, 0, 0, 0) -
+      new Date(Event.dateFrom).setHours(0, 0, 0, 0)
+    const dateFromToCheck =
+      new Date(Event.dateTo).setHours(0, 0, 0, 0) -
+      new Date(Event.dateFrom).setHours(0, 0, 0, 0)
+    if (dateCheck > 0 || dateFromToCheck < 0) {
+      return res.json({
+        code: errorCodes.dateInThePast,
+        error: 'From has to be before to'
+      })
+    }
+    await EventModel.create({
+      name: Event.name,
+      type: Event.type,
+      dateFrom: new Date(Event.dateFrom),
+      dateTo: new Date(Event.dateTo),
+      description: Event.description,
+      price: Event.price,
+      maxNoOfPeople: Event.maxNoOfPeople,
+      amountOfPeople: 0
+    })
+    return res.json({ code: errorCodes.success })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
 module.exports = {
-  create_event,
+  create_event_form,
   invite_to_event,
   register_to_event,
   edit_registeration_admin,
-  edit_event_admin
+  edit_event_admin,
+  show_event,
+  show_all_events,
+  // show_all_events_accepted,
+  // show_my_events,
+  create_event_admin
 }

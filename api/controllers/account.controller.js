@@ -303,6 +303,7 @@ const verify_email = async (req, res) => {
 const verify_confirm_email = async (req, res) => {
   try {
     const { verificationCode } = req.params
+    console.log(req.params)
     await AccountModel.update(
       { emailVerified: true },
       { where: { verificationCode } }

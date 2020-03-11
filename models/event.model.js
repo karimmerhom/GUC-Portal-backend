@@ -2,7 +2,7 @@ const Sequelize = require('sequelize')
 
 const sequelize = require('../config/DBConfig')
 
-const { invitationStatus } = require('../api/constants/TBH.enum')
+const { invitationStatus, accountStatus } = require('../api/constants/TBH.enum')
 
 const { Model } = Sequelize
 const AccountModel = require('./account.model')
@@ -30,12 +30,23 @@ Event.init(
     },
     state: {
       type: Sequelize.ENUM,
-      values: [
-        invitationStatus.ACCEPTED,
-        invitationStatus.REJECTED,
-        invitationStatus.PENDING
-      ],
-      defaultValue: invitationStatus.PENDING
+      values: [invitationStatus.ACCEPTED, accountStatus.CANCELED],
+      defaultValue: invitationStatus.ACCEPTED
+    },
+    services: {
+      type: Sequelize.ARRAY(Sequelize.STRING)
+    },
+    link: {
+      type: Sequelize.STRING
+    },
+    roomLayout: {
+      type: Sequelize.STRING
+    },
+    amountOfPeople: {
+      type: Sequelize.INTEGER
+    },
+    maxNoOfPeople: {
+      type: Sequelize.INTEGER
     }
   },
   {
@@ -43,10 +54,5 @@ Event.init(
     timestamps: false
   }
 )
-
-Event.belongsTo(AccountModel, {
-  foreignKey: 'accountId',
-  targetKey: 'id'
-})
 
 module.exports = Event

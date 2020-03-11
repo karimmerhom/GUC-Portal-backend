@@ -62,7 +62,8 @@ const invitationStatus = {
   ACCEPTED: 'accepted',
   REJECTED: 'rejected',
   PENDING: 'pending',
-  REGISTERED: 'registered'
+  REGISTERED: 'registered',
+  INQUEUE: 'Inqueue'
 }
 
 module.exports = {

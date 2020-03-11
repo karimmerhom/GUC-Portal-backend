@@ -3,9 +3,11 @@ const errorCodes = require('../constants/errorCodes')
 const CalendarModel = require('../../models/calendar.model')
 const PackageModel = require('../../models/package.model')
 const BookingModel = require('../../models/booking.model')
-const { accountStatus, slotStatus } = require('../constants/TBH.enum')
+const AccountModel = require('../../models/account.model')
+const RegisterationModel = require('../../models/register.model')
+const { accountStatus, invitationStatus } = require('../constants/TBH.enum')
 const axios = require('axios')
-const { contactAccessKey } = require('../../config/keys')
+const { contactAccessKey, emailAccessKey } = require('../../config/keys')
 const pricingModel = require('../../models/pricing.model')
 const accountModel = require('../../models/account.model')
 
@@ -243,6 +245,35 @@ const gift_package = async (numberOfHours, roomType, accountId) => {
   }
 }
 
+const sendEmailsToInQueue = async (eventId, eventName) => {
+  const pendingRegistrations = await RegisterationModel.findAll({
+    where: { eventId, state: invitationStatus.INQUEUE }
+  })
+  pendingRegistrations.forEach(async element => {
+    const accountFound = await AccountModel.findOne({
+      where: { id: element.accountId }
+    })
+    if (accountFound.emailVerified)
+      axios({
+        method: 'post',
+        url: 'https://cubexs.net/emailservice/sendemail',
+        data: {
+          header: {
+            accessKey: emailAccessKey
+          },
+          body: {
+            receiverMail: accountFound.email,
+            body: `The event ${eventName} has free places now \n you can try to re register.`,
+            subject: `${eventName}`
+          }
+        }
+      })
+        .then(res => console.log(res))
+        .catch(err => console.log(err))
+  })
+  return { code: errorCodes.success }
+}
+
 function underAgeValidate(birthday) {
   // set current day on 01:00:00 hours GMT+0100 (CET)
   var currentDate = new Date().toJSON().slice(0, 10) + ' 01:00:00'
@@ -274,5 +305,6 @@ module.exports = {
   eraseDatabaseOnSyncContacts,
   gift_package,
   underAgeValidate,
-  IsJsonString
+  IsJsonString,
+  sendEmailsToInQueue
 }

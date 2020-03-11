@@ -45,6 +45,8 @@ const validateAddBooking = request => {
                 '09PM'
               ])
           )
+          .min(1)
+          .max(12)
           .required(),
         roomType: joi
           .string()
@@ -331,6 +333,8 @@ const validateEditTiming = request => {
                 '09PM'
               ])
           )
+          .min(1)
+          .max(12)
           .required(),
         date: joi.date().required()
       })

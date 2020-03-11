@@ -7,21 +7,35 @@ const { invitationStatus } = require('../api/constants/TBH.enum')
 const { Model } = Sequelize
 const AccountModel = require('./account.model')
 
-class Registeration extends Model {}
-Registeration.init(
+class EventForm extends Model {}
+EventForm.init(
   {
+    name: {
+      type: Sequelize.STRING
+    },
+    dateFrom: {
+      type: Sequelize.DATE
+    },
+    dateTo: {
+      type: Sequelize.DATE
+    },
+    description: {
+      type: Sequelize.STRING
+    },
+    type: {
+      type: Sequelize.STRING
+    },
+    price: {
+      type: Sequelize.FLOAT
+    },
     state: {
       type: Sequelize.ENUM,
       values: [
-        invitationStatus.PENDING,
-        invitationStatus.REGISTERED,
+        invitationStatus.ACCEPTED,
         invitationStatus.REJECTED,
-        invitationStatus.INQUEUE
+        invitationStatus.PENDING
       ],
       defaultValue: invitationStatus.PENDING
-    },
-    eventId: {
-      type: Sequelize.INTEGER
     }
   },
   {
@@ -30,9 +44,9 @@ Registeration.init(
   }
 )
 
-Registeration.belongsTo(AccountModel, {
+EventForm.belongsTo(AccountModel, {
   foreignKey: 'accountId',
   targetKey: 'id'
 })
 
-module.exports = Registeration
+module.exports = EventForm

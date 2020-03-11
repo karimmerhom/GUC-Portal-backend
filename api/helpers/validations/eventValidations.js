@@ -88,10 +88,40 @@ const validateEditEventAdmin = request => {
   return joi.validate(request, schema)
 }
 
+const validateShowEvent = request => {
+  const schema = {
+    Event: joi
+      .object({
+        id: joi.number().required()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
+
+const validateCreateEventAdmin = request => {
+  const schema = {
+    Event: joi
+      .object({
+        name: joi.string().required(),
+        dateFrom: joi.date().required(),
+        dateTo: joi.date().required(),
+        description: joi.string().required(),
+        type: joi.string().required(),
+        price: joi.number().required(),
+        maxNoOfPeople: joi.number().required()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
+
 module.exports = {
   validateInviteToEvent,
   validateCreateEvent,
   validateRegisterToEvent,
   validateEditRegisterToEvent,
-  validateEditEventAdmin
+  validateEditEventAdmin,
+  validateShowEvent,
+  validateCreateEventAdmin
 }
