@@ -59,6 +59,6 @@ router.post('/logingoogle', login_google)
 router.post('/registerfacebook', register_facebook)
 router.post('/loginfacebook', login_facebook)
 router.post('/verifyemail', verifyToken, verifyUser, verify_email)
-router.get('/confirmverifyemail:verificationCode', verify_confirm_email)
+router.get('/confirmverifyemail', verify_confirm_email)
 
 module.exports = router

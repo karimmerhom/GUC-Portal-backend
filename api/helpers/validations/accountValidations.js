@@ -98,6 +98,13 @@ const validateEmail = request => {
   return joi.validate(request, schema)
 }
 
+const validateConfirmVerifyEmail = request => {
+  const schema = {
+    code: joi.string().required()
+  }
+  return joi.validate(request, schema)
+}
+
 const validateVerify = request => {
   const schema = {
     Account: joi
@@ -304,5 +311,6 @@ module.exports = {
   validateEmail,
   validateAccountGoogle,
   validateLoginGoogle,
-  validateCallbackGoogle
+  validateCallbackGoogle,
+  validateConfirmVerifyEmail
 }
