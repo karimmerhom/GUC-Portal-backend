@@ -304,7 +304,7 @@ const verify_email = async (req, res) => {
 }
 const verify_confirm_email = async (req, res) => {
   try {
-    const isValid = validator.validateLogin(req.params)
+    const isValid = validator.validateConfirmVerify(req.params)
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
