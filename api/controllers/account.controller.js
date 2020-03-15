@@ -304,6 +304,13 @@ const verify_email = async (req, res) => {
 }
 const verify_confirm_email = async (req, res) => {
   try {
+    const isValid = validator.validateLogin(req.params)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
     const { verificationCode } = req.params
     console.log(req.params)
     const account = await AccountModel.findOne({ where: verificationCode })
