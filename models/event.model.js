@@ -47,6 +47,15 @@ Event.init(
     },
     maxNoOfPeople: {
       type: Sequelize.INTEGER
+    },
+    collaborators: {
+      type: Sequelize.ARRAY(Sequelize.INTEGER)
+    },
+    facebookPage: {
+      type: Sequelize.STRING
+    },
+    instagramPage: {
+      type: Sequelize.STRING
     }
   },
   {

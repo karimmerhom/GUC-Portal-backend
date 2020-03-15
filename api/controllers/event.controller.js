@@ -131,27 +131,7 @@ const invite_to_event = async (req, res) => {
     }
     const { Account, Event, Invitee } = req.body
     const account = await AccountModel.findOne({ where: { id: Account.id } })
-    const inviteeAccount = await AccountModel.findOne({
-      where: { id: Invitee.id }
-    })
-    if (!account) {
-      return res.json({
-        code: errorCodes.invalidCredentials,
-        error: 'User not found'
-      })
-    }
-    if (account.status !== accountStatus.VERIFIED) {
-      return res.json({
-        code: errorCodes.unVerified,
-        error: 'Account must be verified'
-      })
-    }
-    if (!inviteeAccount) {
-      return res.json({
-        code: errorCodes.invalidCredentials,
-        error: 'Invitee not found'
-      })
-    }
+
     const findEvent = await EventModel.findOne({ where: { id: Event.id } })
     if (!findEvent) {
       return res.json({
@@ -166,7 +146,11 @@ const invite_to_event = async (req, res) => {
       })
     }
     const findInvitation = await InvitationsModel.findOne({
-      where: { accountId: Account.id, inviteeId: Invitee.id, eventId: Event.id }
+      where: {
+        accountId: Account.id,
+        inviteeEmail: Invitee.email,
+        eventId: Event.id
+      }
     })
     if (findInvitation) {
       return res.json({
@@ -176,26 +160,23 @@ const invite_to_event = async (req, res) => {
     }
     await InvitationsModel.create({
       accountId: Account.id,
-      inviteeId: Invitee.id,
+      inviteeEmail: Invitee.email,
       eventId: Event.id
     })
-    if (inviteeAccount.emailVerified)
-      axios({
-        method: 'post',
-        url: 'https://cubexs.net/emailservice/sendemail',
-        data: {
-          header: {
-            accessKey: emailAccessKey
-          },
-          body: {
-            receiverMail: inviteeAccount.email,
-            body: `${account.firstName} has invited you to this event \n link`,
-            subject: 'Invitation to an event'
-          }
+    axios({
+      method: 'post',
+      url: 'https://cubexs.net/emailservice/sendemail',
+      data: {
+        header: {
+          accessKey: emailAccessKey
+        },
+        body: {
+          receiverMail: Invitee.email,
+          body: `${account.firstName} ${account.lastName} has invited you to this event \nlink`,
+          subject: 'Invitation to an event'
         }
-      })
-        .then(res => console.log(res))
-        .catch(err => console.log(err))
+      }
+    })
     return res.json({ code: errorCodes.success })
   } catch (exception) {
     console.log(exception)
@@ -322,13 +303,66 @@ const show_all_events = async (req, res) => {
   }
 }
 
-const show_all_events_accepted = async (req, res) => {
+const invite_collaborator = async (req, res) => {
   try {
-    const events = await EventModel.findAll({
-      where: { state: invitationStatus.ACCEPTED }
+    const isValid = validator.validateInviteToCollaborator(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Event, Account, Invitee } = req.body
+    const findEvent = await EventModel.findOne({
+      where: { id: Event.id }
     })
-    return res.json({ code: errorCodes.success, events })
+    if (!findEvent) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'Event not found'
+      })
+    }
+    const account = await AccountModel.findOne({
+      where: { id: parseInt(Account.id) }
+    })
+    if (!account) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'Account not found'
+      })
+    }
+    if (account.status !== accountStatus.VERIFIED) {
+      return res.json({
+        code: errorCodes.unVerified,
+        error: 'Account must be verified'
+      })
+    }
+    let arrayOfCollaboraters = []
+    if (
+      findEvent.collaborators === null ||
+      !findEvent.collaborators.includes(parseInt(Account.id))
+    ) {
+      return res.json({
+        code: errorCodes.collaboratorExists,
+        error: 'You are not a collaborator'
+      })
+    }
+
+    if (findEvent.collaborators.includes(parseInt(Invitee.id))) {
+      return res.json({
+        code: errorCodes.collaboratorExists,
+        error: 'Collaborator already added'
+      })
+    }
+    arrayOfCollaboraters = findEvent.collaborators
+    arrayOfCollaboraters.push(Invitee.id)
+    await EventModel.update(
+      { collaborators: arrayOfCollaboraters },
+      { where: { id: Event.id } }
+    )
+    return res.json({ code: errorCodes.success })
   } catch (exception) {
+    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -518,6 +552,62 @@ const create_event_admin = async (req, res) => {
   }
 }
 
+const add_collaborator = async (req, res) => {
+  try {
+    const isValid = validator.validateAddCollaborator(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Event, Account } = req.body
+    const findEvent = await EventModel.findOne({
+      where: { id: Event.id }
+    })
+    if (!findEvent) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'Event not found'
+      })
+    }
+    const account = await AccountModel.findOne({
+      where: { id: parseInt(Account.id) }
+    })
+    if (!account) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'Account not found'
+      })
+    }
+    if (account.status !== accountStatus.VERIFIED) {
+      return res.json({
+        code: errorCodes.unVerified,
+        error: 'Account must be verified'
+      })
+    }
+    let arrayOfCollaboraters = []
+    if (
+      findEvent.collaborators !== null &&
+      findEvent.collaborators.includes(parseInt(Account.id))
+    ) {
+      return res.json({
+        code: errorCodes.collaboratorExists,
+        error: 'Collaborator already added'
+      })
+    }
+    arrayOfCollaboraters = findEvent.collaborators
+    arrayOfCollaboraters.push(parseInt(Account.id))
+    await EventModel.update(
+      { collaborators: arrayOfCollaboraters },
+      { where: { id: Event.id } }
+    )
+    return res.json({ code: errorCodes.success })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
 module.exports = {
   create_event_form,
   invite_to_event,
@@ -528,5 +618,7 @@ module.exports = {
   show_all_events,
   // show_all_events_accepted,
   // show_my_events,
-  create_event_admin
+  create_event_admin,
+  add_collaborator,
+  invite_collaborator
 }

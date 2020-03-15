@@ -10,8 +10,8 @@ const AccountModel = require('./account.model')
 class Inivitation extends Model {}
 Inivitation.init(
   {
-    inviteeId: {
-      type: Sequelize.INTEGER
+    inviteeEmail: {
+      type: Sequelize.STRING
     },
     state: {
       type: Sequelize.ENUM,

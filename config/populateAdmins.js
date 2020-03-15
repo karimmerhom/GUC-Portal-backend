@@ -21,7 +21,7 @@ const populate_admins = async () => {
   })
   await axios({
     method: 'post',
-    url: 'http://localhost:2003/contacts/createcontact',
+    url: 'https://cubexs.net/contacts/createcontact',
     data: {
       header: {
         accessKey: contactAccessKey
@@ -31,7 +31,8 @@ const populate_admins = async () => {
         lastName: 'Sanad',
         email: 'islam.sanad98@gmail.com',
         phoneNumber: '01018070815',
-        ownerId: parseInt(accountCreated.id)
+        ownerId: parseInt(accountCreated.id),
+        accountId: 1
       }
     }
   })
@@ -49,7 +50,7 @@ const populate_admins = async () => {
   })
   await axios({
     method: 'post',
-    url: 'http://localhost:2003/contacts/createcontact',
+    url: 'https://cubexs.net/contacts/createcontact',
     data: {
       header: {
         accessKey: contactAccessKey
@@ -59,7 +60,8 @@ const populate_admins = async () => {
         lastName: 'Ashery',
         email: 'samar.ashery@lirten.com',
         phoneNumber: '01141988757',
-        ownerId: parseInt(accountCreated.id)
+        ownerId: parseInt(accountCreated.id),
+        accountId: 1
       }
     }
   })

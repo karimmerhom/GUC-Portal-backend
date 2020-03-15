@@ -31,7 +31,8 @@ const populate_users = async () => {
         lastName: 'Shokry',
         email: 'aisha.shokry@lirten.com',
         phoneNumber: '010000000000',
-        ownerId: parseInt(accountCreated.id)
+        ownerId: parseInt(accountCreated.id),
+        accountId: 1
       }
     }
   })
@@ -87,7 +88,8 @@ const populate_users = async () => {
         lastName: 'Hassan',
         email: 'noura.hassan@lirten.com',
         phoneNumber: '01098723687',
-        ownerId: parseInt(accountCreated.id)
+        ownerId: parseInt(accountCreated.id),
+        accountId: 1
       }
     }
   })

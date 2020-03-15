@@ -203,7 +203,8 @@ const eraseDatabaseOnSyncContacts = async () => {
       data: {
         header: {
           accessKey: contactAccessKey
-        }
+        },
+        body: { accountId: 1 }
       }
     })
       .then(res => console.log(res))

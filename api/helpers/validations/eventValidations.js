@@ -15,6 +15,48 @@ const validateInviteToEvent = request => {
       .required(),
     Invitee: joi
       .object({
+        email: joi
+          .string()
+          .email()
+          .required()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
+
+const validateInviteToCollaborator = request => {
+  const schema = {
+    Event: joi
+      .object({
+        id: joi.number().required()
+      })
+      .required(),
+    Account: joi
+      .object({
+        id: joi.number().required()
+      })
+      .required(),
+    Invitee: joi
+      .object({
+        id: joi
+          .number()
+          .required()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
+
+const validateAddCollaborator = request => {
+  const schema = {
+    Event: joi
+      .object({
+        id: joi.number().required()
+      })
+      .required(),
+    Account: joi
+      .object({
         id: joi.number().required()
       })
       .required()
@@ -123,5 +165,7 @@ module.exports = {
   validateEditRegisterToEvent,
   validateEditEventAdmin,
   validateShowEvent,
-  validateCreateEventAdmin
+  validateCreateEventAdmin,
+  validateAddCollaborator,
+  validateInviteToCollaborator
 }

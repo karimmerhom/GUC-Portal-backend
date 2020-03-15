@@ -60,6 +60,8 @@ const EventNotActive = 129
 
 const reachedMaximumAmountOfPeopleEvent = 130
 
+const collaboratorExists = 131
+
 module.exports = {
   success,
   validation,
@@ -91,5 +93,6 @@ module.exports = {
   underAge,
   invitationAlreadyExists,
   EventNotActive,
-  reachedMaximumAmountOfPeopleEvent
+  reachedMaximumAmountOfPeopleEvent,
+  collaboratorExists
 }

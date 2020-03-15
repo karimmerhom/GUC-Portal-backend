@@ -90,7 +90,8 @@ const register = async (req, res) => {
           lastName: Account.lastName,
           email: Account.email,
           phoneNumber: Account.phoneNumber,
-          ownerId: parseInt(accountCreated.id)
+          ownerId: parseInt(accountCreated.id),
+          accountId: 1
         }
       }
     })
@@ -192,7 +193,8 @@ const update_profile = async (req, res) => {
           ownerId: parseInt(Account.id),
           gender: Account.gender,
           birthdate: Account.birthdate,
-          profession: Account.profession
+          profession: Account.profession,
+          accountId: 1
         }
       }
     })
@@ -465,7 +467,8 @@ const register_google = async (req, res) => {
           email: Account.email,
           phoneNumber: Account.phoneNumber,
           ownerId: parseInt(accountCreated.id),
-          googleId: Account.id
+          googleId: Account.id,
+          accountId: 1
         }
       }
     })
@@ -634,7 +637,8 @@ const register_facebook = async (req, res) => {
           email: Account.email,
           phoneNumber: Account.phoneNumber,
           ownerId: parseInt(accountCreated.id),
-          facebookId: Account.id
+          facebookId: Account.id,
+          accountId: 1
         }
       }
     })
@@ -898,7 +902,8 @@ const change_email = async (req, res) => {
         },
         body: {
           email: Account.email,
-          ownerId: parseInt(Account.id)
+          ownerId: parseInt(Account.id),
+          accountId: 1
         }
       }
     })
@@ -968,7 +973,8 @@ const change_phone = async (req, res) => {
         },
         body: {
           phoneNumber: Account.phoneNumber,
-          ownerId: parseInt(Account.id)
+          ownerId: parseInt(Account.id),
+          accountId: 1
         }
       }
     })
@@ -1071,7 +1077,8 @@ const get_profile = async (req, res) => {
           accessKey: contactAccessKey
         },
         body: {
-          ownerId: parseInt(Account.id)
+          ownerId: parseInt(Account.id),
+          accountId: 1
         }
       }
     }).then(res => {
@@ -1183,7 +1190,10 @@ const get_accounts = async (req, res) => {
     const allAccounts = await axios({
       method: 'post',
       url: 'https://cubexs.net/contacts/getcontacts',
-      data: { header: { accessKey: contactAccessKey } }
+      data: {
+        header: { accessKey: contactAccessKey },
+        body: { accountId: 1, accountId: 1 }
+      }
     })
 
     return res.json({ code: errorCodes.success, data: allAccounts.data.body })
