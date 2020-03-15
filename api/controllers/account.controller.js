@@ -304,7 +304,7 @@ const verify_email = async (req, res) => {
 }
 const verify_confirm_email = async (req, res) => {
   try {
-    const isValid = validator.validateConfirmVerify(req.params)
+    const isValid = validator.validateConfirmVerifyEmail(req.params)
     if (isValid.error) {
       return res.json({
         code: errorCodes.validation,
@@ -313,7 +313,7 @@ const verify_confirm_email = async (req, res) => {
     }
     const { verificationCode } = req.params
     console.log(req.params)
-    const account = await AccountModel.findOne({ where: verificationCode })
+    const account = await AccountModel.findOne({ where: { verificationCode } })
     if (!account) {
       return res.json({
         code: errorCodes.entityNotFound,
@@ -327,6 +327,7 @@ const verify_confirm_email = async (req, res) => {
 
     return res.json({ code: errorCodes.success })
   } catch (exception) {
+    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
