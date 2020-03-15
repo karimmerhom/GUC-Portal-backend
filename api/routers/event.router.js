@@ -14,6 +14,7 @@ const {
   show_all_events,
   add_collaborator,
   invite_collaborator,
+  remove_collaborator,
   // show_all_events_accepted,
   // show_my_events,
   create_event_admin
@@ -27,6 +28,7 @@ router.post('/createEventForm', verifyToken, verifyUser, create_event_form)
 router.post('/createEventAdmin', verifyAdmin, create_event_admin)
 router.post('/addcollaborator', verifyAdmin, add_collaborator)
 router.post('/invitecollaborator', verifyToken, verifyUser, invite_collaborator)
+router.post('/removecollaborator', verifyToken, verifyUser, remove_collaborator)
 router.post('/invitetoevent', verifyToken, verifyUser, invite_to_event)
 router.post('/registerevent', verifyToken, verifyUser, register_to_event)
 router.post('/showevent', show_event)

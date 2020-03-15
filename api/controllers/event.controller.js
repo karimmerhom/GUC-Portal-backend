@@ -367,6 +367,70 @@ const invite_collaborator = async (req, res) => {
   }
 }
 
+const remove_collaborator = async (req, res) => {
+  try {
+    const isValid = validator.validateInviteToCollaborator(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Event, Account, Invitee } = req.body
+    const findEvent = await EventModel.findOne({
+      where: { id: Event.id }
+    })
+    if (!findEvent) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'Event not found'
+      })
+    }
+    const account = await AccountModel.findOne({
+      where: { id: parseInt(Account.id) }
+    })
+    if (!account) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'Account not found'
+      })
+    }
+
+    let arrayOfCollaboraters = []
+    if (
+      findEvent.collaborators === null ||
+      !findEvent.collaborators.includes(parseInt(Account.id))
+    ) {
+      return res.json({
+        code: errorCodes.collaboratorExists,
+        error: 'You are not a collaborator'
+      })
+    }
+    if (account.status !== accountStatus.VERIFIED) {
+      return res.json({
+        code: errorCodes.unVerified,
+        error: 'Account must be verified'
+      })
+    }
+    if (!findEvent.collaborators.includes(parseInt(Invitee.id))) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'Collaborator not added'
+      })
+    }
+    arrayOfCollaboraters = findEvent.collaborators
+    arrayOfCollaboraters.pop(Invitee.id)
+    await EventModel.update(
+      { collaborators: arrayOfCollaboraters },
+      { where: { id: Event.id } }
+    )
+    return res.json({ code: errorCodes.success })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
 // const show_my_event_forms = async (req, res) => {
 //   try {
 //     const events = await EventFormModel.findAll({
@@ -596,7 +660,8 @@ const add_collaborator = async (req, res) => {
         error: 'Collaborator already added'
       })
     }
-    arrayOfCollaboraters = findEvent.collaborators
+    if (findEvent.collaborators === null) arrayOfCollaboraters = []
+    else arrayOfCollaboraters = findEvent.collaborators
     arrayOfCollaboraters.push(parseInt(Account.id))
     await EventModel.update(
       { collaborators: arrayOfCollaboraters },
@@ -604,6 +669,7 @@ const add_collaborator = async (req, res) => {
     )
     return res.json({ code: errorCodes.success })
   } catch (exception) {
+    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -620,5 +686,6 @@ module.exports = {
   // show_my_events,
   create_event_admin,
   add_collaborator,
-  invite_collaborator
+  invite_collaborator,
+  remove_collaborator
 }
