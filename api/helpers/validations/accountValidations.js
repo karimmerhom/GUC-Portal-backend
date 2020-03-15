@@ -100,7 +100,7 @@ const validateEmail = request => {
 
 const validateConfirmVerifyEmail = request => {
   const schema = {
-    verificationCode: joi.string().required()
+    code: joi.string().required()
   }
   return joi.validate(request, schema)
 }
