@@ -38,6 +38,12 @@ const create_package = async (req, res) => {
         error: 'Account must be verified'
       })
     }
+    if (Package.numberOfHours > 1000) {
+      return res.json({
+        code: errorCodes.invalidPackage,
+        error: 'Over load number of hours'
+      })
+    }
     const checkPrice = await pricingModel.findOne({
       where: { code: Package.package }
     })

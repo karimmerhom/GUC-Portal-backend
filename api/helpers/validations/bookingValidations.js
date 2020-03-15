@@ -118,6 +118,7 @@ const validateCreatePackage = request => {
         numberOfHours: joi
           .number()
           .positive()
+          .max(1000)
           .required(),
         package: joi
           .string()
