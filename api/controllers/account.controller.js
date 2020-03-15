@@ -306,6 +306,13 @@ const verify_confirm_email = async (req, res) => {
   try {
     const { verificationCode } = req.params
     console.log(req.params)
+    const account = await AccountModel.findOne({ where: verificationCode })
+    if (!account) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'Account not found'
+      })
+    }
     await AccountModel.update(
       { emailVerified: true },
       { where: { verificationCode } }
