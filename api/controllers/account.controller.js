@@ -368,6 +368,14 @@ const login = async (req, res) => {
       })
     }
 
+    if (account.password === null) {
+      return res.json({
+        code: errorCodes.invalidCredentials,
+        error:
+          'Cannot use this service, you are either registered with fb or google'
+      })
+    }
+
     // if (account.status === accountStatus.PENDING) {
     //   return res.json({ code: errorCodes.unVerified })
     // }
