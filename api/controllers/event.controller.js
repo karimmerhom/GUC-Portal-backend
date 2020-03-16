@@ -7,7 +7,11 @@ const InvitationsModel = require('../../models/invitations.model')
 const RegisterationModel = require('../../models/register.model')
 const AccountModel = require('../../models/account.model')
 const errorCodes = require('../constants/errorCodes')
-const { accountStatus, invitationStatus } = require('../constants/TBH.enum')
+const {
+  accountStatus,
+  invitationStatus,
+  userTypes
+} = require('../constants/TBH.enum')
 const validator = require('../helpers/validations/eventValidations')
 const { emailAccessKey } = require('../../config/keys')
 const {
@@ -431,6 +435,42 @@ const remove_collaborator = async (req, res) => {
   }
 }
 
+const edit_event_information = async (req, res) => {
+  try {
+    const isValid = validator.validateEditEventInfo(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Account, Event } = req.body
+    const findEvent = await EventModel.findOne({ where: { id: Event.id } })
+    if (!findEvent) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'Event not found'
+      })
+    }
+    if (req.data.type !== userTypes.ADMIN) {
+      if (
+        findEvent.collaborators === null ||
+        !findEvent.collaborators.includes(parseInt(Account.id))
+      ) {
+        return res.json({
+          code: errorCodes.collaboratorExists,
+          error: 'You are not a collaborator'
+        })
+      }
+    }
+    await EventModel.update(Event.Info, { where: { id: Event.id } })
+    return res.json({ code: errorCodes.success })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
 // const show_my_event_forms = async (req, res) => {
 //   try {
 //     const events = await EventFormModel.findAll({
@@ -687,5 +727,6 @@ module.exports = {
   create_event_admin,
   add_collaborator,
   invite_collaborator,
-  remove_collaborator
+  remove_collaborator,
+  edit_event_information
 }

@@ -25,6 +25,35 @@ const validateInviteToEvent = request => {
   return joi.validate(request, schema)
 }
 
+const validateEditEventInfo = request => {
+  const schema = {
+    Event: joi
+      .object({
+        id: joi.number().required(),
+        Info: joi
+          .object({
+            link: joi.string(),
+            facebookPage: joi.string(),
+            instagramPage: joi.string(),
+            roomLayout: joi.string(),
+            maxNoOfPeople: joi.number(),
+            services: joi
+              .array()
+              .items(joi.string())
+              .min(1)
+          })
+          .required()
+      })
+      .required(),
+    Account: joi
+      .object({
+        id: joi.number().required()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
+
 const validateInviteToCollaborator = request => {
   const schema = {
     Event: joi
@@ -39,9 +68,7 @@ const validateInviteToCollaborator = request => {
       .required(),
     Invitee: joi
       .object({
-        id: joi
-          .number()
-          .required()
+        id: joi.number().required()
       })
       .required()
   }
@@ -167,5 +194,6 @@ module.exports = {
   validateShowEvent,
   validateCreateEventAdmin,
   validateAddCollaborator,
-  validateInviteToCollaborator
+  validateInviteToCollaborator,
+  validateEditEventInfo
 }
