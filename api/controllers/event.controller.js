@@ -342,23 +342,29 @@ const invite_collaborator = async (req, res) => {
       })
     }
     let arrayOfCollaboraters = []
-    if (
-      findEvent.collaborators === null ||
-      !findEvent.collaborators.includes(parseInt(Account.id))
-    ) {
-      return res.json({
-        code: errorCodes.collaboratorExists,
-        error: 'You are not a collaborator'
-      })
+    if (req.data.type !== userTypes.ADMIN) {
+      if (
+        findEvent.collaborators === null ||
+        !findEvent.collaborators.includes(parseInt(Account.id))
+      ) {
+        return res.json({
+          code: errorCodes.collaboratorExists,
+          error: 'You are not a collaborator'
+        })
+      }
     }
-
-    if (findEvent.collaborators.includes(parseInt(Invitee.id))) {
+    console.log(findEvent.collaborators)
+    if (
+      findEvent.collaborators !== null &&
+      findEvent.collaborators.includes(parseInt(Invitee.id))
+    ) {
       return res.json({
         code: errorCodes.collaboratorExists,
         error: 'Collaborator already added'
       })
     }
-    arrayOfCollaboraters = findEvent.collaborators
+    if (findEvent.collaborators === null) arrayOfCollaboraters = []
+    else arrayOfCollaboraters = findEvent.collaborators
     arrayOfCollaboraters.push(Invitee.id)
     await EventModel.update(
       { collaborators: arrayOfCollaboraters },
@@ -401,21 +407,18 @@ const remove_collaborator = async (req, res) => {
     }
 
     let arrayOfCollaboraters = []
-    if (
-      findEvent.collaborators === null ||
-      !findEvent.collaborators.includes(parseInt(Account.id))
-    ) {
-      return res.json({
-        code: errorCodes.collaboratorExists,
-        error: 'You are not a collaborator'
-      })
+    if (req.data.type !== userTypes.ADMIN) {
+      if (
+        findEvent.collaborators === null ||
+        !findEvent.collaborators.includes(parseInt(Account.id))
+      ) {
+        return res.json({
+          code: errorCodes.collaboratorExists,
+          error: 'You are not a collaborator'
+        })
+      }
     }
-    if (account.status !== accountStatus.VERIFIED) {
-      return res.json({
-        code: errorCodes.unVerified,
-        error: 'Account must be verified'
-      })
-    }
+
     if (!findEvent.collaborators.includes(parseInt(Invitee.id))) {
       return res.json({
         code: errorCodes.entityNotFound,
@@ -608,11 +611,12 @@ const edit_event_admin = async (req, res) => {
       })
     }
     await EventModel.update({ state: Event.state }, { where: { id: Event.id } })
-    if (Event.state === invitationStatus.REJECTED) {
+    if (Event.state === accountStatus.CANCELED) {
       cancelAllRegisterations(Event.id)
     }
     return res.json({ code: errorCodes.success })
   } catch (exception) {
+    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -656,64 +660,6 @@ const create_event_admin = async (req, res) => {
   }
 }
 
-const add_collaborator = async (req, res) => {
-  try {
-    const isValid = validator.validateAddCollaborator(req.body)
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message
-      })
-    }
-    const { Event, Account } = req.body
-    const findEvent = await EventModel.findOne({
-      where: { id: Event.id }
-    })
-    if (!findEvent) {
-      return res.json({
-        code: errorCodes.entityNotFound,
-        error: 'Event not found'
-      })
-    }
-    const account = await AccountModel.findOne({
-      where: { id: parseInt(Account.id) }
-    })
-    if (!account) {
-      return res.json({
-        code: errorCodes.entityNotFound,
-        error: 'Account not found'
-      })
-    }
-    if (account.status !== accountStatus.VERIFIED) {
-      return res.json({
-        code: errorCodes.unVerified,
-        error: 'Account must be verified'
-      })
-    }
-    let arrayOfCollaboraters = []
-    if (
-      findEvent.collaborators !== null &&
-      findEvent.collaborators.includes(parseInt(Account.id))
-    ) {
-      return res.json({
-        code: errorCodes.collaboratorExists,
-        error: 'Collaborator already added'
-      })
-    }
-    if (findEvent.collaborators === null) arrayOfCollaboraters = []
-    else arrayOfCollaboraters = findEvent.collaborators
-    arrayOfCollaboraters.push(parseInt(Account.id))
-    await EventModel.update(
-      { collaborators: arrayOfCollaboraters },
-      { where: { id: Event.id } }
-    )
-    return res.json({ code: errorCodes.success })
-  } catch (exception) {
-    console.log(exception)
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
-  }
-}
-
 module.exports = {
   create_event_form,
   invite_to_event,
@@ -725,7 +671,6 @@ module.exports = {
   // show_all_events_accepted,
   // show_my_events,
   create_event_admin,
-  add_collaborator,
   invite_collaborator,
   remove_collaborator,
   edit_event_information

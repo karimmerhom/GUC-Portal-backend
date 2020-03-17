@@ -12,7 +12,6 @@ const {
   edit_event_admin,
   show_event,
   show_all_events,
-  add_collaborator,
   invite_collaborator,
   remove_collaborator,
   edit_event_information,
@@ -27,7 +26,6 @@ const { verifyAdmin } = require('../../config/AdminAuthentication')
 
 router.post('/createEventForm', verifyToken, verifyUser, create_event_form)
 router.post('/createEventAdmin', verifyAdmin, create_event_admin)
-router.post('/addcollaborator', verifyAdmin, add_collaborator)
 router.post('/invitecollaborator', verifyToken, verifyUser, invite_collaborator)
 router.post('/removecollaborator', verifyToken, verifyUser, remove_collaborator)
 router.post('/invitetoevent', verifyToken, verifyUser, invite_to_event)

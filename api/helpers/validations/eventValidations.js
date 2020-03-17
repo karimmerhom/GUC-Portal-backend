@@ -1,5 +1,5 @@
 const joi = require('joi')
-const { invitationStatus } = require('../../constants/TBH.enum')
+const { invitationStatus, accountStatus } = require('../../constants/TBH.enum')
 
 const validateInviteToEvent = request => {
   const schema = {
@@ -145,11 +145,7 @@ const validateEditEventAdmin = request => {
         id: joi.number().required(),
         state: joi
           .string()
-          .valid(
-            invitationStatus.ACCEPTED,
-            invitationStatus.REJECTED,
-            invitationStatus.PENDING
-          )
+          .valid(invitationStatus.ACCEPTED, accountStatus.CANCELED)
           .required()
       })
       .required()
