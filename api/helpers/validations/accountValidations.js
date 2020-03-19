@@ -244,10 +244,20 @@ const validateSuspendAccount = request => {
 
 const validateAccountGoogle = request => {
   const usernamePattern = /^[a-zA-Z0-9!#_$%&*]{3,25}$/
+  const complexityOptions = {
+    min: 8,
+    max: 255,
+    lowerCase: 1,
+    upperCase: 1,
+    numeric: 1,
+    symbol: 0,
+    requirementCount: 8
+  }
   const schema = {
     Account: joi
       .object({
         id: joi.string().required(),
+        password: new PasswordComplexity(complexityOptions).required(),
         username: joi
           .string()
           .regex(usernamePattern)

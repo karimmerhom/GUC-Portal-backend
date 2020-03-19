@@ -368,14 +368,6 @@ const login = async (req, res) => {
       })
     }
 
-    if (account.password === null) {
-      return res.json({
-        code: errorCodes.invalidCredentials,
-        error:
-          'Cannot use this service, you are either registered with fb or google'
-      })
-    }
-
     // if (account.status === accountStatus.PENDING) {
     //   return res.json({ code: errorCodes.unVerified })
     // }
@@ -467,11 +459,14 @@ const register_google = async (req, res) => {
       code,
       date: new Date()
     })
+    const saltKey = bcrypt.genSaltSync(10)
+    const hashed_pass = bcrypt.hashSync(Account.password, saltKey)
     const accountCreated = await AccountModel.create({
       username: Account.username.toString().toLowerCase(),
       firstName: Account.firstName,
       lastName: Account.lastName,
       phone: Account.phoneNumber,
+      password: hashed_pass,
       email: Account.email.toString().toLowerCase(),
       status: accountStatus.PENDING,
       type: userTypes.USER,
@@ -637,8 +632,11 @@ const register_facebook = async (req, res) => {
       code,
       date: new Date()
     })
+    const saltKey = bcrypt.genSaltSync(10)
+    const hashed_pass = bcrypt.hashSync(Account.password, saltKey)
     const accountCreated = await AccountModel.create({
       username: Account.username.toString().toLowerCase(),
+      password: hashed_pass,
       firstName: Account.firstName,
       lastName: Account.lastName,
       phone: Account.phoneNumber,
