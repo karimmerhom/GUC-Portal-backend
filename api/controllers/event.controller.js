@@ -147,7 +147,7 @@ const invite_to_event = async (req, res) => {
         error: 'Event not found'
       })
     }
-    if (findEvent.state !== invitationStatus.ACCEPTED) {
+    if (findEvent.state === eventStatus.CANCELED) {
       return res.json({
         code: errorCodes.EventNotActive,
         error: 'Event not active'
