@@ -1,5 +1,7 @@
 const request = require('request')
 const fs = require('fs')
+const { Op } = require('sequelize')
+const cron = require('cron')
 const axios = require('axios')
 const EventFormModel = require('../../models/eventForm.model')
 const EventModel = require('../../models/event.model')
@@ -10,14 +12,16 @@ const errorCodes = require('../constants/errorCodes')
 const {
   accountStatus,
   invitationStatus,
-  userTypes
+  userTypes,
+  eventStatus
 } = require('../constants/TBH.enum')
 const validator = require('../helpers/validations/eventValidations')
-const { emailAccessKey } = require('../../config/keys')
+const { emailAccessKey, bookingExpiry } = require('../../config/keys')
 const {
   IsJsonString,
   sendEmailsToInQueue,
-  cancelAllRegisterations
+  cancelAllRegisterations,
+  expireRegisteration
 } = require('../helpers/helpers')
 
 const create_event_form = async (req, res) => {
@@ -219,10 +223,10 @@ const register_to_event = async (req, res) => {
         error: 'Event not found'
       })
     }
-    if (findEvent.state !== invitationStatus.ACCEPTED) {
+    if (findEvent.state !== eventStatus.OPENFORREGISTERATION) {
       return res.json({
         code: errorCodes.EventNotActive,
-        error: 'Event not active'
+        error: 'Event not open for registeration'
       })
     }
     const findRegisteration = await RegisterationModel.findOne({
@@ -263,18 +267,29 @@ const register_to_event = async (req, res) => {
         }
       )
     } else {
-      if (!findRegisteration)
-        await RegisterationModel.create({
+      if (!findRegisteration) {
+        const registerationCreated = await RegisterationModel.create({
           accountId: Account.id,
           eventId: Event.id
         })
+        const date = new Date().getTime() + bookingExpiry //Enviroment variable
+        const expiryDate = new Date(date)
+        const scheduleJob = cron.job(expiryDate, async () => {
+          await expireRegisteration(registerationCreated.id)
+        })
+        scheduleJob.start()
+      }
     }
+    let state = findEvent.state
+    if (findEvent.amountOfPeople + 1 === findEvent.maxNoOfPeople)
+      state = eventStatus.FULLYBOOKED
     await EventModel.update(
-      { amountOfPeople: findEvent.amountOfPeople + 1 },
+      { amountOfPeople: findEvent.amountOfPeople + 1, state: state },
       { where: { id: Event.id } }
     )
     return res.json({ code: errorCodes.success })
   } catch (exception) {
+    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -299,7 +314,7 @@ const show_event = async (req, res) => {
 const show_all_events = async (req, res) => {
   try {
     const events = await EventModel.findAll({
-      where: { state: invitationStatus.ACCEPTED }
+      where: { state: { [Op.not]: eventStatus.CANCELED } }
     })
     return res.json({ code: errorCodes.success, events })
   } catch (exception) {
@@ -455,17 +470,17 @@ const edit_event_information = async (req, res) => {
         error: 'Event not found'
       })
     }
-    if (req.data.type !== userTypes.ADMIN) {
-      if (
-        findEvent.collaborators === null ||
-        !findEvent.collaborators.includes(parseInt(Account.id))
-      ) {
-        return res.json({
-          code: errorCodes.collaboratorExists,
-          error: 'You are not a collaborator'
-        })
-      }
-    }
+    // if (req.data.type !== userTypes.ADMIN) {
+    //   if (
+    //     findEvent.collaborators === null ||
+    //     !findEvent.collaborators.includes(parseInt(Account.id))
+    //   ) {
+    //     return res.json({
+    //       code: errorCodes.collaboratorExists,
+    //       error: 'You are not a collaborator'
+    //     })
+    //   }
+    // }
     await EventModel.update(Event.Info, { where: { id: Event.id } })
     return res.json({ code: errorCodes.success })
   } catch (exception) {
@@ -580,8 +595,11 @@ const edit_registeration_admin = async (req, res) => {
       findRegisteration.state !== invitationStatus.REJECTED
     ) {
       sendEmailsToInQueue(Event.id, findEvent.name)
+      let state = findEvent.state
+      if (findEvent.state === eventStatus.FULLYBOOKED)
+        state = eventStatus.OPENFORREGISTERATION
       EventModel.update(
-        { amountOfPeople: findEvent.amountOfPeople - 1 },
+        { amountOfPeople: findEvent.amountOfPeople - 1, state },
         { where: { id: Event.id } }
       )
     }
@@ -611,12 +629,22 @@ const edit_event_admin = async (req, res) => {
       })
     }
     await EventModel.update({ state: Event.state }, { where: { id: Event.id } })
-    if (Event.state === accountStatus.CANCELED) {
+    if (Event.state === eventStatus.CANCELED) {
       cancelAllRegisterations(Event.id)
     }
     return res.json({ code: errorCodes.success })
   } catch (exception) {
     console.log(exception)
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const show_all_events_admin = async (req, res) => {
+  try {
+    const events = await EventModel.findAll()
+
+    return res.json({ code: errorCodes.success, events })
+  } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -660,6 +688,16 @@ const create_event_admin = async (req, res) => {
   }
 }
 
+const show_all_event_forms = async (req, res) => {
+  try {
+    const eventForms = await EventFormModel.findAll()
+    return res.json({ code: errorCodes.success, eventForms })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
 module.exports = {
   create_event_form,
   invite_to_event,
@@ -673,5 +711,7 @@ module.exports = {
   create_event_admin,
   invite_collaborator,
   remove_collaborator,
-  edit_event_information
+  edit_event_information,
+  show_all_events_admin,
+  show_all_event_forms
 }

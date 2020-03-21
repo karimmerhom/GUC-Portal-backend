@@ -1,5 +1,9 @@
 const joi = require('joi')
-const { invitationStatus, accountStatus } = require('../../constants/TBH.enum')
+const {
+  invitationStatus,
+  accountStatus,
+  eventStatus
+} = require('../../constants/TBH.enum')
 
 const validateInviteToEvent = request => {
   const schema = {
@@ -35,7 +39,7 @@ const validateEditEventInfo = request => {
             link: joi.string(),
             facebookPage: joi.string(),
             instagramPage: joi.string(),
-            roomLayout: joi.string(),
+            roomLayout: joi.string().valid('meeting room', 'training room'),
             maxNoOfPeople: joi.number(),
             services: joi
               .array()
@@ -145,7 +149,14 @@ const validateEditEventAdmin = request => {
         id: joi.number().required(),
         state: joi
           .string()
-          .valid(invitationStatus.ACCEPTED, accountStatus.CANCELED)
+          .valid(
+            eventStatus.POSTED,
+            eventStatus.OPENFORREGISTERATION,
+            eventStatus.STARTED,
+            eventStatus.ENDED,
+            eventStatus.FULLYBOOKED,
+            eventStatus.CANCELED
+          )
           .required()
       })
       .required()

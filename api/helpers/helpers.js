@@ -195,6 +195,24 @@ const expireBooking = async (id, status = accountStatus.EXPIRED) => {
   return { code: errorCodes.success }
 }
 
+const expireRegisteration = async id => {
+  const registeration = RegisterationModel.findOne({ where: { id } })
+  if (
+    registeration.state === invitationStatus.REGISTERED ||
+    registeration.state === invitationStatus.INQUEUE
+  ) {
+    return {
+      code: errorCodes.bookingConfirmed,
+      error: 'Cannot expire this registeration'
+    }
+  }
+  RegisterationModel.update(
+    { state: invitationStatus.REJECTED },
+    { where: { id } }
+  )
+  return { code: errorCodes.success }
+}
+
 const eraseDatabaseOnSyncContacts = async () => {
   try {
     await axios({
@@ -319,5 +337,6 @@ module.exports = {
   underAgeValidate,
   IsJsonString,
   sendEmailsToInQueue,
-  cancelAllRegisterations
+  cancelAllRegisterations,
+  expireRegisteration
 }

@@ -66,6 +66,15 @@ const invitationStatus = {
   INQUEUE: 'Inqueue'
 }
 
+const eventStatus = {
+  POSTED: 'posted',
+  OPENFORREGISTERATION: 'open for registeration',
+  FULLYBOOKED: 'fully booked',
+  STARTED: 'started',
+  ENDED: 'ended',
+  CANCELED: 'canceled'
+}
+
 module.exports = {
   accountStatus,
   paymentMethods,
@@ -74,5 +83,6 @@ module.exports = {
   slotStatus,
   roomPricing,
   userTypes,
-  invitationStatus
+  invitationStatus,
+  eventStatus
 }

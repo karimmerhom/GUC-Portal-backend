@@ -2,7 +2,11 @@ const Sequelize = require('sequelize')
 
 const sequelize = require('../config/DBConfig')
 
-const { invitationStatus, accountStatus } = require('../api/constants/TBH.enum')
+const {
+  invitationStatus,
+  accountStatus,
+  eventStatus
+} = require('../api/constants/TBH.enum')
 
 const { Model } = Sequelize
 const AccountModel = require('./account.model')
@@ -30,8 +34,15 @@ Event.init(
     },
     state: {
       type: Sequelize.ENUM,
-      values: [invitationStatus.ACCEPTED, accountStatus.CANCELED],
-      defaultValue: invitationStatus.ACCEPTED
+      values: [
+        eventStatus.POSTED,
+        eventStatus.OPENFORREGISTERATION,
+        eventStatus.STARTED,
+        eventStatus.ENDED,
+        eventStatus.FULLYBOOKED,
+        eventStatus.CANCELED
+      ],
+      defaultValue: eventStatus.POSTED
     },
     services: {
       type: Sequelize.ARRAY(Sequelize.STRING)
