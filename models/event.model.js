@@ -35,6 +35,7 @@ Event.init(
     state: {
       type: Sequelize.ENUM,
       values: [
+        eventStatus.CONFIRMED,
         eventStatus.POSTED,
         eventStatus.OPENFORREGISTERATION,
         eventStatus.STARTED,
@@ -42,7 +43,7 @@ Event.init(
         eventStatus.FULLYBOOKED,
         eventStatus.CANCELED
       ],
-      defaultValue: eventStatus.POSTED
+      defaultValue: eventStatus.CONFIRMED
     },
     services: {
       type: Sequelize.ARRAY(Sequelize.STRING)

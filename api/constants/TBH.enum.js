@@ -72,7 +72,8 @@ const eventStatus = {
   FULLYBOOKED: 'fully booked',
   STARTED: 'started',
   ENDED: 'ended',
-  CANCELED: 'canceled'
+  CANCELED: 'canceled',
+  CONFIRMED: 'confirmed'
 }
 
 module.exports = {

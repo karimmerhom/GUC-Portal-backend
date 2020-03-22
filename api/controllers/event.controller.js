@@ -223,9 +223,15 @@ const register_to_event = async (req, res) => {
         error: 'Event not found'
       })
     }
+    if (findEvent.state === eventStatus.FULLYBOOKED) {
+      return res.json({
+        code: errorCodes.eventFullyBooked,
+        error: 'Event is fully booked'
+      })
+    }
     if (findEvent.state !== eventStatus.OPENFORREGISTERATION) {
       return res.json({
-        code: errorCodes.EventNotActive,
+        code: errorCodes.eventNotOpenForRegisteration,
         error: 'Event not open for registeration'
       })
     }

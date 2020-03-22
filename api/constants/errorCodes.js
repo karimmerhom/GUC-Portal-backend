@@ -62,6 +62,10 @@ const reachedMaximumAmountOfPeopleEvent = 130
 
 const collaboratorExists = 131
 
+const eventFullyBooked = 132
+
+const eventNotOpenForRegisteration = 133
+
 module.exports = {
   success,
   validation,
@@ -94,5 +98,7 @@ module.exports = {
   invitationAlreadyExists,
   EventNotActive,
   reachedMaximumAmountOfPeopleEvent,
-  collaboratorExists
+  collaboratorExists,
+  eventNotOpenForRegisteration,
+  eventFullyBooked
 }
