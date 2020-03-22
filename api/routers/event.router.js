@@ -15,6 +15,8 @@ const {
   invite_collaborator,
   remove_collaborator,
   edit_event_information,
+  cancel_registeration_user,
+  show_my_registerations,
   // show_all_events_accepted,
   // show_my_events,
   create_event_admin,
@@ -33,10 +35,12 @@ router.post('/removecollaborator', verifyToken, verifyUser, remove_collaborator)
 router.post('/invitetoevent', verifyToken, verifyUser, invite_to_event)
 router.post('/editeventinfo', verifyAdmin, edit_event_information)
 router.post('/registerevent', verifyToken, verifyUser, register_to_event)
+router.post('/cancelregisteration', verifyToken, verifyUser, cancel_registeration_user)
 router.post('/showevent', show_event)
 router.post('/showallevents', show_all_events)
 router.post('/showalleventsadmin', verifyAdmin, show_all_events_admin)
 router.post('/showalleventforms', verifyAdmin, show_all_event_forms)
+router.post('/showmyregisterations', verifyToken, verifyUser, show_my_registerations)
 // router.post('/showmyevents', verifyToken, verifyUser, show_my_events)
 // router.post('/showalleventsaccepted', show_all_events_accepted)
 router.post('/editregisterationadmin', verifyAdmin, edit_registeration_admin)

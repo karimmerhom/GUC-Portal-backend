@@ -175,6 +175,22 @@ const validateShowEvent = request => {
   return joi.validate(request, schema)
 }
 
+const validateEditRegisterToEventUser = request => {
+  const schema = {
+    Registeration: joi
+      .object({
+        id: joi.number().required()
+      })
+      .required(),
+    Account: joi
+      .object({
+        id: joi.number().required()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
+
 const validateCreateEventAdmin = request => {
   const schema = {
     Event: joi
@@ -192,6 +208,17 @@ const validateCreateEventAdmin = request => {
   return joi.validate(request, schema)
 }
 
+const viewMyRegisterations = request => {
+  const schema = {
+    Account: joi
+      .object({
+        id: joi.number().required()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
+
 module.exports = {
   validateInviteToEvent,
   validateCreateEvent,
@@ -202,5 +229,7 @@ module.exports = {
   validateCreateEventAdmin,
   validateAddCollaborator,
   validateInviteToCollaborator,
-  validateEditEventInfo
+  validateEditEventInfo,
+  validateEditRegisterToEventUser,
+  viewMyRegisterations
 }

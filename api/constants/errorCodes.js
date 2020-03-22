@@ -66,6 +66,8 @@ const eventFullyBooked = 132
 
 const eventNotOpenForRegisteration = 133
 
+const cannotEditRegisteration = 134
+
 module.exports = {
   success,
   validation,
@@ -100,5 +102,6 @@ module.exports = {
   reachedMaximumAmountOfPeopleEvent,
   collaboratorExists,
   eventNotOpenForRegisteration,
-  eventFullyBooked
+  eventFullyBooked,
+  cannotEditRegisteration
 }

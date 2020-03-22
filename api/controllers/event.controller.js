@@ -229,7 +229,10 @@ const register_to_event = async (req, res) => {
         error: 'Event is fully booked'
       })
     }
-    if (findEvent.state !== eventStatus.OPENFORREGISTERATION) {
+    if (
+      findEvent.state !== eventStatus.OPENFORREGISTERATION &&
+      findEvent.state !== eventStatus.FULLYBOOKED
+    ) {
       return res.json({
         code: errorCodes.eventNotOpenForRegisteration,
         error: 'Event not open for registeration'
@@ -254,7 +257,7 @@ const register_to_event = async (req, res) => {
         state: invitationStatus.INQUEUE
       })
       return res.json({
-        code: errorCodes.reachedMaximumAmountOfPeopleEvent,
+        code: errorCodes.eventFullyBooked,
         error: 'This event has no remaining places left'
       })
     }
@@ -495,6 +498,71 @@ const edit_event_information = async (req, res) => {
   }
 }
 
+const cancel_registeration_user = async (req, res) => {
+  try {
+    const isValid = validator.validateEditRegisterToEventUser(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Account, Registeration } = req.body
+    const registeration = await RegisterationModel.findOne({
+      where: { id: Registeration.id }
+    })
+    if (!registeration) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'No registeration found'
+      })
+    }
+    if (
+      Account.id !== registeration.accountId &&
+      req.data.type !== userTypes.ADMIN
+    ) {
+      return res.json({
+        code: errorCodes.unauthorized,
+        error: 'Unauthorized cancellation'
+      })
+    }
+    if (
+      registeration.state !== invitationStatus.PENDING &&
+      registeration.state !== invitationStatus.INQUEUE
+    ) {
+      return res.json({
+        code: errorCodes.cannotEditRegisteration,
+        error: 'Cannot edit this registeration'
+      })
+    }
+    await RegisterationModel.destroy({ where: { id: registeration.id } })
+    return res.json({ code: errorCodes.success })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const show_my_registerations = async (req, res) => {
+  try {
+    const isValid = validator.viewMyRegisterations(req.body)
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Account } = req.body
+    const registerations = await RegisterationModel.findAll({
+      where: { accountId: Account.id }
+    })
+    return res.json({ code: errorCodes.success, registerations})
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
 // const show_my_event_forms = async (req, res) => {
 //   try {
 //     const events = await EventFormModel.findAll({
@@ -712,6 +780,7 @@ module.exports = {
   edit_event_admin,
   show_event,
   show_all_events,
+  cancel_registeration_user,
   // show_all_events_accepted,
   // show_my_events,
   create_event_admin,
@@ -719,5 +788,6 @@ module.exports = {
   remove_collaborator,
   edit_event_information,
   show_all_events_admin,
-  show_all_event_forms
+  show_all_event_forms,
+  show_my_registerations
 }
