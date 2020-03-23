@@ -223,21 +223,6 @@ const register_to_event = async (req, res) => {
         error: 'Event not found'
       })
     }
-    if (findEvent.state === eventStatus.FULLYBOOKED) {
-      return res.json({
-        code: errorCodes.eventFullyBooked,
-        error: 'Event is fully booked'
-      })
-    }
-    if (
-      findEvent.state !== eventStatus.OPENFORREGISTERATION &&
-      findEvent.state !== eventStatus.FULLYBOOKED
-    ) {
-      return res.json({
-        code: errorCodes.eventNotOpenForRegisteration,
-        error: 'Event not open for registeration'
-      })
-    }
     const findRegisteration = await RegisterationModel.findOne({
       where: { accountId: Account.id, eventId: Event.id }
     })
@@ -250,16 +235,39 @@ const register_to_event = async (req, res) => {
         error: 'You already tried to register to this event'
       })
     }
-    if (findEvent.amountOfPeople + 1 > findEvent.maxNoOfPeople) {
-      await RegisterationModel.create({
-        accountId: Account.id,
-        eventId: Event.id,
-        state: invitationStatus.INQUEUE
-      })
+    // if (findEvent.state === eventStatus.FULLYBOOKED) {
+    //   return res.json({
+    //     code: errorCodes.eventFullyBooked,
+    //     error: 'Event is fully booked'
+    //   })
+    // }
+    if (
+      findEvent.state !== eventStatus.OPENFORREGISTERATION &&
+      findEvent.state !== eventStatus.FULLYBOOKED
+    ) {
       return res.json({
-        code: errorCodes.eventFullyBooked,
-        error: 'This event has no remaining places left'
+        code: errorCodes.eventNotOpenForRegisteration,
+        error: 'Event not open for registeration'
       })
+    }
+   
+    if (findEvent.state === eventStatus.FULLYBOOKED) {
+      if (!findRegisteration) {
+        await RegisterationModel.create({
+          accountId: Account.id,
+          eventId: Event.id,
+          state: invitationStatus.INQUEUE
+        })
+        return res.json({
+          code: errorCodes.eventFullyBooked,
+          error: 'This event has no remaining places left'
+        })
+      } else {
+        return res.json({
+          code: errorCodes.eventFullyBooked,
+          error: 'This event has no remaining places left'
+        })
+      }
     }
 
     if (
@@ -543,6 +551,53 @@ const cancel_registeration_user = async (req, res) => {
   }
 }
 
+const cancel_registeration_user_by_eventId = async (req, res) => {
+  try {
+    const isValid = validator.validateCancelRegisterToEventUserByEventId(
+      req.body
+    )
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message
+      })
+    }
+    const { Account, Event } = req.body
+    const registeration = await RegisterationModel.findOne({
+      where: { accountId: Account.id, eventId: Event.id }
+    })
+    if (!registeration) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'No registeration found'
+      })
+    }
+    if (
+      Account.id !== registeration.accountId &&
+      req.data.type !== userTypes.ADMIN
+    ) {
+      return res.json({
+        code: errorCodes.unauthorized,
+        error: 'Unauthorized cancellation'
+      })
+    }
+    if (
+      registeration.state !== invitationStatus.PENDING &&
+      registeration.state !== invitationStatus.INQUEUE
+    ) {
+      return res.json({
+        code: errorCodes.cannotEditRegisteration,
+        error: 'Cannot edit this registeration'
+      })
+    }
+    await RegisterationModel.destroy({ where: { id: registeration.id } })
+    return res.json({ code: errorCodes.success })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
 const show_my_registerations = async (req, res) => {
   try {
     const isValid = validator.viewMyRegisterations(req.body)
@@ -556,7 +611,7 @@ const show_my_registerations = async (req, res) => {
     const registerations = await RegisterationModel.findAll({
       where: { accountId: Account.id }
     })
-    return res.json({ code: errorCodes.success, registerations})
+    return res.json({ code: errorCodes.success, registerations })
   } catch (exception) {
     console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
@@ -666,7 +721,8 @@ const edit_registeration_admin = async (req, res) => {
 
     if (
       Event.state === invitationStatus.REJECTED &&
-      findRegisteration.state !== invitationStatus.REJECTED
+      findRegisteration.state !== invitationStatus.REJECTED &&
+      findRegisteration.state !== invitationStatus.INQUEUE
     ) {
       sendEmailsToInQueue(Event.id, findEvent.name)
       let state = findEvent.state
@@ -789,5 +845,6 @@ module.exports = {
   edit_event_information,
   show_all_events_admin,
   show_all_event_forms,
-  show_my_registerations
+  show_my_registerations,
+  cancel_registeration_user_by_eventId
 }

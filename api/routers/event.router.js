@@ -17,6 +17,7 @@ const {
   edit_event_information,
   cancel_registeration_user,
   show_my_registerations,
+  cancel_registeration_user_by_eventId,
   // show_all_events_accepted,
   // show_my_events,
   create_event_admin,
@@ -36,6 +37,7 @@ router.post('/invitetoevent', verifyToken, verifyUser, invite_to_event)
 router.post('/editeventinfo', verifyAdmin, edit_event_information)
 router.post('/registerevent', verifyToken, verifyUser, register_to_event)
 router.post('/cancelregisteration', verifyToken, verifyUser, cancel_registeration_user)
+router.post('/cancelregisterationbyeventid', verifyToken, verifyUser, cancel_registeration_user_by_eventId)
 router.post('/showevent', show_event)
 router.post('/showallevents', show_all_events)
 router.post('/showalleventsadmin', verifyAdmin, show_all_events_admin)

@@ -191,6 +191,22 @@ const validateEditRegisterToEventUser = request => {
   return joi.validate(request, schema)
 }
 
+const validateCancelRegisterToEventUserByEventId = request => {
+  const schema = {
+    Event: joi
+      .object({
+        id: joi.number().required()
+      })
+      .required(),
+    Account: joi
+      .object({
+        id: joi.number().required()
+      })
+      .required()
+  }
+  return joi.validate(request, schema)
+}
+
 const validateCreateEventAdmin = request => {
   const schema = {
     Event: joi
@@ -231,5 +247,6 @@ module.exports = {
   validateInviteToCollaborator,
   validateEditEventInfo,
   validateEditRegisterToEventUser,
-  viewMyRegisterations
+  viewMyRegisterations,
+  validateCancelRegisterToEventUserByEventId
 }
