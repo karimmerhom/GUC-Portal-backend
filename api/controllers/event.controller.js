@@ -250,7 +250,7 @@ const register_to_event = async (req, res) => {
         error: 'Event not open for registeration'
       })
     }
-   
+
     if (findEvent.state === eventStatus.FULLYBOOKED) {
       if (!findRegisteration) {
         await RegisterationModel.create({
@@ -519,12 +519,16 @@ const cancel_registeration_user = async (req, res) => {
     const registeration = await RegisterationModel.findOne({
       where: { id: Registeration.id }
     })
+
     if (!registeration) {
       return res.json({
         code: errorCodes.entityNotFound,
         error: 'No registeration found'
       })
     }
+    const findEvent = await EventModel.findOne({
+      where: { id: registeration.eventId }
+    })
     if (
       Account.id !== registeration.accountId &&
       req.data.type !== userTypes.ADMIN
@@ -544,6 +548,15 @@ const cancel_registeration_user = async (req, res) => {
       })
     }
     await RegisterationModel.destroy({ where: { id: registeration.id } })
+    if (registeration.state !== invitationStatus.INQUEUE) {
+      let state = findEvent.state
+      if (findEvent.state === eventStatus.FULLYBOOKED)
+        state = eventStatus.OPENFORREGISTERATION
+      EventModel.update(
+        { amountOfPeople: findEvent.amountOfPeople - 1, state },
+        { where: { id: findEvent.id } }
+      )
+    }
     return res.json({ code: errorCodes.success })
   } catch (exception) {
     console.log(exception)
@@ -572,6 +585,9 @@ const cancel_registeration_user_by_eventId = async (req, res) => {
         error: 'No registeration found'
       })
     }
+    const findEvent = await EventModel.findOne({
+      where: { id: registeration.eventId }
+    })
     if (
       Account.id !== registeration.accountId &&
       req.data.type !== userTypes.ADMIN
@@ -591,6 +607,15 @@ const cancel_registeration_user_by_eventId = async (req, res) => {
       })
     }
     await RegisterationModel.destroy({ where: { id: registeration.id } })
+    if (registeration.state !== invitationStatus.INQUEUE) {
+      let state = findEvent.state
+      if (findEvent.state === eventStatus.FULLYBOOKED)
+        state = eventStatus.OPENFORREGISTERATION
+      EventModel.update(
+        { amountOfPeople: findEvent.amountOfPeople - 1, state },
+        { where: { id: findEvent.id } }
+      )
+    }
     return res.json({ code: errorCodes.success })
   } catch (exception) {
     console.log(exception)
