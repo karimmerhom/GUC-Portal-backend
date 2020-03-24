@@ -276,6 +276,12 @@ const verify_email = async (req, res) => {
       })
     }
     const account = await AccountModel.findOne({ where: { id: Account.id } })
+    if (!account) {
+      return res.json({
+        code: errorCodes.entityNotFound,
+        error: 'User not found'
+      })
+    }
     if (account.emailVerified) {
       return res.json({
         code: errorCodes.alreadyVerified,
@@ -299,6 +305,7 @@ const verify_email = async (req, res) => {
     })
     return res.json({ code: errorCodes.success })
   } catch (exception) {
+    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
