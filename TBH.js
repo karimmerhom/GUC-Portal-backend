@@ -5,24 +5,19 @@ const allRoutes = require('express-list-endpoints')
 const bodyParser = require('body-parser')
 const fileUpload = require('express-fileupload')
 
-const { eraseDatabaseOnSyncContacts } = require('./api/helpers/helpers')
 const { populate_admins } = require('./config/populateAdmins')
 const { populate_users } = require('./config/populateUser')
-const { populate_pricing } = require('./config/populatePricing')
 
 const app = express()
 
 const account = require('./api/routers/account.router')
-const booking = require('./api/routers/booking.router')
-const package = require('./api/routers/package.router')
-const event = require('./api/routers/event.router')
 
 // import db configuration
 const sequelize = require('./config/DBConfig')
 
 app.use(
   fileUpload({
-    createParentPath: true
+    createParentPath: true,
   })
 )
 // add other middleware
@@ -38,48 +33,30 @@ sequelize
   .then(() => {
     console.log('Connected to postgres')
   })
-  .catch(err => {
+  .catch((err) => {
     console.error('Unable to connect to postgres', err)
   })
 
 const explore = (req, res) => {
   const routes = allRoutes(app)
   const result = {
-    ServiceList: []
+    ServiceList: [],
   }
-  routes.forEach(route => {
+  routes.forEach((route) => {
     const name = route.path.split('/')[5]
     result.ServiceList.push({
       Service: {
         name,
-        fullUrl: `${route.path}`
-      }
+        fullUrl: `${route.path}`,
+      },
     })
   })
   return res.json(result)
 }
 
 app.use('/tbhapp/accounts', account)
-app.use('/tbhapp/bookings', booking)
-app.use('/tbhapp/packages', package)
-app.use('/tbhapp/events', event)
-app.use('/tbhapp/explore', explore)
 
-app.get('/tbhapp/dropdb', async (req, res) => {
-  sequelize
-    .sync({ force: true })
-    .then(() => console.log('Synced models with database'))
-    .then(() => {
-      if (true) {
-        eraseDatabaseOnSyncContacts()
-        populate_admins()
-        populate_users()
-        populate_pricing()
-      }
-    })
-    .catch(error => console.log('Could not sync models with database', error))
-  return res.json({ msg: 'dropped' })
-})
+app.use('/tbhapp/explore', explore)
 
 app.use((req, res) => {
   res.status(404).send({ err: 'No such url' })
@@ -103,20 +80,18 @@ app.use((req, res, next) => {
   next()
 })
 
-const eraseDatabaseOnSync = false
+const eraseDatabaseOnSync = true
 
 sequelize
   .sync({ force: eraseDatabaseOnSync })
   .then(() => console.log('Synced models with database'))
   .then(() => {
     if (eraseDatabaseOnSync) {
-      eraseDatabaseOnSyncContacts()
       populate_admins()
       populate_users()
-      populate_pricing()
     }
   })
-  .catch(error => console.log('Could not sync models with database', error))
+  .catch((error) => console.log('Could not sync models with database', error))
 
 const port = process.env.PORT || 5000
 app.listen(port, () => console.log(`Server up and running on ${port}`))

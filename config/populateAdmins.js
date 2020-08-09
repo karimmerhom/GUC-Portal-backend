@@ -17,82 +17,22 @@ const populate_admins = async () => {
     phone: '01018070815',
     email: 'islam.sanad98@gmail.com',
     status: accountStatus.VERIFIED,
-    type: userTypes.ADMIN
+    type: userTypes.ADMIN,
   })
-  await axios({
-    method: 'post',
-    url: 'https://cubexs.net/contacts/createcontact',
-    data: {
-      header: {
-        accessKey: contactAccessKey
-      },
-      body: {
-        firstName: 'Islam',
-        lastName: 'Sanad',
-        email: 'islam.sanad98@gmail.com',
-        phoneNumber: '01018070815',
-        ownerId: parseInt(accountCreated.id),
-        accountId: 1
-      }
-    }
-  })
-  password = 'Samar1234'
+
+  password = 'Hooda1234'
   hashed_pass = bcrypt.hashSync(password, saltKey)
   accountCreated = await AccountModel.create({
-    username: 'samarashery',
+    username: 'hoodaadmin',
     password: hashed_pass,
-    firstName: 'Samar',
-    lastName: 'Ashery',
-    phone: '01141988757',
-    email: 'samar.ashery@lirten.com',
+    firstName: 'Hooda',
+    lastName: 'Admin',
+    phone: '01005599171',
+    email: 'mohammed.mahmoud57@gmail.com',
     status: accountStatus.VERIFIED,
-    type: userTypes.ADMIN
+    type: userTypes.ADMIN,
   })
-  await axios({
-    method: 'post',
-    url: 'https://cubexs.net/contacts/createcontact',
-    data: {
-      header: {
-        accessKey: contactAccessKey
-      },
-      body: {
-        firstName: 'Samar',
-        lastName: 'Ashery',
-        email: 'samar.ashery@lirten.com',
-        phoneNumber: '01141988757',
-        ownerId: parseInt(accountCreated.id),
-        accountId: 1
-      }
-    }
-  })
-  // password = 'Hooda1234'
-  // hashed_pass = bcrypt.hashSync(password, saltKey)
-  // accountCreated = await AccountModel.create({
-  //   username: 'hoodaadmin',
-  //   password: hashed_pass,
-  //   firstName: 'Hooda',
-  //   lastName: 'Admin',
-  //   phone: '01005599171',
-  //   email: 'mohammed.mahmoud57@gmail.com',
-  //   status: accountStatus.VERIFIED,
-  //   type: userTypes.ADMIN
-  // })
-  // await axios({
-  //   method: 'post',
-  //   url: 'http://localhost:2003/contacts/createcontact',
-  //   data: {
-  //     header: {
-  //       accessKey: contactAccessKey
-  //     },
-  //     body: {
-  //       firstName: 'Hooda',
-  //       lastName: 'Admin',
-  //       email: 'mohammed.mahmoud@gmail.com',
-  //       phoneNumber: '01005599171',
-  //       ownerId: parseInt(accountCreated.id)
-  //     }
-  //   }
-  // })
+
   return { code: errorCodes.success }
 }
 
