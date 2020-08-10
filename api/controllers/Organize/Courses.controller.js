@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken')
 const CoursesModel = require('../../../models/courses.model')
 const errorCodes = require('../../constants/errorCodes')
 const FormModel = require('../../../models/form.model')
-
+const validator = require('../../helpers/validations/coursesValidations')
 const createCourse = async (req, res) => {
   try {
     const { Course, Account } = req.body
