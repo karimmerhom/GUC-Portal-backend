@@ -11,6 +11,8 @@ const { populate_users } = require('./config/populateUser')
 const app = express()
 
 const account = require('./api/routers/account.router')
+const courses = require('./api/routers/courses.router')
+const form = require('./api/routers/form.router')
 
 // import db configuration
 const sequelize = require('./config/DBConfig')
@@ -55,7 +57,8 @@ const explore = (req, res) => {
 }
 
 app.use('/tbhapp/accounts', account)
-
+app.use('/tbhapp/Courses', courses)
+app.use('/tbhapp/Form', form)
 app.use('/tbhapp/explore', explore)
 
 app.use((req, res) => {
