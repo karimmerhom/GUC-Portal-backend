@@ -9,17 +9,14 @@ const {
 } = require("../api/constants/TBH.enum")
 
 const UserModel = require("./account.model")
-const PackageModel = require("./packages.model")
-
+const RegularPackageModel = require("./regularpackage.model")
+const ExtremePackageModel = require("./extremepackage.model")
 const { Model } = Sequelize
 
 class Purchased extends Model {}
 Purchased.init(
   {
     packageId: {
-      type: Sequelize.STRING,
-    },
-    packageType: {
       type: Sequelize.STRING,
     },
     totalPoints: {
@@ -41,6 +38,5 @@ Purchased.init(
   }
 )
 Purchased.belongsTo(UserModel, { foreignKey: "accountId" })
-Purchased.belongsTo(PackageModel, { foreignKey: "packageId" })
 
-module.exports = Account
+module.exports = Purchased
