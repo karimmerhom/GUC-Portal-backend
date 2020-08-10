@@ -34,6 +34,30 @@ const createForm = async (req, res) => {
   }
 }
 
+const editForm = async (req, res) => {
+  try {
+    const formID = req.body.Form.id
+    const { form } = req.body
+    const formid = await FormModel.findOne({
+      where: {
+        id: formID,
+      },
+    })
+    if (formid) {
+      delete Course.id
+      CoursesModel.delete(Form, { where: { id: formID } })
+    }
+    return res.json({ msg: 'form is updated', statusCode: '0' })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({
+      error: 'Something went wrong',
+      statusCode: '1',
+    })
+  }
+}
+
 module.exports = {
   createForm,
+  editForm,
 }

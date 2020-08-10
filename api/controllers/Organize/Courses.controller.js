@@ -5,6 +5,7 @@ const CoursesModel = require('../../../models/courses.model')
 const errorCodes = require('../../constants/errorCodes')
 const FormModel = require('../../../models/form.model')
 const validator = require('../../helpers/validations/coursesValidations')
+
 const createCourse = async (req, res) => {
   try {
     const { course, Account } = req.body
@@ -46,6 +47,32 @@ const createCourse = async (req, res) => {
   }
 }
 
+const editCourse = async (req, res) => {
+  try {
+    const courseID = req.body.Course.id
+    const { Course } = req.body
+    const courseid = await CoursesModel.findOne({
+      where: {
+        id: courseID,
+      },
+    })
+    if (courseid) {
+      delete Course.id
+      CoursesModel.update(Course, { where: { id: courseID } })
+    }
+
+    //console.log(courseUpdate.title),
+    return res.json({ msg: 'course is updated', statusCode: '0' })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({
+      error: 'Something went wrong',
+      statusCode: '1',
+    })
+  }
+}
+
 module.exports = {
   createCourse,
+  editCourse,
 }
