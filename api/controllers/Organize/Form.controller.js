@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs')
 const axios = require('axios')
 const jwt = require('jsonwebtoken')
 const FormModel = require('../../../models/form.model')
-//const validator = require('../helpers/validations/formValidations')
+const validator = require('../../helpers/validations/formValidations')
 const errorCodes = require('../../constants/errorCodes')
 
 const createForm = async (req, res) => {
