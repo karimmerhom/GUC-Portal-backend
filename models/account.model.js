@@ -10,52 +10,49 @@ class Account extends Model {}
 Account.init(
   {
     username: {
-      type: Sequelize.STRING
+      type: Sequelize.STRING,
     },
     password: {
-      type: Sequelize.STRING
+      type: Sequelize.STRING,
     },
     firstName: {
-      type: Sequelize.STRING
+      type: Sequelize.STRING,
     },
     lastName: {
-      type: Sequelize.STRING
+      type: Sequelize.STRING,
     },
     email: {
-      type: Sequelize.STRING
+      type: Sequelize.STRING,
     },
     phone: {
-      type: Sequelize.STRING
+      type: Sequelize.STRING,
     },
     status: {
       type: Sequelize.ENUM,
       values: [
         accountStatus.VERIFIED,
         accountStatus.PENDING,
-        accountStatus.SUSPENDED
-      ]
-    },
-    verificationCode: {
-      type: Sequelize.STRING
+        accountStatus.SUSPENDED,
+      ],
     },
     type: {
       type: Sequelize.ENUM,
-      values: [userTypes.ADMIN, userTypes.USER]
+      values: [userTypes.ADMIN, userTypes.USER],
     },
     emailVerified: {
       type: Sequelize.BOOLEAN,
-      defaultValue: false
+      defaultValue: false,
     },
     facebookId: {
-      type: Sequelize.STRING
+      type: Sequelize.STRING,
     },
     googleId: {
-      type: Sequelize.STRING
-    }
+      type: Sequelize.STRING,
+    },
   },
   {
     sequelize,
-    timestamps: false
+    timestamps: false,
   }
 )
 
