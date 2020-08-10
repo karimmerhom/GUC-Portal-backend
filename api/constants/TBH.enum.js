@@ -107,6 +107,12 @@ const calStatus = {
   FILTERED: 'filtered',
 }
 
+const bookingStatus = {
+  CONFIRMED: 'confirmed',
+  PENDING: 'pending',
+  CANCELED: 'canceled',
+}
+
 module.exports = {
   accountStatus,
   paymentMethods,
@@ -121,4 +127,5 @@ module.exports = {
   roomType,
   calStatus,
   slots,
+  bookingStatus,
 }

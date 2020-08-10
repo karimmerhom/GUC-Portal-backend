@@ -16,9 +16,10 @@ const {
   contactAccessKey,
   emailAccessKey,
 } = require('../../config/keys')
-const { slots, calStatus } = require('../constants/TBH.enum')
+const { slots, calStatus, bookingStatus } = require('../constants/TBH.enum')
 const {} = require('../helpers/helpers')
 const { object } = require('joi')
+const { calendar } = require('googleapis/build/src/apis/calendar')
 
 const viewCalendar = async (req, res) => {
   try {
@@ -67,4 +68,96 @@ const viewCalendar = async (req, res) => {
   }
 }
 
-module.exports = { viewCalendar }
+const cancelBooking = async (req, res) => {
+  try {
+    const { Account, bookingId } = req.body
+    const accountId = Account.id
+    const booking = await BookingModel.findOne({
+      where: {
+        id: bookingId,
+      },
+    })
+    if (booking) {
+      if (booking.status == bookingStatus.CANCELED) {
+        return res.json({ statusCode: 7000, error: 'booking already canceled' })
+      }
+      if (booking.accountId !== accountId) {
+        return res.json({ statusCode: 7000, error: 'Not the users booking' })
+      }
+
+      await BookingModel.update(
+        { status: bookingStatus.CANCELED },
+        { where: { id: bookingId } }
+      )
+      console.log('YYYY')
+      await CalendarModel.destroy({
+        where: { bookingId: bookingId },
+      })
+      console.log('YYYY')
+
+      return res.json({ code: errorCodes.success })
+    } else {
+      return res.json({ statusCode: 7000, error: 'booking not found' })
+    }
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const viewMyBookings = async (req, res) => {
+  try {
+    const { Account } = req.body
+
+    id = Account.id
+
+    const booking = await BookingModel.findAll({
+      where: {
+        accountId: id,
+        status: { [Op.not]: bookingStatus.CANCELED },
+      },
+    })
+    if (booking === []) {
+      return res.json({ statusCode: 7000, error: 'No bookings not found' })
+    } else {
+      return res.json({ booking, code: errorCodes.success })
+    }
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const viewAllBookings = async (req, res) => {
+  try {
+    const booking = await BookingModel.findAll()
+
+    return res.json({ booking, code: errorCodes.success })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const viewDateBookings = async (req, res) => {
+  try {
+    const { date } = req.body
+
+    const booking = await BookingModel.findAll({
+      where: {
+        date: date,
+      },
+    })
+    if (booking === []) {
+      return res.json({ statusCode: 7000, error: 'No bookings not found' })
+    } else {
+      return res.json({ booking, code: errorCodes.success })
+    }
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+module.exports = {
+  viewCalendar,
+  cancelBooking,
+  viewMyBookings,
+  viewDateBookings,
+  viewAllBookings,
+}

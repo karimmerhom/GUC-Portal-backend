@@ -11,7 +11,6 @@ Calendar.init(
   {
     roomNumber: {
       type: Sequelize.INTEGER,
-      unique: true,
     },
     date: {
       type: Sequelize.DATE,
@@ -23,7 +22,7 @@ Calendar.init(
       type: Sequelize.STRING,
     },
     bookingId: {
-      type: Sequelize.STRING,
+      type: Sequelize.INTEGER,
     },
   },
   {
