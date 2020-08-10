@@ -1,5 +1,21 @@
 module.exports = {
-  postgresURI: 'postgres://postgres:654@localhost:5432/TBH',
-  secretOrKey: 'LIRTEN',
-  salt: parseInt(10, 10)
+  postgresURI:
+    "postgres://tbh_read_write:tbh_read_write@odoo.cwkflpbzjgkp.eu-central-1.rds.amazonaws.com:5432/tbh-dev",
+  secretOrKey: "SECRET",
+  salt: "10",
+  // smsAccessKey: process.env.SMS_ACCESS_KEY,
+  // emailAccessKey: process.env.EMAIL_ACCESS_KEY,
+  // contactAccessKey: process.env.CONTACT_ACCESS_KEY,
+  // bookingExpiry: process.env.BOOKING_EXPIRY,
+  // facebookAuth: {
+  //   client_id: process.env.FACEBOOK_CLIENT_ID,
+  //   client_secret: process.env.FACEBOOK_CLIENT_SECRET,
+  //   redirect_uri: process.env.FACEBOOK_REDIRECT_URI,
+  // },
+  // googleAuth: {
+  //   client_id: process.env.GOOGLE.CLIENT_ID,
+  //   client_secret: process.env.GOOGLE_CLIENT_ID,
+  //   loginURI: process.env.FACEBOOK_LOGIN_URI,
+  //   signUpURI: process.env.GOOGLE_SIGNUP_URI,
+  // },
 }
