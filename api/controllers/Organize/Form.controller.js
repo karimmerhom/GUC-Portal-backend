@@ -4,6 +4,8 @@ const jwt = require('jsonwebtoken')
 const FormModel = require('../../../models/form.model')
 const validator = require('../../helpers/validations/formValidations')
 const errorCodes = require('../../constants/errorCodes')
+const Account = require('../../../models/account.model')
+const AccountModel = require('../../../models/account.model')
 
 const createForm = async (req, res) => {
   try {
@@ -21,7 +23,6 @@ const createForm = async (req, res) => {
       accountId: Account.id,
     }
     FormModel.create(newForm)
-    console.log(newForm.university)
 
     return res.json({
       statusCode: '0',
@@ -35,6 +36,25 @@ const createForm = async (req, res) => {
   }
 }
 
+const viewForm = async (req, res) => {
+  try {
+    const formId = req.body.Account.id
+    const checkForm = await FormModel.findOne({
+      _id: formId,
+    })
+    if (!checkForm) {
+      return res.json({
+        error: 'Form does not exist',
+        statusCode: '7',
+      })
+    }
+    return res.json({ Form: checkForm, statusCode: '0' })
+  } catch (exception) {
+    return res.json({ error: 'Something went wrong' })
+  }
+}
+
 module.exports = {
   createForm,
+  viewForm,
 }
