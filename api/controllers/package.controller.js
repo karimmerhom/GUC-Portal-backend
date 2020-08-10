@@ -11,7 +11,7 @@ const createPackage = async (req, res) => {
       delete body.packageType
       await regularPackage.create(body)
       return res.json({
-        code: success
+        code: 7000
     })
   }
   if (Type === "extreme")
@@ -19,10 +19,11 @@ const createPackage = async (req, res) => {
     delete body.packageType
     await extremePackage.create(body)
     return res.json({
-      code: success
+      code: 7000
   })
 }
   } catch (exception) {
+    console.log(exception+"  jjjjjjjjj")
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
