@@ -2,13 +2,12 @@ const bcrypt = require('bcryptjs')
 const axios = require('axios')
 const jwt = require('jsonwebtoken')
 const AccountModel = require('../../models/account.model')
-const validator = require('../helpers/validations/accountValidations')
+const VerificationCode = require('../../models/verificationCodes')
 const errorCodes = require('../constants/errorCodes')
 const { Op } = require('sequelize')
 const {
   secretOrKey,
   smsAccessKey,
-  contactAccessKey,
   emailAccessKey,
 } = require('../../config/keys')
 const {
@@ -21,13 +20,6 @@ const { generateOTP } = require('../helpers/helpers')
 const register = async (req, res) => {
   try {
     const { Account } = req.body
-    const isValid = validator.validateAccount({ Account })
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message,
-      })
-    }
     const findEmail = await AccountModel.findOne({
       where: { email: Account.email.toString().toLowerCase() },
     })
@@ -55,7 +47,8 @@ const register = async (req, res) => {
         error: 'Phone number already exists',
       })
     }
-    const code = await generateOTP()
+    const emailCode = await generateOTP()
+    const smsCode = await generateOTP()
 
     const saltKey = bcrypt.genSaltSync(10)
     const hashed_pass = bcrypt.hashSync(Account.password, saltKey)
@@ -68,13 +61,21 @@ const register = async (req, res) => {
       email: Account.email.toString().toLowerCase(),
       status: accountStatus.PENDING,
       type: userTypes.USER,
-      verificationCode: code,
     })
 
-    const link = 'https://cubexs.net?code=' + code //TODO
+    await VerificationCode.create({
+      emailCode,
+      smsCode,
+      emailDate: new Date(),
+      smsDate: new Date(),
+      accountId: accountCreated.id,
+    })
+
+    let link =
+      'http://localhost:3000?code=' + emailCode + '&id=' + accountCreated.id //TODO
     axios({
       method: 'post',
-      url: 'https://cubexs.net/emailservice/sendemail', //TODO
+      url: 'https://dev.power-support.lirten.com/email/email/_send_email', //TODO
       data: {
         header: {
           accessKey: emailAccessKey,
@@ -86,22 +87,24 @@ const register = async (req, res) => {
         },
       },
     })
+
     axios({
       method: 'post',
-      url: 'https://cubexs.net/epushservice/sendsms', //TODO
+      url: 'https://dev.power-support.lirten.com/epush/sms/_send_sms', //TODO
       data: {
         header: {
           accessKey: smsAccessKey,
         },
         body: {
           receiverPhone: accountCreated.phone,
-          body: `Your TBH confirmation code is\n ${accountCreated.verificationCode}`,
+          body: `Your TBH confirmation code is\n ${smsCode}`,
         },
       },
     })
 
     return res.json({ code: errorCodes.success })
   } catch (exception) {
+    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -109,13 +112,7 @@ const register = async (req, res) => {
 const update_profile = async (req, res) => {
   try {
     const { Account } = req.body
-    const isValid = validator.validateUpdateProfile({ Account })
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message,
-      })
-    }
+
     const { id } = req.data
     if (parseInt(id) !== parseInt(Account.id)) {
       return res.json({ code: errorCodes.authentication, error: 'breach' })
@@ -150,20 +147,10 @@ const update_profile = async (req, res) => {
 const verify = async (req, res) => {
   try {
     const { Account } = req.body
-    const isValid = validator.validateVerify({ Account })
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message,
-      })
-    }
-    const { id } = req.data
-    if (parseInt(id) !== parseInt(Account.id)) {
-      return res.json({ code: errorCodes.authentication, error: 'breach' })
-    }
+
     const account = await AccountModel.findOne({
       where: {
-        id: parseInt(id),
+        id: parseInt(Account.id),
       },
     })
     if (!account) {
@@ -179,29 +166,28 @@ const verify = async (req, res) => {
       })
     }
     const code = await generateOTP()
-    await VerificationCode.create({
-      code,
-      date: new Date(),
-    })
-    await AccountModel.update(
-      { verificationCode: code },
-      { where: { id: Account.id } }
+    await VerificationCode.update(
+      {
+        smsCode: code,
+        smsDate: new Date(),
+      },
+      { where: { accountId: Account.id } }
     )
-    if (Account.verifyBy === verificationMethods.SMS) {
-      axios({
-        method: 'post',
-        url: 'https://cubexs.net/epushservice/sendsms', //TODO
-        data: {
-          header: {
-            accessKey: smsAccessKey,
-          },
-          body: {
-            receiverPhone: account.phone,
-            body: `Your TBH confirmation code is\n ${code}`,
-          },
+
+    axios({
+      method: 'post',
+      url: 'https://dev.power-support.lirten.com/epush/sms/_send_sms', //TODO
+      data: {
+        header: {
+          accessKey: smsAccessKey,
         },
-      })
-    }
+        body: {
+          receiverPhone: account.phone,
+          body: `Your TBH confirmation code is\n ${code}`,
+        },
+      },
+    })
+
     return res.json({ code: errorCodes.success })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
@@ -211,13 +197,7 @@ const verify = async (req, res) => {
 const verify_email = async (req, res) => {
   try {
     const { Account } = req.body
-    const isValid = validator.validateEmail({ Account })
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message,
-      })
-    }
+
     const account = await AccountModel.findOne({ where: { id: Account.id } })
     if (!account) {
       return res.json({
@@ -231,10 +211,18 @@ const verify_email = async (req, res) => {
         code: 'Email already verified',
       })
     }
-    const link = 'https://cubexs.net?code=' + account.verificationCode
+    const code = await generateOTP()
+    await VerificationCode.update(
+      {
+        emailCode: code,
+        emailDate: new Date(),
+      },
+      { where: { accountId: Account.id } }
+    )
+    const link = 'http://localhost:3000?code=' + code + '&id=' + account.id
     axios({
       method: 'post',
-      url: 'https://cubexs.net/emailservice/sendemail', //TODO
+      url: 'https://dev.power-support.lirten.com/email/email/_send_email', //TODO
       data: {
         header: {
           accessKey: emailAccessKey,
@@ -254,26 +242,44 @@ const verify_email = async (req, res) => {
 }
 const verify_confirm_email = async (req, res) => {
   try {
-    const isValid = validator.validateConfirmVerifyEmail(req.query) //TODO
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message,
-      })
-    }
+    const { Account } = req.body
     const account = await AccountModel.findOne({
-      where: { verificationCode: req.query.code },
+      where: { id: Account.id },
     })
-    console.log(req.query.code)
     if (!account) {
       return res.json({
         code: errorCodes.entityNotFound,
         error: 'Account not found',
       })
     }
+    const checkCodeExpired = await VerificationCode.findOne({
+      where: { accountId: Account.id, emailCode: Account.code },
+    })
+    if (!checkCodeExpired) {
+      return res.json({
+        code: errorCodes.wrongVerificationCode,
+        error: 'Wrong verification code',
+      })
+    }
+    const date1 = new Date(checkCodeExpired.emailDate)
+    const date2 = new Date()
+    console.log(date1)
+    const diffTime = Math.abs(date2 - date1)
+    if (diffTime > 86400000) {
+      return res.json({
+        code: errorCodes.verificationCodeExpired,
+        error: 'This is code has expired',
+      })
+    }
+    if (account.emailVerified) {
+      return res.json({
+        code: errorCodes.alreadyVerified,
+        error: 'Already verified',
+      })
+    }
     await AccountModel.update(
       { emailVerified: true },
-      { where: { verificationCode: req.query.code } }
+      { where: { id: Account.id } }
     )
 
     return res.json({ code: errorCodes.success })
@@ -286,13 +292,6 @@ const verify_confirm_email = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { Account } = req.body
-    const isValid = validator.validateLogin({ Account })
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message,
-      })
-    }
 
     const account = await AccountModel.findOne({
       where: {
@@ -360,13 +359,6 @@ const login = async (req, res) => {
 
 const register_google = async (req, res) => {
   try {
-    const isValid = validator.validateAccountGoogle(req.body)
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message,
-      })
-    }
     const { Account } = req.body
     const account = await AccountModel.findOne({
       where: { googleId: Account.id },
@@ -424,10 +416,11 @@ const register_google = async (req, res) => {
       googleId: Account.id,
     })
 
-    const link = 'https://cubexs.net?code=' + code
+    const link =
+      'http://localhost:3000?code=' + code + '&id=' + accountCreated.id
     axios({
       method: 'post',
-      url: 'https://cubexs.net/emailservice/sendemail', //TODO
+      url: 'https://dev.power-support.lirten.com/email/email/_send_email', //TODO
       data: {
         header: {
           accessKey: emailAccessKey,
@@ -441,7 +434,7 @@ const register_google = async (req, res) => {
     })
     axios({
       method: 'post',
-      url: 'https://cubexs.net/epushservice/sendsms', //TODO
+      url: 'https://dev.power-support.lirten.com/epush/sms/_send_sms', //TODO
       data: {
         header: {
           accessKey: smsAccessKey,
@@ -460,13 +453,6 @@ const register_google = async (req, res) => {
 
 const login_google = async (req, res) => {
   try {
-    const isValid = validator.validateLoginGoogle(req.body)
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message,
-      })
-    }
     const { Account } = req.body
     const account = await AccountModel.findOne({
       where: { googleId: Account.id },
@@ -507,13 +493,6 @@ const login_google = async (req, res) => {
 
 const register_facebook = async (req, res) => {
   try {
-    const isValid = validator.validateAccountGoogle(req.body)
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message,
-      })
-    }
     const { Account } = req.body
     const account = await AccountModel.findOne({
       where: { facebookId: Account.id },
@@ -571,10 +550,11 @@ const register_facebook = async (req, res) => {
       facebookId: Account.id,
     })
 
-    const link = 'https://cubexs.net?code=' + code
+    const link =
+      'http://localhost:3000?code=' + code + '&id=' + accountCreated.id
     axios({
       method: 'post',
-      url: 'https://cubexs.net/emailservice/sendemail',
+      url: 'https://dev.power-support.lirten.com/email/email/_send_email',
       data: {
         header: {
           accessKey: emailAccessKey,
@@ -588,7 +568,7 @@ const register_facebook = async (req, res) => {
     })
     axios({
       method: 'post',
-      url: 'https://cubexs.net/epushservice/sendsms',
+      url: 'https://dev.power-support.lirten.com/epush/sms/_send_sms',
       data: {
         header: {
           accessKey: smsAccessKey,
@@ -608,13 +588,6 @@ const register_facebook = async (req, res) => {
 
 const login_facebook = async (req, res) => {
   try {
-    const isValid = validator.validateLoginGoogle(req.body)
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message,
-      })
-    }
     const { Account } = req.body
     const account = await AccountModel.findOne({
       where: { facebookId: Account.id },
@@ -655,20 +628,10 @@ const login_facebook = async (req, res) => {
 const confirm_verify = async (req, res) => {
   try {
     const { Account } = req.body
-    const isValid = validator.validateConfirmVerify({ Account })
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message,
-      })
-    }
-    const { id } = req.data
-    if (parseInt(id, 10) !== parseInt(Account.id, 10)) {
-      return res.json({ code: errorCodes.authentication, error: 'breach' })
-    }
+
     const account = await AccountModel.findOne({
       where: {
-        id,
+        id: Account.id,
       },
     })
     if (!account) {
@@ -684,7 +647,7 @@ const confirm_verify = async (req, res) => {
       })
     }
     const checkCodeExpired = await VerificationCode.findOne({
-      where: { code: account.verificationCode },
+      where: { accountId: Account.id, smsCode: Account.code },
     })
     if (!checkCodeExpired) {
       return res.json({
@@ -692,8 +655,9 @@ const confirm_verify = async (req, res) => {
         error: 'Wrong verification code',
       })
     }
-    const date1 = new Date(checkCodeExpired.date)
+    const date1 = new Date(checkCodeExpired.smsDate)
     const date2 = new Date()
+    console.log(date1)
     const diffTime = Math.abs(date2 - date1)
     if (diffTime > 86400000) {
       return res.json({
@@ -707,26 +671,20 @@ const confirm_verify = async (req, res) => {
         error: 'Already verified',
       })
     }
-    const correctCode = account.verificationCode
-    if (Account.code === correctCode) {
-      await AccountModel.update(
-        {
-          status: accountStatus.VERIFIED,
+
+    await AccountModel.update(
+      {
+        status: accountStatus.VERIFIED,
+      },
+      {
+        where: {
+          id: Account.id,
         },
-        {
-          where: {
-            id,
-          },
-        }
-      )
-      return res.json({
-        code: errorCodes.success,
-        state: accountStatus.VERIFIED,
-      })
-    }
+      }
+    )
     return res.json({
-      code: errorCodes.wrongVerificationCode,
-      error: 'Wrong verification code',
+      code: errorCodes.success,
+      state: accountStatus.VERIFIED,
     })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
@@ -736,13 +694,7 @@ const confirm_verify = async (req, res) => {
 const change_password = async (req, res) => {
   try {
     const { Credentials, Account } = req.body
-    const isValid = validator.validateChangePassword({ Credentials, Account })
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message,
-      })
-    }
+
     const { id } = Account
     const account = await AccountModel.findOne({
       where: {
@@ -784,13 +736,7 @@ const change_password = async (req, res) => {
 const change_email = async (req, res) => {
   try {
     const { Account } = req.body
-    const isValid = validator.validateChangeEmail({ Account })
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message,
-      })
-    }
+
     const { id } = Account
     const found = await AccountModel.findOne({
       where: { email: Account.email },
@@ -822,13 +768,7 @@ const change_email = async (req, res) => {
 const change_phone = async (req, res) => {
   try {
     const { Account } = req.body
-    const isValid = validator.validateChangePhone({ Account })
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message,
-      })
-    }
+
     const { id } = Account
     const found = await AccountModel.findOne({
       where: { phone: Account.phoneNumber },
@@ -841,13 +781,16 @@ const change_phone = async (req, res) => {
       })
     }
     const code = await generateOTP()
-    await VerificationCode.create({
-      code,
-      date: new Date(),
-    })
+    await VerificationCode.update(
+      {
+        smsCode: code,
+        smsDate: new Date(),
+      },
+      { where: { accountId: Account.id } }
+    )
     axios({
       method: 'post',
-      url: 'https://cubexs.net/epushservice/sendsms', //TODO
+      url: 'https://dev.power-support.lirten.com/epush/sms/_send_sms', //TODO
       data: {
         header: {
           accessKey: smsAccessKey,
@@ -880,13 +823,7 @@ const change_phone = async (req, res) => {
 const forget_password = async (req, res) => {
   try {
     const { Account } = req.body
-    const isValid = validator.validateForgetPassword({ Account })
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message,
-      })
-    }
+
     const account = await AccountModel.findOne({
       where: {
         phone: Account.phoneNumber,
@@ -910,7 +847,7 @@ const forget_password = async (req, res) => {
 
     axios({
       method: 'post',
-      url: 'https://cubexs.net/epushservice/sendsms', //TODO
+      url: 'https://dev.power-support.lirten.com/epush/sms/_send_sms', //TODO
       data: {
         header: {
           accessKey: smsAccessKey,
@@ -942,13 +879,7 @@ const get_profile = async (req, res) => {
   //TODO
   try {
     const { Account } = req.body
-    const isValid = validator.validateGetProfile({ Account })
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message,
-      })
-    }
+
     const { id } = Account
 
     const account = await AccountModel.findOne({
@@ -962,11 +893,12 @@ const get_profile = async (req, res) => {
         error: 'User not found',
       })
     }
-    let profile
+    let profile = account
+    delete profile.password
 
     return res.json({
       code: errorCodes.success,
-      profile,
+      profile: account,
       state: account.status,
     })
   } catch (exception) {
@@ -978,13 +910,6 @@ const suspend_account = async (req, res) => {
   try {
     const { Account } = req.body
 
-    const isValid = validator.validateSuspendAccount({ Account })
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message,
-      })
-    }
     const account = await AccountModel.findOne({
       where: {
         id: parseInt(Account.id),
@@ -1024,13 +949,6 @@ const unsuspend_account = async (req, res) => {
   try {
     const { Account } = req.body
 
-    const isValid = validator.validateSuspendAccount({ Account })
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message,
-      })
-    }
     const account = await AccountModel.findOne({
       where: {
         id: parseInt(Account.id),
@@ -1065,33 +983,8 @@ const unsuspend_account = async (req, res) => {
   }
 }
 
-const get_accounts = async (req, res) => {
-  //TODO
-  try {
-    const allAccounts = await axios({
-      method: 'post',
-      url: 'https://cubexs.net/contacts/getcontacts',
-      data: {
-        header: { accessKey: contactAccessKey },
-        body: { accountId: 1, accountId: 1 },
-      },
-    })
-
-    return res.json({ code: errorCodes.success, data: allAccounts.data.body })
-  } catch (exception) {
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
-  }
-}
-
 const make_user_verified = async (req, res) => {
   try {
-    const isValid = validator.validateSuspendAccount({ Account })
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message,
-      })
-    }
     const { Account } = req.body
     const { id } = Account
     const account = await AccountModel.findOne({ where: { id } })
@@ -1136,7 +1029,6 @@ module.exports = {
   get_profile,
   suspend_account,
   unsuspend_account,
-  get_accounts,
   verify_confirm_email,
   verify_email,
   register_google,
