@@ -6,11 +6,11 @@ const {
 } = require('../../constants/TBH.enum')
 const validateCreateForm = (req, res, next) => {
   const schema = {
-    degree: joi.string().required(),
+    degree: joi.object.string().required(),
     university: joi.string().required(),
     yearOfGraduation: joi.date().required(),
     CV: joi.string().required(),
-    englishLevel: joi
+    englishLevel: joi.object
       .string()
       .valid(
         englishLevel.BEGINNER,
