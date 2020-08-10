@@ -145,7 +145,7 @@ const validateVerify = (req, res, next) => {
     Account: joi
       .object({
         id: joi.number().required(),
-        })
+      })
       .required(),
   }
   const isValid = joi.validate(req.body, schema)
