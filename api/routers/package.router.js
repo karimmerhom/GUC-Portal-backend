@@ -9,7 +9,7 @@ const { createPackage, purchasePackage } = packageController
 const { verifyToken } = require("../../config/AuthenticationMiddleWare")
 const { verifyAdmin } = require("../../config/AdminAuthentication")
 const { verifyUser } = require("../../config/authUser")
-console.log("hi")
+
 router.post("/purchasePackage", purchasePackage)
 
 module.exports = router

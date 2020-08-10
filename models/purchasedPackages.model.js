@@ -13,8 +13,8 @@ const RegularPackageModel = require("./regularpackage.model")
 const ExtremePackageModel = require("./extremepackage.model")
 const { Model } = Sequelize
 
-class Purchased extends Model {}
-Purchased.init(
+class Purchase extends Model {}
+Purchase.init(
   {
     packageId: {
       type: Sequelize.STRING,
@@ -37,6 +37,6 @@ Purchased.init(
     timestamps: false,
   }
 )
-Purchased.belongsTo(UserModel, { foreignKey: "accountId" })
+Purchase.belongsTo(UserModel, { foreignKey: "accountId" })
 
-module.exports = Purchased
+module.exports = Purchase
