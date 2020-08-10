@@ -2,11 +2,7 @@ const Sequelize = require('sequelize')
 
 const sequelize = require('../config/DBConfig')
 
-const {
-  accountStatus,
-  paymentMethods,
-  gender
-} = require('../api/constants/TBH.enum')
+const { accountStatus, userTypes } = require('../api/constants/TBH.enum')
 
 const { Model } = Sequelize
 
@@ -31,24 +27,29 @@ Account.init(
     phone: {
       type: Sequelize.STRING
     },
-    facebookAccount: {
-      type: Sequelize.STRING
-    },
-    googleAccount: {
-      type: Sequelize.STRING
-    },
-    age: {
-      type: Sequelize.STRING
-    },
-    gender: {
-      type: Sequelize.STRING,
-      values: [gender.MALE, gender.FEMALE]
-    },
     status: {
       type: Sequelize.ENUM,
-      values: [accountStatus.VERIFIED, accountStatus.PENDING]
+      values: [
+        accountStatus.VERIFIED,
+        accountStatus.PENDING,
+        accountStatus.SUSPENDED
+      ]
     },
     verificationCode: {
+      type: Sequelize.STRING
+    },
+    type: {
+      type: Sequelize.ENUM,
+      values: [userTypes.ADMIN, userTypes.USER]
+    },
+    emailVerified: {
+      type: Sequelize.BOOLEAN,
+      defaultValue: false
+    },
+    facebookId: {
+      type: Sequelize.STRING
+    },
+    googleId: {
       type: Sequelize.STRING
     }
   },
