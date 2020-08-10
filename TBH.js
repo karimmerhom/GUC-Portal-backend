@@ -11,6 +11,7 @@ const { populate_users } = require('./config/populateUser')
 const app = express()
 
 const account = require('./api/routers/account.router')
+const room = require('./api/routers/room.router')
 
 // import db configuration
 const sequelize = require('./config/DBConfig')
@@ -55,6 +56,7 @@ const explore = (req, res) => {
 }
 
 app.use('/tbhapp/accounts', account)
+app.use('/room', room)
 
 app.use('/tbhapp/explore', explore)
 
@@ -80,7 +82,7 @@ app.use((req, res, next) => {
   next()
 })
 
-const eraseDatabaseOnSync = true
+const eraseDatabaseOnSync = false
 
 sequelize
   .sync({ force: eraseDatabaseOnSync })
