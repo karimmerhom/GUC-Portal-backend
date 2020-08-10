@@ -10,7 +10,7 @@ class Calendar extends Model {}
 Calendar.init(
   {
     roomNumber: {
-      type: Sequelize.NUMBER,
+      type: Sequelize.INTEGER,
       unique: true,
     },
     date: {

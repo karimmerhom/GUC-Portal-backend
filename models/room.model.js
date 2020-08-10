@@ -10,7 +10,7 @@ class Room extends Model {}
 Room.init(
   {
     roomNumber: {
-      type: Sequelize.NUMBER,
+      type: Sequelize.INTEGER,
     },
     roomType: {
       type: Sequelize.STRING,

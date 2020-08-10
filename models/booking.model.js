@@ -16,7 +16,7 @@ Booking.init(
       type: Sequelize.DATE,
     },
     slots: {
-      type: Sequelize.ARRAY,
+      type: Sequelize.ARRAY(Sequelize.STRING),
     },
     roomType: {
       type: Sequelize.STRING,

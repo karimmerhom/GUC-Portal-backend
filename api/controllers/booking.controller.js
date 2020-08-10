@@ -16,7 +16,55 @@ const {
   contactAccessKey,
   emailAccessKey,
 } = require('../../config/keys')
-const {} = require('../constants/TBH.enum')
+const { slots, calStatus } = require('../constants/TBH.enum')
 const {} = require('../helpers/helpers')
+const { object } = require('joi')
 
-module.exports = {}
+const viewCalendar = async (req, res) => {
+  try {
+    var calendar = []
+    const { startDate, filterRoomType, filterRoomSize } = req.body
+
+    const rooms = await RoomModel.findAll()
+    console.log(rooms.length)
+
+    for (i = 0; i < rooms.length; i++) {
+      console.log(rooms[i])
+      var room = rooms[i]
+      var r = {}
+      r.roomNumber = room.roomNumber
+      r.filtered = false
+      r.notFreeSlots = {}
+
+      if (room.roomType === filterRoomType) {
+        r.filtered = true
+        calendar.push(r)
+      } else {
+        const slots = await CalendarModel.findAll({
+          where: {
+            roomNumber: r.roomNumber,
+            date: startDate,
+          },
+        })
+
+        const notslots = slots.map((s) => {
+          const sl = {
+            slotName: s.slot,
+            status: s.status,
+          }
+          return sl
+        })
+
+        r.notFreeSlots = notslots
+
+        calendar.push(r)
+      }
+    }
+
+    return res.json({ calendar, code: errorCodes.success })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+module.exports = { viewCalendar }
