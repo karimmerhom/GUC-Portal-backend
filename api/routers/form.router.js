@@ -1,8 +1,9 @@
 const express = require('express')
 
 const router = express.Router()
-// const { validateCourse } = require('../helpers/validations/coursesValidations')
+
 const formController = require('../controllers/Organize/Form.controller')
+const { validateCreateForm } = require('../helpers/validations/formValidations')
 
 const { createForm } = formController
 
@@ -10,7 +11,7 @@ const { createForm } = formController
 // const { verifyAdmin } = require('../../config/AdminAuthentication')
 // const { verifyUser } = require('../../config/authUser')
 
-router.post('/createForm', createForm)
+router.post('/createForm', validateCreateForm, createForm)
 
 //router.post('/verify', verifyToken, verify)
 

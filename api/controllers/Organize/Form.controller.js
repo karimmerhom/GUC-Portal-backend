@@ -21,7 +21,6 @@ const createForm = async (req, res) => {
       accountId: Account.id,
     }
     FormModel.create(newForm)
-    console.log(newForm.university)
 
     return res.json({
       statusCode: '0',

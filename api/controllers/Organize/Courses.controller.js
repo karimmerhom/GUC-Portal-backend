@@ -5,10 +5,9 @@ const CoursesModel = require('../../../models/courses.model')
 const errorCodes = require('../../constants/errorCodes')
 const FormModel = require('../../../models/form.model')
 const validator = require('../../helpers/validations/coursesValidations')
-
 const createCourse = async (req, res) => {
   try {
-    const { Course, Account } = req.body
+    const { course, Account } = req.body
 
     const formFound = await FormModel.findOne({
       where: { accountId: Account.id },
@@ -30,8 +29,8 @@ const createCourse = async (req, res) => {
       daysPerWeek: course.daysPerWeek,
       sessionDuration: course.sessionDuration,
       pricePerPerson: course.pricePerPerson,
-      maxNumerOfAttendees: course.maxNumerOfAttendees,
-      minNumerOfAttendees: course.minNumerOfAttendees,
+      maxNumberOfAttendees: course.maxNumberOfAttendees,
+      minNumberOfAttendees: course.minNumberOfAttendees,
       accountId: Account.id,
     }
     CoursesModel.create(newCourse)

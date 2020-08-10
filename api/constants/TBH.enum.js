@@ -77,13 +77,23 @@ const eventStatus = {
 }
 const englishLevel = {
   NONE: 'None',
-  BEGINNER: 'beginner',
-  FAIR: 'fair',
-  GOOD: 'good',
-  FLUENT: 'fluent',
-  NATIVE: 'native',
+  BEGINNER: 'Beginner',
+  FAIR: 'Fair',
+  GOOD: 'Good',
+  FLUENT: 'Fluent',
+  NATIVE: 'Native',
 }
-const previousOrganizingExperience
+const previousOrganizingExperience = {
+  PROF: 'In person (Professionally)',
+  INFORMAL: 'In person (Informally)',
+  ONLINE: 'Online',
+  OTHER: 'Other',
+}
+const AvailableAudience = {
+  NOTNOW: 'Not at the moment',
+  SMALLGROUP: 'I have a small following group',
+  LARGEGROUP: 'I have a sizable following',
+}
 
 module.exports = {
   accountStatus,
@@ -96,5 +106,6 @@ module.exports = {
   invitationStatus,
   eventStatus,
   englishLevel,
+  previousOrganizingExperience,
+  AvailableAudience,
 }
- 
