@@ -11,8 +11,8 @@ const { populate_users } = require('./config/populateUser')
 const app = express()
 
 const account = require('./api/routers/account.router')
-const room = require('./api/routers/room.router')
 const booking = require('./api/routers/booking.router')
+const room = require('./api/routers/room.router')
 
 // import db configuration
 const sequelize = require('./config/DBConfig')
