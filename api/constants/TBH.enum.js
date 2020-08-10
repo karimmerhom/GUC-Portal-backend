@@ -100,6 +100,19 @@ const slots = {
   TWENTYONE_TWENTYTWO: 'TWENTYONE_TWENTYTWO',
 }
 
+const calStatus = {
+  CONFIRMED: 'confirmed',
+  PENDING: 'pending',
+  FREE: 'free',
+  FILTERED: 'filtered',
+}
+
+const bookingStatus = {
+  CONFIRMED: 'confirmed',
+  PENDING: 'pending',
+  CANCELED: 'canceled',
+}
+
 module.exports = {
   accountStatus,
   paymentMethods,
@@ -112,4 +125,7 @@ module.exports = {
   eventStatus,
   roomSize,
   roomType,
+  calStatus,
+  slots,
+  bookingStatus,
 }

@@ -4,12 +4,12 @@ const router = express.Router()
 
 const bookingController = require('../controllers/booking.controller')
 
-const {} = accountController
-
 const { verifyToken } = require('../../config/AuthenticationMiddleWare')
 const { verifyAdmin } = require('../../config/AdminAuthentication')
 const { verifyUser } = require('../../config/authUser')
+const { viewCalendar, bookRoom } = require('../controllers/booking.controller')
 
-router.post('/register', register)
+router.post('/viewCalendar', viewCalendar)
+router.post('/bookRoom', bookRoom)
 
 module.exports = router
