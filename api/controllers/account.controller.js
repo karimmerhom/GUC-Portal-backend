@@ -66,12 +66,13 @@ const register = async (req, res) => {
     await VerificationCode.create({
       emailCode,
       smsCode,
-      emailDate: new Date(new Date().getDate() + 1),
-      smsDate: new Date(new Date().getDate() + 1),
+      emailDate: new Date(),
+      smsDate: new Date(),
       accountId: accountCreated.id,
     })
 
-    let link = 'http://localhost:3000?code=' + emailCode + 'id=' + account.id //TODO
+    let link =
+      'http://localhost:3000?code=' + emailCode + '&id=' + accountCreated.id //TODO
     axios({
       method: 'post',
       url: 'https://dev.power-support.lirten.com/email/email/_send_email', //TODO
@@ -213,12 +214,12 @@ const verify_email = async (req, res) => {
     const code = await generateOTP()
     await VerificationCode.update(
       {
-        smsCode: code,
-        smsDate: new Date(),
+        emailCode: code,
+        emailDate: new Date(),
       },
       { where: { accountId: Account.id } }
     )
-    const link = 'http://localhost:3000?code=' + code + 'id=' + account.id
+    const link = 'http://localhost:3000?code=' + code + '&id=' + account.id
     axios({
       method: 'post',
       url: 'https://dev.power-support.lirten.com/email/email/_send_email', //TODO
@@ -241,19 +242,44 @@ const verify_email = async (req, res) => {
 }
 const verify_confirm_email = async (req, res) => {
   try {
+    const { Account } = req.body
     const account = await AccountModel.findOne({
-      where: { verificationCode: req.query.code },
+      where: { id: Account.id },
     })
-    console.log(req.query.code)
     if (!account) {
       return res.json({
         code: errorCodes.entityNotFound,
         error: 'Account not found',
       })
     }
+    const checkCodeExpired = await VerificationCode.findOne({
+      where: { accountId: Account.id, emailCode: Account.code },
+    })
+    if (!checkCodeExpired) {
+      return res.json({
+        code: errorCodes.wrongVerificationCode,
+        error: 'Wrong verification code',
+      })
+    }
+    const date1 = new Date(checkCodeExpired.emailDate)
+    const date2 = new Date()
+    console.log(date1)
+    const diffTime = Math.abs(date2 - date1)
+    if (diffTime > 86400000) {
+      return res.json({
+        code: errorCodes.verificationCodeExpired,
+        error: 'This is code has expired',
+      })
+    }
+    if (account.emailVerified) {
+      return res.json({
+        code: errorCodes.alreadyVerified,
+        error: 'Already verified',
+      })
+    }
     await AccountModel.update(
       { emailVerified: true },
-      { where: { verificationCode: req.query.code } }
+      { where: { id: Account.id } }
     )
 
     return res.json({ code: errorCodes.success })
@@ -390,7 +416,8 @@ const register_google = async (req, res) => {
       googleId: Account.id,
     })
 
-    const link = 'http://localhost:3000?code=' + code
+    const link =
+      'http://localhost:3000?code=' + code + '&id=' + accountCreated.id
     axios({
       method: 'post',
       url: 'https://dev.power-support.lirten.com/email/email/_send_email', //TODO
@@ -523,7 +550,8 @@ const register_facebook = async (req, res) => {
       facebookId: Account.id,
     })
 
-    const link = 'http://localhost:3000?code=' + code
+    const link =
+      'http://localhost:3000?code=' + code + '&id=' + accountCreated.id
     axios({
       method: 'post',
       url: 'https://dev.power-support.lirten.com/email/email/_send_email',
@@ -601,13 +629,9 @@ const confirm_verify = async (req, res) => {
   try {
     const { Account } = req.body
 
-    const { id } = req.data
-    if (parseInt(id, 10) !== parseInt(Account.id, 10)) {
-      return res.json({ code: errorCodes.authentication, error: 'breach' })
-    }
     const account = await AccountModel.findOne({
       where: {
-        id,
+        id: Account.id,
       },
     })
     if (!account) {
@@ -623,7 +647,7 @@ const confirm_verify = async (req, res) => {
       })
     }
     const checkCodeExpired = await VerificationCode.findOne({
-      where: { code: account.verificationCode },
+      where: { accountId: Account.id, smsCode: Account.code },
     })
     if (!checkCodeExpired) {
       return res.json({
@@ -631,8 +655,9 @@ const confirm_verify = async (req, res) => {
         error: 'Wrong verification code',
       })
     }
-    const date1 = new Date(checkCodeExpired.date)
+    const date1 = new Date(checkCodeExpired.smsDate)
     const date2 = new Date()
+    console.log(date1)
     const diffTime = Math.abs(date2 - date1)
     if (diffTime > 86400000) {
       return res.json({
@@ -646,26 +671,20 @@ const confirm_verify = async (req, res) => {
         error: 'Already verified',
       })
     }
-    const correctCode = account.verificationCode
-    if (Account.code === correctCode) {
-      await AccountModel.update(
-        {
-          status: accountStatus.VERIFIED,
+
+    await AccountModel.update(
+      {
+        status: accountStatus.VERIFIED,
+      },
+      {
+        where: {
+          id: Account.id,
         },
-        {
-          where: {
-            id,
-          },
-        }
-      )
-      return res.json({
-        code: errorCodes.success,
-        state: accountStatus.VERIFIED,
-      })
-    }
+      }
+    )
     return res.json({
-      code: errorCodes.wrongVerificationCode,
-      error: 'Wrong verification code',
+      code: errorCodes.success,
+      state: accountStatus.VERIFIED,
     })
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
@@ -762,10 +781,13 @@ const change_phone = async (req, res) => {
       })
     }
     const code = await generateOTP()
-    await VerificationCode.create({
-      code,
-      date: new Date(),
-    })
+    await VerificationCode.update(
+      {
+        smsCode: code,
+        smsDate: new Date(),
+      },
+      { where: { accountId: Account.id } }
+    )
     axios({
       method: 'post',
       url: 'https://dev.power-support.lirten.com/epush/sms/_send_sms', //TODO
@@ -871,11 +893,12 @@ const get_profile = async (req, res) => {
         error: 'User not found',
       })
     }
-    let profile
+    let profile = account
+    delete profile.password
 
     return res.json({
       code: errorCodes.success,
-      profile,
+      profile: account,
       state: account.status,
     })
   } catch (exception) {

@@ -117,7 +117,7 @@ router.post(
   verifyUser,
   verify_email
 )
-router.get(
+router.post(
   '/confirmverifyemail',
   validateConfirmVerifyEmail,
   verify_confirm_email

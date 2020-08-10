@@ -125,7 +125,10 @@ const validateEmail = (req, res, next) => {
 
 const validateConfirmVerifyEmail = (req, res, next) => {
   const schema = {
-    code: joi.string().required(),
+    Account: joi.object({
+      id: joi.number().required(),
+      code: joi.string().required(),
+    }),
   }
   const isValid = joi.validate(req.body, schema)
   if (isValid.error) {
@@ -142,8 +145,7 @@ const validateVerify = (req, res, next) => {
     Account: joi
       .object({
         id: joi.number().required(),
-        verifyBy: joi.string().valid(['sms']).required(),
-      })
+        })
       .required(),
   }
   const isValid = joi.validate(req.body, schema)
