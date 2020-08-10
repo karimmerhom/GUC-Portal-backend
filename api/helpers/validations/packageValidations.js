@@ -146,8 +146,7 @@ const validateViewAllPackages = (req, res, next) => {
     Account: Joi.object({
       id: Joi.string().length(24).required(),
     }).required(),
-    page: Joi.number().required(),
-    limit: Joi.number().required()
+    
   })
 
   const isValid = Joi.validate(req.body, schema)

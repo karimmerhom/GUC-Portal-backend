@@ -103,18 +103,9 @@ const viewPackage = async (req, res) => {
 
 const viewAllPackages = async (req, res) => {
   try {
-    const page = req.body.page
-    const limit = req.body.limit
     const packagesFound1 = await regularPackage.findAll({})
     const packagesFound2 = await extremePackage.findAll({})
     const packagesFound = packagesFound1.concat(packagesFound2);
-
-    packagesFound.slice(page*limit)
-   
-    var i;
-    for (i = limit+1; i < packagesFound.length; i++) {
-      packagesFound.splice(i, 1);
-    }
     return res.json({package: packagesFound,
           code: 7000,
         })
