@@ -4,26 +4,24 @@ const sequelize = require('../config/DBConfig')
 
 const { roomSize, roomType } = require('../api/constants/TBH.enum')
 
+const UserModel = require('./account.model')
+const RoomModel = require('./room.model')
+
 const { Model } = Sequelize
 
 class Booking extends Model {}
 Booking.init(
   {
-    accountId: {
-      type: Sequelize.String,
-    },
     date: {
       type: Sequelize.DATE,
     },
-    slot: {
+    slots: {
       type: Sequelize.ARRAY,
     },
     roomType: {
       type: Sequelize.STRING,
     },
-    roomNumber: {
-      type: Sequelize.STRING,
-    },
+
     roomSize: {
       type: Sequelize.STRING,
     },
@@ -45,5 +43,7 @@ Booking.init(
     timestamps: true,
   }
 )
+Booking.belongsTo(UserModel, { foreignKey: 'accountId' })
+Booking.belongsTo(RoomModel, { foreignKey: 'roomId' })
 
 module.exports = Booking
