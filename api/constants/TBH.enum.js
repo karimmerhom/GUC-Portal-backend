@@ -6,56 +6,56 @@ const accountStatus = {
   ACTIVE: 'active',
   USED: 'used',
   EXPIRED: 'expired',
-  SUSPENDED: 'suspended'
+  SUSPENDED: 'suspended',
 }
 
 const userTypes = {
   ADMIN: 'admin',
-  USER: 'user'
+  USER: 'user',
 }
 
 const paymentMethods = {
   CASH: 'cash',
-  VODAFONECASH: 'vodafone cash'
+  VODAFONECASH: 'vodafone cash',
 }
 
 const gender = {
   MALE: 'male',
-  FEMALE: 'female'
+  FEMALE: 'female',
 }
 
 const verificationMethods = {
   SMS: 'sms',
-  EMAIL: 'email'
+  EMAIL: 'email',
 }
 
 const slotStatus = {
   BUSY: 'Busy',
   FREE: 'Free',
-  PENDING: 'Pending'
+  PENDING: 'Pending',
 }
 
 const roomPricing = {
   meetingRoomF0T5Users: {
     F10T20: '100',
     F21T50: '90',
-    F50: '80'
+    F50: '80',
   },
   meetingRoomF6T10Users: {
     F10T20: '170',
     F21T50: '160',
-    F50: '150'
+    F50: '150',
   },
   trainingRoomF0T7Users: {
     F10T20: '180',
     F21T50: '170',
-    F50: '150'
+    F50: '150',
   },
   trainingRoomF8T16Users: {
     F10T20: '280',
     F21T50: '270',
-    F50: '250'
-  }
+    F50: '250',
+  },
 }
 
 const invitationStatus = {
@@ -63,7 +63,7 @@ const invitationStatus = {
   REJECTED: 'rejected',
   PENDING: 'pending',
   REGISTERED: 'registered',
-  INQUEUE: 'Inqueue'
+  INQUEUE: 'Inqueue',
 }
 
 const eventStatus = {
@@ -73,7 +73,31 @@ const eventStatus = {
   STARTED: 'started',
   ENDED: 'ended',
   CANCELED: 'canceled',
-  CONFIRMED: 'confirmed'
+  CONFIRMED: 'confirmed',
+}
+const roomSize = {
+  LARGE: 'large group',
+  SMALL: 'small group',
+}
+const roomType = {
+  MEETING: 'meeting room',
+  TRAINING: 'training room',
+}
+
+const slots = {
+  NINE_TEN: 'NINE_TEN',
+  TEN_ELEVEN: 'TEN_ELEVEN',
+  ELEVEN_TWELVE: 'ELEVEN_TWELVE',
+  TWELVE_THIRTEEN: 'TWELVE_THIRTEEN',
+  THIRTEEN_FOURTEEN: 'THIRTEEN_FOURTEEN',
+  FOURTEEN_FIFTEEN: 'FOURTEEN_FIFTEEN',
+  FIFTEEN_SIXTEEN: 'FIFTEEN_SIXTEEN',
+  SIXTEEN_SEVENTEEN: 'SIXTEEN_SEVENTEEN',
+  SEVENTEEN_EIGHTEEN: 'SEVENTEEN_EIGHTEEN',
+  EIGHTEEN_NINETEEN: 'EIGHTEEN_NINETEEN',
+  NINETEEN_TWENTY: 'NINETEEN_TWENTY',
+  TWENTY_TWENTYONE: 'TWENTY_TWENTYONE',
+  TWENTYONE_TWENTYTWO: 'TWENTYONE_TWENTYTWO',
 }
 
 module.exports = {
@@ -85,5 +109,7 @@ module.exports = {
   roomPricing,
   userTypes,
   invitationStatus,
-  eventStatus
+  eventStatus,
+  roomSize,
+  roomType,
 }
