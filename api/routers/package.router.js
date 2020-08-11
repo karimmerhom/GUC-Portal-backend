@@ -18,6 +18,7 @@ const {
   purchasePackage,
   cancelPackage,
   viewMyPackages,
+  deletePackage,
 } = packageController
 
 const {
@@ -35,6 +36,7 @@ router.post('/createPackage',validateCreatePackage, createPackage)
 router.post('/editPackage',validateEditPackage, editPackage)
 router.post('/viewPackage',validateViewPackage, viewPackage)
 router.post('/viewAllPackages',validateViewAllPackages, viewAllPackages)
+router.post('/deletePackage',validateViewPackage, deletePackage)
 
 router.post("/purchasePackage",validatePurchasePackage, purchasePackage)
 router.post("/cancelPackage",validateCancelPackage, cancelPackage)

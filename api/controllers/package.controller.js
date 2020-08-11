@@ -14,22 +14,37 @@ Date.prototype.addDays = function (days) {
 const createPackage = async (req, res) => {
   try {
     const body = req.body
+    const name = req.body.packageName
     const Type = req.body.packageType
 
     if (Type === 'regular') {
       delete body.packageType
+      const found = regularPackage.findOne({where: {
+        packageName: name,
+      }},)
+      if(!found)
+      {
       await regularPackage.create(body)
       return res.json({
         code: 7000,
       })
     }
-    if (Type === 'extreme') {
+    return res.json({ code: 7006, error: "name already exists" })
+    }
+    if (Type === "extreme") {
       delete body.packageType
+      const found = extremePackage.findOne({where: {
+        packageName: name,
+      }},)
+      if(!found)
+      {
       await extremePackage.create(body)
       return res.json({
         code: 7000,
       })
     }
+  }
+  return res.json({ code: 7006, error: "name already exists" })
   } catch (exception) {
     console.log(exception + '  jjjjjjjjj')
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
@@ -152,6 +167,51 @@ const viewMyPackages = async (req, res) => {
   }
 }
 
+const deletePackage = async (req, res) => {
+  try {
+    const body = req.body
+    const id = req.body.id
+    delete body.id
+    const Type = req.body.packageType
+    if (Type === "regular") {
+      delete body.packageType
+      const packageFound = await regularPackage.findOne({
+        where: {
+          id: parseInt(id),
+        },
+      })
+      if(packageFound){
+      packageFound.destroy()
+      if(packageFound)
+      return res.json({
+        code: 7000,
+      })
+    }
+  }
+    if (Type === "extreme") {
+
+      const packageFound = await extremePackage.findOne({
+          where: {
+            id: parseInt(id),
+          },
+        })
+        if(packageFound){
+        packageFound.destroy()
+        
+        return res.json({
+          code: 7000,
+        })
+      }
+    }
+    return res.json({ statusCode: 7001, error: 'package not found' })
+
+  } catch (exception) {
+    console.log(exception + "  jjjjjjjjj")
+    return res.json({ code: errorCodes.unknown, error: "Something went wrong" })
+  }
+}
+
+
 module.exports = {
   createPackage,
   purchasePackage,
@@ -161,4 +221,5 @@ module.exports = {
   viewPackage,
   viewAllPackages,
   viewMyPackages,
+  deletePackage
 }
