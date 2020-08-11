@@ -14,6 +14,7 @@ const {
   viewDateBookings,
   bookRoom,
   editBooking,
+  tryBooking,
 } = require('../controllers/booking.controller')
 
 const {
@@ -26,6 +27,8 @@ const {
 } = require('../helpers/validations/bookingValidations')
 
 router.post('/bookRoom', validateBookRoom, bookRoom)
+router.post('/tryBooking', validateBookRoom, tryBooking)
+
 router.post('/editBooking', validateEditMyBooking, editBooking)
 
 router.post('/viewCalendar', validateViewCalendar, viewCalendar)
