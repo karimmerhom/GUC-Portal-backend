@@ -57,8 +57,8 @@ const explore = (req, res) => {
 }
 
 app.use('/tbhapp/accounts', account)
+app.use('/tbhapp/room', room)
 app.use('/tbhapp/booking', booking)
-app.use('/room', room)
 app.use('/tbhapp/explore', explore)
 
 app.use((req, res) => {

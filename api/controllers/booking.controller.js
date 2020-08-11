@@ -37,7 +37,10 @@ const viewCalendar = async (req, res) => {
       r.filtered = false
       r.notFreeSlots = {}
 
-      if (room.roomType === filterRoomType) {
+      if (
+        room.roomType !== filterRoomType ||
+        room.roomSize !== filterRoomSize
+      ) {
         r.filtered = true
         calendar.push(r)
       } else {
@@ -64,6 +67,118 @@ const viewCalendar = async (req, res) => {
 
     return res.json({ calendar, code: errorCodes.success })
   } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+const editBooking = async (req, res) => {
+  try {
+    const booked = await BookingModel.findOne({
+      where: { id: req.body.bookingId },
+    })
+    if (booked) {
+      let bookingDetails = req.body
+      const status =
+        bookingDetails.paymentMethod === 'points' ? 'confirmed' : 'pending'
+      bookingDetails.status = status
+
+      let noAvailableSlots = false
+      for (let i = 0; i < bookingDetails.slots.length; i++) {
+        let sl = bookingDetails.slots[i]
+        const notAvSl = await CalendarModel.findAll({
+          where: {
+            roomNumber: bookingDetails.roomNumber,
+            date: bookingDetails.date,
+            slot: sl,
+          },
+        })
+        if (notAvSl.length !== 0) noAvailableSlots = true
+      }
+      if (noAvailableSlots) {
+        res.json({
+          error: 'one room or more is/are busy in that timeslot',
+          statusCode: 7000,
+        })
+      } else {
+        let foundSlots = await CalendarModel.findAll({
+          where: {
+            bookingId: booked.id,
+          },
+        })
+        foundSlots.map((slot) => {
+          slot.destroy()
+        })
+
+        booked.destroy()
+        bookRoom(req, res)
+        return res.json({ code: errorCodes.success })
+      }
+    } else {
+      return res.json({ code: errorCodes.unknown, error: 'Booking not found' })
+    }
+  } catch (e) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+const bookRoom = async (req, res) => {
+  try {
+    let bookingDetails = req.body
+    const status =
+      bookingDetails.paymentMethod === 'points' ? 'confirmed' : 'pending'
+    bookingDetails.status = status
+
+    const roomFound = await RoomModel.findOne({
+      where: { roomNumber: bookingDetails.roomNumber },
+    })
+
+    if (!roomFound) {
+      res.json({ error: 'room doesnt exist', statusCode: 7000 })
+    }
+
+    bookingDetails.roomId = roomFound.id
+    bookingDetails.accountId = req.body.Account.id
+
+    let noAvailableSlots = false
+    for (let i = 0; i < bookingDetails.slots.length; i++) {
+      let sl = bookingDetails.slots[i]
+      const notAvSl = await CalendarModel.findAll({
+        where: {
+          roomNumber: bookingDetails.roomNumber,
+          date: bookingDetails.date,
+          slot: sl,
+        },
+      })
+      if (notAvSl.length !== 0) noAvailableSlots = true
+    }
+
+    console.log(noAvailableSlots)
+    if (noAvailableSlots) {
+      res.json({
+        error: 'one room or more is/are busy in that timeslot',
+        statusCode: 7000,
+      })
+    } else {
+      const booked = await BookingModel.create(bookingDetails)
+      for (let i = 0; i < bookingDetails.slots.length; i++) {
+        let sl = bookingDetails.slots[i]
+        console.log(
+          bookingDetails.roomNumber,
+          bookingDetails.date,
+          bookingDetails.status,
+          sl,
+          booked.id
+        )
+        await CalendarModel.create({
+          roomNumber: bookingDetails.roomNumber,
+          date: bookingDetails.date,
+          status: bookingDetails.status,
+          slot: sl,
+          bookingId: booked.id,
+        })
+      }
+
+      return res.json({ statusCode: 0 })
+    }
+  } catch (e) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -154,10 +269,14 @@ const viewDateBookings = async (req, res) => {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
+
 module.exports = {
   viewCalendar,
   cancelBooking,
   viewMyBookings,
   viewDateBookings,
   viewAllBookings,
+  viewCalendar,
+  bookRoom,
+  editBooking,
 }
