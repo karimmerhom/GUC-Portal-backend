@@ -168,7 +168,7 @@ const validateEditMyBooking = (req, res, next) => {
       .required(),
     roomLayout: Joi.string().required(),
     roomSize: Joi.string().valid([roomSize.LARGE, roomSize.SMALL]).required(),
-    bookingId: Joi.string().required(),
+    bookingId: Joi.number().required(),
   })
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
