@@ -4,35 +4,40 @@ const router = express.Router()
 
 const packageController = require("../controllers/package.controller")
 
-const { createPackage, purchasePackage } = packageController
 
 const { verifyToken } = require("../../config/AuthenticationMiddleWare")
 const { verifyAdmin } = require("../../config/AdminAuthentication")
 const { verifyUser } = require("../../config/authUser")
 const packageValidations = require('../helpers/validations/packageValidations')
 
-router.post("/purchasePackage", purchasePackage)
 const {
   createPackage,
   editPackage,
   viewPackage,
-  viewAllPackages
+  viewAllPackages,
+  purchasePackage,
+  cancelPackage,
+  viewMyPackages,
 } = packageController
 
 const {
   validateCreatePackage,
   validateEditPackage,
   validateViewPackage,
-  validateViewAllPackages
+  validateViewAllPackages,
+  validatePurchasePackage,
+  validateCancelPackage,
+  validateViewMyPackages,
 } = packageValidations
 
-const { verifyToken } = require('../../config/AuthenticationMiddleWare')
-const { verifyAdmin } = require('../../config/AdminAuthentication')
-const { verifyUser } = require('../../config/authUser')
 
 router.post('/createPackage',validateCreatePackage, createPackage)
 router.post('/editPackage',validateEditPackage, editPackage)
 router.post('/viewPackage',validateViewPackage, viewPackage)
 router.post('/viewAllPackages',validateViewAllPackages, viewAllPackages)
+
+router.post("/purchasePackage",validatePurchasePackage, purchasePackage)
+router.post("/cancelPackage",validateCancelPackage, cancelPackage)
+router.post("/viewMyPackages",validateViewMyPackages, viewMyPackages)
 
 module.exports = router

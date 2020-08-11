@@ -2,7 +2,7 @@ const Joi = require('joi')
 
 const validateCreatePackage = (req, res, next) => {
   const schema = Joi.object({
-    Account: Joi.object({ id: Joi.string().length(24).required() }).required(),
+    Account: Joi.object({ id: Joi.string().required() }).required(),
     packageName: Joi.string().min(3).required(),
     expiryDuration: Joi.number().required(),
     packageType: Joi.string().valid(['regular', 'extreme']).required(),
@@ -49,6 +49,51 @@ const validateCreatePackage = (req, res, next) => {
         then: Joi.number().required()
       }),
     
+  })
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: 7001,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
+
+const validatePurchasePackage = (req, res, next) => {
+  const schema = Joi.object({
+    Account: Joi.object({ id: Joi.string().required() }).required(),
+    packageId: Joi.string().required(),
+    packageType: Joi.string().valid(['regular', 'extreme']).required(),
+  })
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: 7001,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
+
+const validateCancelPackage = (req, res, next) => {
+  const schema = Joi.object({
+    Account: Joi.object({ id: Joi.string().length(3).required() }).required(),
+    Id: Joi.string().required(),
+  })
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: 7001,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
+
+const validateViewMyPackages = (req, res, next) => {
+  const schema = Joi.object({
+    Account: Joi.object({ id: Joi.string().length(3).required() }).required(),
   })
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
@@ -163,5 +208,8 @@ module.exports = {
   validateCreatePackage,
   validateEditPackage,
   validateViewPackage,
-  validateViewAllPackages
+  validateViewAllPackages,
+  validatePurchasePackage,
+  validateCancelPackage,
+  validateViewMyPackages
 }

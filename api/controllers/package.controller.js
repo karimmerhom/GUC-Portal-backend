@@ -1,25 +1,29 @@
-const extremePackage = require("../../models/extremePackage.model")
-const regularPackage = require("../../models/regularPackage.model")
-const purchasedPackage = require("../../models/purchasedPackages.model")
-const { packageStatus } = require("../constants/TBH.enum")
-const errorCodes = require("../constants/errorCodes")
-const extremePackage = require("../../models/extremePackage.model")
-const regularPackage = require("../../models/regularPackage.model")
-const errorCodes = require("../constants/errorCodes")
+const extremePackage = require('../../models/extremePackage.model')
+const regularPackage = require('../../models/regularPackage.model')
+const purchasedPackage = require('../../models/purchasedPackages.model')
+const { packageStatus } = require('../constants/TBH.enum')
+const errorCodes = require('../constants/errorCodes')
+const { deductPoints , addPoints } = require('../helpers/helpers')
 
+Date.prototype.addDays = function (days) {
+  var date = new Date(this.valueOf())
+  date.setDate(date.getDate() + days)
+  return date
+}
 
 const createPackage = async (req, res) => {
   try {
     const body = req.body
     const Type = req.body.packageType
-    if (Type === "regular") {
+
+    if (Type === 'regular') {
       delete body.packageType
       await regularPackage.create(body)
       return res.json({
         code: 7000,
       })
     }
-    if (Type === "extreme") {
+    if (Type === 'extreme') {
       delete body.packageType
       await extremePackage.create(body)
       return res.json({
@@ -27,8 +31,8 @@ const createPackage = async (req, res) => {
       })
     }
   } catch (exception) {
-    console.log(exception + "  jjjjjjjjj")
-    return res.json({ code: errorCodes.unknown, error: "Something went wrong" })
+    console.log(exception + '  jjjjjjjjj')
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 
@@ -38,7 +42,7 @@ const editPackage = async (req, res) => {
     const id = req.body.id
     delete body.id
     const Type = req.body.packageType
-    if (Type === "regular") {
+    if (Type === 'regular') {
       delete body.packageType
       await regularPackage.update(body, {
         where: {
@@ -50,7 +54,7 @@ const editPackage = async (req, res) => {
         code: 7000,
       })
     }
-    if (Type === "extreme") {
+    if (Type === 'extreme') {
       delete body.packageType
       await extremePackage.update(body, {
         where: {
@@ -63,49 +67,39 @@ const editPackage = async (req, res) => {
       })
     }
   } catch (exception) {
-    console.log(exception + "  jjjjjjjjj")
-    return res.json({ code: errorCodes.unknown, error: "Something went wrong" })
+    console.log(exception + '  jjjjjjjjj')
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 
 const purchasePackage = async (req, res) => {
   try {
-    const body = req.body
     const Type = req.body.packageType
     const Id = req.body.packageId
-    
-    if (Type === "regular") {
-      const packageBody = await regularPackage.findByPk(Id)
-      body.totalPoints = packageBody.points
-      body.usedPoints = 0
-      body.purchaseDate = Date.now()
-      body.status = packageStatus.PENDING
-      delete body.packageType
-     
-      // await purchasedPackage.create(body)
-      return res.json({
-        code: success,
-      })
-    }
-    if (Type === "extreme") {
-    
-      const packageBody = await regularPackage.findByPk(Id)
-      body.purchaseDate = Date.now()
-      body.status = packageStatus.PENDING
-      delete body.packageType
-      await purchasedPackage.create(body)
-      return res.json({
-        code: success,
-      })
-    }
-    else {
-     
-      return res.json({ code: errorCodes.unknown, error: "Something went wrong" })
-    }
+    const accountId = req.body.Account.id
+    const r = await addPoints(accountId , Type , Id)
+    return (res.json(r))
+
   } catch (exception) {
-        console.log(exception);
-        return res.json({ code: errorCodes.unknown, error: "Something went wrong" })
-  }}
+    console.log(exception)
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const cancelPackage = async (req, res) => {
+  try {
+    const body = req.body
+    const bodyId = req.body.Id
+    body.status = packageStatus.CANCELED
+    await purchasedPackage.update(body, { where: { id: purchased.id } })
+    return res.json({
+      code: errorCodes.success,
+    })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
 
 const viewPackage = async (req, res) => {
   try {
@@ -113,35 +107,27 @@ const viewPackage = async (req, res) => {
     const id = req.body.id
     delete body.id
     const Type = req.body.packageType
-    if (Type === "regular") {
+    if (Type === 'regular') {
       delete body.packageType
       const packageFound = await regularPackage.findOne({
         where: {
           id: parseInt(id),
         },
       })
-      if(packageFound)
-      return res.json({package: packageFound,
-        code: 7000,
-      })
+      if (packageFound) return res.json({ package: packageFound, code: 7000 })
     }
-    if (Type === "extreme") {
-
+    if (Type === 'extreme') {
       const packageFound = await extremePackage.findOne({
-          where: {
-            id: parseInt(id),
-          },
-        })
-        if(packageFound)
-        return res.json({package: packageFound,
-          code: 7000,
-        })
+        where: {
+          id: parseInt(id),
+        },
+      })
+      if (packageFound) return res.json({ package: packageFound, code: 7000 })
     }
     return res.json({ statusCode: 7001, error: 'package not found' })
-
   } catch (exception) {
-    console.log(exception + "  jjjjjjjjj")
-    return res.json({ code: errorCodes.unknown, error: "Something went wrong" })
+    console.log(exception + '  jjjjjjjjj')
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 
@@ -149,22 +135,30 @@ const viewAllPackages = async (req, res) => {
   try {
     const packagesFound1 = await regularPackage.findAll({})
     const packagesFound2 = await extremePackage.findAll({})
-    const packagesFound = packagesFound1.concat(packagesFound2);
-    return res.json({package: packagesFound,
-          code: 7000,
-        })
+    const packagesFound = packagesFound1.concat(packagesFound2)
+    return res.json({ package: packagesFound, code: 7000 })
   } catch (exception) {
-    console.log(exception + "  jjjjjjjjj")
-    return res.json({ code: errorCodes.unknown, error: "Something went wrong" })
+    console.log(exception + '  jjjjjjjjj')
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const viewMyPackages = async (req, res) => {
+  try {
+    const purchasedPackages = await purchasedPackage.findAll({})
+    return res.json({ purchasedPackages: purchasedPackages, code: 7000 })
+  } catch (exception) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 
 module.exports = {
   createPackage,
   purchasePackage,
-
+  cancelPackage,
   createPackage,
   editPackage,
   viewPackage,
-  viewAllPackages
+  viewAllPackages,
+  viewMyPackages,
 }
