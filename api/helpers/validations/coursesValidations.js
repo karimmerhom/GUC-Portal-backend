@@ -22,7 +22,7 @@ const validateCreate = (req, res, next) => {
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
     return res.json({
-      statusCode: '1',
+      statusCode: errorCodes.unknown,
       error: isValid.error.details[0].message,
     })
   }
@@ -41,7 +41,7 @@ const validateViewCourse = (req, res, next) => {
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
     return res.json({
-      statusCode: '1',
+      statusCode: errorCodes.unknown,
       error: isValid.error.details[0].message,
     })
   }
@@ -58,7 +58,7 @@ const validateViewAllCourses = (req, res, next) => {
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
     return res.json({
-      statusCode: '1',
+      statusCode: errorCodes.unknown,
       error: isValid.error.details[0].message,
     })
   }
