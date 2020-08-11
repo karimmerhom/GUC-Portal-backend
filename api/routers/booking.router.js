@@ -24,7 +24,6 @@ router.post('/viewCalendar', validateViewCalendar, viewCalendar)
 router.post('/cancelBooking', validateCancelBooking, cancelBooking)
 router.post('/viewMyBookings', validateViewMyBooking, viewMyBookings)
 router.post('/viewDateBookings', validateViewDateBookings, viewDateBookings)
-
 router.post('/viewAllBookings', viewAllBookings)
 
 module.exports = router
