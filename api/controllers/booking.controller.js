@@ -8,7 +8,7 @@ const pricingModel = require('../../models/pricing.model')
 
 const validator = require('../helpers/validations/bookingValidations')
 const errorCodes = require('../constants/errorCodes')
-const { Op } = require('sequelize')
+const { Op, where } = require('sequelize')
 
 const {
   secretOrKey,
@@ -20,6 +20,31 @@ const { slots, calStatus, bookingStatus } = require('../constants/TBH.enum')
 const {} = require('../helpers/helpers')
 const { object } = require('joi')
 const { calendar } = require('googleapis/build/src/apis/calendar')
+const Pricing = require('../../models/pricing.model')
+
+const calculatePrice = async (type, slots) => {
+  try {
+    var pricing
+    pricing.points = 0
+    pricing.cash = 0
+
+    const pricingfound = await pricingModel.findOne({
+      where: { pricingType: 'flat_rate', roomType: type },
+    })
+
+    pricing.cash = pricingfound.value
+
+    const pricingfound1 = await pricingModel.findOne({
+      where: { pricingType: 'points', roomType: type },
+    })
+
+    pricing.points = pricingfound1.value
+
+    return pricing
+  } catch (exception) {
+    return console.log('toot')
+  }
+}
 
 const viewCalendar = async (req, res) => {
   try {
