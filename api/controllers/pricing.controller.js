@@ -18,6 +18,30 @@ const {
 const {} = require('../constants/TBH.enum')
 const {} = require('../helpers/helpers')
 
+const calculatePrice = async (type, slots) => {
+  try {
+    var pricing
+    pricing.points = 0
+    pricing.cash = 0
+
+    const pricingfound = await pricingModel.findOne({
+      where: { pricingType: 'flat_rate', roomType: type },
+    })
+
+    pricing.cash = pricingfound.value * slots
+
+    const pricingfound1 = await pricingModel.findOne({
+      where: { pricingType: 'points', roomType: type },
+    })
+
+    pricing.points = pricingfound1.value * slots
+
+    return pricing
+  } catch (exception) {
+    return console.log('toot')
+  }
+}
+
 const createPricing = async (req, res) => {
   try {
     const room = req.body
