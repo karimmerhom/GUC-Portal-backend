@@ -69,6 +69,7 @@ const eventNotOpenForRegisteration = 133
 const cannotEditRegisteration = 134
 const formExists = 135
 const formNotFound = 136
+const cousrseDoesntExist = 137
 
 module.exports = {
   success,
@@ -108,4 +109,5 @@ module.exports = {
   cannotEditRegisteration,
   formExists,
   formNotFound,
+  cousrseDoesntExist,
 }

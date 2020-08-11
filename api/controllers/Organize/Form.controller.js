@@ -18,13 +18,15 @@ const createForm = async (req, res) => {
         error: 'you already have a form',
       })
     }
+    let year = `${new Date(form.yearOfGraduation).getFullYear()}` + ''
+
     const newForm = {
       degree: form.degree,
       university: form.university,
-      yearOfGraduation: form.yearOfGraduation,
+      yearOfGraduation: year,
       CV: form.CV,
       englishLevel: form.englishLevel,
-      previousOrganzingExperience: form.previousOrganzingExperience,
+      previousOrganizingExperience: form.previousOrganizingExperience,
       placesOrganizedAtPreviously: form.placesOrganizedAtPreviously,
       availableAudience: form.availableAudience,
       accountId: Account.id,
@@ -51,10 +53,14 @@ const editForm = async (req, res) => {
         id: formID,
       },
     })
-    if (formid) {
-      delete form.id
-      FormModel.update(form, { where: { id: formID } })
+    if (!formid) {
+      return res.json({
+        msg: 'form doesnt exist',
+        statusCode: errorCodes.formNotFound,
+      })
     }
+    delete form.id
+    FormModel.update(form, { where: { id: formID } })
     return res.json({ msg: 'form is updated', statusCode: errorCodes.success })
   } catch (exception) {
     return res.json({

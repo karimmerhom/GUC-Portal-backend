@@ -55,9 +55,13 @@ const editCourse = async (req, res) => {
         id: courseID,
       },
     })
-    if (courseid) {
-      CoursesModel.drop(Course, { where: { id: courseID } })
+    if (!courseid) {
+      return res.json({
+        msg: 'course doesnt exist',
+        statusCode: errorCodes.cousrseDoesntExist,
+      })
     }
+    CoursesModel.update(Course, { where: { id: courseID } })
 
     return res.json({
       msg: 'course is updated',
@@ -74,16 +78,18 @@ const editCourse = async (req, res) => {
 const deleteCourse = async (req, res) => {
   try {
     const courseID = req.body.Course.id
-    const { Course } = req.body
     const courseid = await CoursesModel.findOne({
       where: {
         id: courseID,
       },
     })
-    if (courseid) {
-      delete Course.category
-      CoursesModel.update(Course, { where: { id: courseID } })
+    if (!courseid) {
+      return res.json({
+        msg: 'course doesnt exist',
+        statusCode: errorCodes.cousrseDoesntExist,
+      })
     }
+    CoursesModel.destroy({ where: { id: courseID } })
     return res.json({
       msg: 'course is deleted',
       statusCode: errorCodes.success,
