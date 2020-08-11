@@ -8,7 +8,7 @@ const validator = require('../../helpers/validations/coursesValidations')
 
 const createCourse = async (req, res) => {
   try {
-    const { course, Account } = req.body
+    const { Course, Account } = req.body
 
     const formFound = await FormModel.findOne({
       where: { accountId: Account.id },
@@ -16,32 +16,31 @@ const createCourse = async (req, res) => {
 
     if (!formFound) {
       return res.json({
-        statusCode: '1',
+        statusCode: errorCodes.formNotFound,
         error: 'You must Create a form first',
       })
     }
 
     const newCourse = {
-      title: course.title,
-      description: course.description,
-      category: course.category,
-      attachedMedia: course.attachedMedia,
-      durationInHours: course.durationInHours,
-      daysPerWeek: course.daysPerWeek,
-      sessionDuration: course.sessionDuration,
-      pricePerPerson: course.pricePerPerson,
-      maxNumberOfAttendees: course.maxNumberOfAttendees,
-      minNumberOfAttendees: course.minNumberOfAttendees,
+      title: Course.title,
+      description: Course.description,
+      category: Course.category,
+      attachedMedia: Course.attachedMedia,
+      durationInHours: Course.durationInHours,
+      daysPerWeek: Course.daysPerWeek,
+      sessionDuration: Course.sessionDuration,
+      pricePerPerson: Course.pricePerPerson,
+      maxNumberOfAttendees: Course.maxNumberOfAttendees,
+      minNumberOfAttendees: Course.minNumberOfAttendees,
       accountId: Account.id,
     }
     CoursesModel.create(newCourse)
     return res.json({
-      statusCode: '0',
+      statusCode: errorCodes.success,
     })
   } catch (exception) {
-    console.log(exception)
     return res.json({
-      statusCode: '1',
+      statusCode: errorCodes.unknown,
       error: 'Something went wrong',
     })
   }
@@ -57,17 +56,43 @@ const editCourse = async (req, res) => {
       },
     })
     if (courseid) {
-      delete Course.id
-      CoursesModel.update(Course, { where: { id: courseID } })
+      CoursesModel.drop(Course, { where: { id: courseID } })
     }
 
-    //console.log(courseUpdate.title),
-    return res.json({ msg: 'course is updated', statusCode: '0' })
+    return res.json({
+      msg: 'course is updated',
+      statusCode: errorCodes.success,
+    })
+  } catch (exception) {
+    return res.json({
+      error: 'Something went wrong',
+      statusCode: errorCodes.unknown,
+    })
+  }
+}
+
+const deleteCourse = async (req, res) => {
+  try {
+    const courseID = req.body.Course.id
+    const { Course } = req.body
+    const courseid = await CoursesModel.findOne({
+      where: {
+        id: courseID,
+      },
+    })
+    if (courseid) {
+      delete Course.category
+      CoursesModel.update(Course, { where: { id: courseID } })
+    }
+    return res.json({
+      msg: 'course is deleted',
+      statusCode: errorCodes.success,
+    })
   } catch (exception) {
     console.log(exception)
     return res.json({
       error: 'Something went wrong',
-      statusCode: '1',
+      statusCode: error.unknown,
     })
   }
 }
@@ -75,4 +100,5 @@ const editCourse = async (req, res) => {
 module.exports = {
   createCourse,
   editCourse,
+  deleteCourse,
 }

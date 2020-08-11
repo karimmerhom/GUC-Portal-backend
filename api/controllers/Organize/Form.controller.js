@@ -8,7 +8,16 @@ const errorCodes = require('../../constants/errorCodes')
 const createForm = async (req, res) => {
   try {
     const { form, Account } = req.body
+    const formFound = await FormModel.findOne({
+      where: { accountId: Account.id },
+    })
 
+    if (formFound) {
+      return res.json({
+        statusCode: errorCodes.formExists,
+        error: 'you already have a form',
+      })
+    }
     const newForm = {
       degree: form.degree,
       university: form.university,
@@ -23,12 +32,11 @@ const createForm = async (req, res) => {
     FormModel.create(newForm)
 
     return res.json({
-      statusCode: '0',
+      statusCode: errorCodes.success,
     })
   } catch (exception) {
-    console.log(exception)
     return res.json({
-      statusCode: '1',
+      statusCode: errorCodes.unknown,
       error: 'Something went wrong',
     })
   }
@@ -36,7 +44,7 @@ const createForm = async (req, res) => {
 
 const editForm = async (req, res) => {
   try {
-    const formID = req.body.Form.id
+    const formID = req.body.form.id
     const { form } = req.body
     const formid = await FormModel.findOne({
       where: {
@@ -44,15 +52,14 @@ const editForm = async (req, res) => {
       },
     })
     if (formid) {
-      delete Course.id
-      CoursesModel.delete(Form, { where: { id: formID } })
+      delete form.id
+      FormModel.update(form, { where: { id: formID } })
     }
-    return res.json({ msg: 'form is updated', statusCode: '0' })
+    return res.json({ msg: 'form is updated', statusCode: errorCodes.success })
   } catch (exception) {
-    console.log(exception)
     return res.json({
       error: 'Something went wrong',
-      statusCode: '1',
+      statusCode: errorCodes.unknown,
     })
   }
 }

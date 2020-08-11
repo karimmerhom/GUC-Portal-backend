@@ -67,6 +67,8 @@ const eventFullyBooked = 132
 const eventNotOpenForRegisteration = 133
 
 const cannotEditRegisteration = 134
+const formExists = 135
+const formNotFound = 136
 
 module.exports = {
   success,
@@ -103,5 +105,7 @@ module.exports = {
   collaboratorExists,
   eventNotOpenForRegisteration,
   eventFullyBooked,
-  cannotEditRegisteration
+  cannotEditRegisteration,
+  formExists,
+  formNotFound,
 }

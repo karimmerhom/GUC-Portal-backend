@@ -1,4 +1,5 @@
 const Joi = require('Joi')
+const errorCodes = require('../../constants/errorCodes')
 
 const validateCreate = (req, res, next) => {
   const schema = {
@@ -22,39 +23,57 @@ const validateCreate = (req, res, next) => {
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
     return res.json({
-      statusCode: '1',
+      statusCode:errorCodes.unknown,
       error: isValid.error.details[0].message,
     })
   }
   return next()
 }
-const validateEditCourse= (req, res, next) => {
-    const schema = {
-      Course: Joi.object({
-        title: Joi.string(),
-        description: Joi.string(),
-        category: Joi.string(),
-        attachedMedia: Joi.string(),
-        durationInHours: Joi.number(),
-        daysPerWeek: Joi.number(),
-        sessionDuration: Joi.number(),
-        pricePerPerson: Joi.number(),
-        maxNumberOfAttendees: Joi.number(),
-        minNumberOfAttendees: Joi.number(),
-        id: Joi.number(),
-      }),
-      Account: Joi.object({
-        id: Joi.number(),
-      }),
-    }
-  
-    const isValid = Joi.validate(req.body, schema)
-    if (isValid.error) {
-      return res.json({
-        statusCode: '1',
-        error: isValid.error.details[0].message,
-      })
-    }
-    return next()
+const validateEditCourse = (req, res, next) => {
+  const schema = {
+    Course: Joi.object({
+      title: Joi.string(),
+      description: Joi.string(),
+      category: Joi.string(),
+      attachedMedia: Joi.string(),
+      durationInHours: Joi.number(),
+      daysPerWeek: Joi.number(),
+      sessionDuration: Joi.number(),
+      pricePerPerson: Joi.number(),
+      maxNumberOfAttendees: Joi.number(),
+      minNumberOfAttendees: Joi.number(),
+      id: Joi.number(),
+    }),
+    Account: Joi.object({
+      id: Joi.number(),
+    }),
   }
-module.exports = { validateCreate, validateEditCourse }
+
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
+
+const validateDeleteCourse = (req, res, next) => {
+  const schema = {
+    Course: Joi.object({ id: Joi.number() }),
+
+    Account: Joi.object({
+      id: Joi.number(),
+    }),
+  }
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
+module.exports = { validateCreate, validateEditCourse, validateDeleteCourse }

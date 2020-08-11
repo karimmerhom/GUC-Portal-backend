@@ -4,10 +4,11 @@ const router = express.Router()
 const {
   validateCreate,
   validateEditCourse,
+  validateDeleteCourse,
 } = require('../helpers/validations/coursesValidations')
 const coursesController = require('../controllers/Organize/Courses.controller')
 
-const { createCourse, editCourse } = coursesController
+const { createCourse, editCourse, deleteCourse } = coursesController
 
 // const { verifyToken } = require('../../config/AuthenticationMiddleWare')
 // const { verifyAdmin } = require('../../config/AdminAuthentication')
@@ -15,6 +16,7 @@ const { createCourse, editCourse } = coursesController
 
 router.post('/createCourse', validateCreate, createCourse)
 router.post('/editCourse', validateEditCourse, editCourse)
+router.post('/deleteCourse', validateDeleteCourse, deleteCourse)
 
 //router.post('/verify', verifyToken, verify)
 
