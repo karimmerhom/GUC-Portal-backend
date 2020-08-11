@@ -10,7 +10,8 @@ const {
   createPackage,
   editPackage,
   viewPackage,
-  viewAllPackages
+  viewAllPackages,
+  deletePackage
 } = packageController
 
 const {
@@ -28,5 +29,6 @@ router.post('/createPackage',validateCreatePackage, createPackage)
 router.post('/editPackage',validateEditPackage, editPackage)
 router.post('/viewPackage',validateViewPackage, viewPackage)
 router.post('/viewAllPackages',validateViewAllPackages, viewAllPackages)
+router.post('/deletePackage',validateViewPackage, deletePackage)
 
 module.exports = router
