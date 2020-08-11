@@ -48,10 +48,13 @@ const createCourse = async (req, res) => {
 
 const viewCourse = async (req, res) => {
   try {
-    const courseId = req.body.Course.id
+    const { Account, Course } = req.body
+    const { id } = Course
+    const accountId = Account.id
     const checkCourse = await CoursesModel.findOne({
       where: {
-        id: courseId,
+        id,
+        accountId,
       },
     })
     if (!checkCourse) {
@@ -71,6 +74,20 @@ const viewCourse = async (req, res) => {
 
 const viewAllCourses = async (req, res) => {
   try {
+    const accountId = req.body.Account.id
+    
+    const checkCourse = await CoursesModel.findOne({
+      where: {
+      accountId,
+      },
+    })
+    if (!checkCourse) {
+      return res.json({
+        error: 'Account id is not correct',
+        statusCode: errorCodes.validation,
+      })
+    }
+
     const result = await CoursesModel.findAll()
 
     return res.json({ AllCourses: result, statusCode: errorCodes.success })
@@ -83,21 +100,23 @@ const viewAllCourses = async (req, res) => {
 }
 const editCourse = async (req, res) => {
   try {
-    const { Course } = req.body
-    const courseID = req.body.Course.id
-  
+    const { Course, Account } = req.body
+    const courseID = Course.id
+    const accountId = Account.id
+
     const courseid = await CoursesModel.findOne({
       where: {
         id: courseID,
+        accountId,
       },
     })
     if (!courseid) {
       return res.json({
-        msg: 'course doesnt exist',
+        msg: 'course doesnt exist for this account',
         statusCode: errorCodes.cousrseDoesntExist,
       })
     }
-    CoursesModel.update(Course, { where: { id: courseID } })
+    CoursesModel.update(Course, { where: { id: courseID, accountId } })
 
     return res.json({
       msg: 'course is updated',
@@ -115,9 +134,11 @@ const editCourse = async (req, res) => {
 const deleteCourse = async (req, res) => {
   try {
     const courseID = req.body.Course.id
+    const accountId = req.body.Account.id
     const courseid = await CoursesModel.findOne({
       where: {
         id: courseID,
+        accountId,
       },
     })
     if (!courseid) {
@@ -126,7 +147,7 @@ const deleteCourse = async (req, res) => {
         statusCode: errorCodes.cousrseDoesntExist,
       })
     }
-    CoursesModel.destroy({ where: { id: courseID } })
+    CoursesModel.destroy({ where: { id: courseID, accountId } })
     return res.json({
       msg: 'course is deleted',
       statusCode: errorCodes.success,
