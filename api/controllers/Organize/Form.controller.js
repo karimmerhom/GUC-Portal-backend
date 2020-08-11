@@ -54,10 +54,7 @@ const editForm = async (req, res) => {
       },
     })
     if (!formid) {
-      return res.json({
-        msg: 'form doesnt exist',
-        statusCode: errorCodes.formNotFound,
-      })
+      return res.json({ msg: 'form doesnt exist', statusCode: errorCodes.form })
     }
     delete form.id
     FormModel.update(form, { where: { id: formID } })

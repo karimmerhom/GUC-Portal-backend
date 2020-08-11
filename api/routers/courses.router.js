@@ -3,18 +3,29 @@ const express = require('express')
 const router = express.Router()
 const {
   validateCreate,
+  validateViewCourse,
+  validateViewAllCourses,
   validateEditCourse,
   validateDeleteCourse,
 } = require('../helpers/validations/coursesValidations')
 const coursesController = require('../controllers/Organize/Courses.controller')
 
-const { createCourse, editCourse, deleteCourse } = coursesController
+
+const {
+  viewCourse,
+  createCourse,
+  viewAllCourses,
+  editCourse,
+  deleteCourse
+} = coursesController
 
 // const { verifyToken } = require('../../config/AuthenticationMiddleWare')
 // const { verifyAdmin } = require('../../config/AdminAuthentication')
 // const { verifyUser } = require('../../config/authUser')
 
 router.post('/createCourse', validateCreate, createCourse)
+router.post('/viewCourse', validateViewCourse, viewCourse)
+router.post('/viewAllCourses', validateViewAllCourses, viewAllCourses)
 router.post('/editCourse', validateEditCourse, editCourse)
 router.post('/deleteCourse', validateDeleteCourse, deleteCourse)
 

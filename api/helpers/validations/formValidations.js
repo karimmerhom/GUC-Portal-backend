@@ -44,7 +44,16 @@ const validateCreateForm = (req, res, next) => {
       id: Joi.number().required(),
     }),
   }
-
+}
+const validateViewForm = (req, res, next) => {
+  const schema = {
+    Account: Joi.object({
+      id: Joi.number().required(),
+    }),
+    Form: Joi.object({
+      id: Joi.number().required(),
+    }),
+  }
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
     return res.json({
@@ -104,4 +113,5 @@ const validateEditForm = (req, res, next) => {
 module.exports = {
   validateCreateForm,
   validateEditForm,
+  validateViewForm,
 }

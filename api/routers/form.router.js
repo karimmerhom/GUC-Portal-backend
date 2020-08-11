@@ -6,9 +6,13 @@ const formController = require('../controllers/Organize/Form.controller')
 const {
   validateCreateForm,
   validateEditForm,
+  validateViewForm
+  
 } = require('../helpers/validations/formValidations')
 
-const { createForm, editForm } = formController
+const { createForm, editForm, viewForm } = formController
+
+
 
 // const { verifyToken } = require('../../config/AuthenticationMiddleWare')
 // const { verifyAdmin } = require('../../config/AdminAuthentication')
@@ -16,6 +20,7 @@ const { createForm, editForm } = formController
 
 router.post('/createForm', validateCreateForm, createForm)
 router.post('/editForm', validateEditForm, editForm)
+router.post('/viewForm', validateViewForm, viewForm)
 
 //router.post('/verify', verifyToken, verify)
 
