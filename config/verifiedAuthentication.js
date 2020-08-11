@@ -4,29 +4,21 @@ const { secretOrKey } = require('./keys')
 
 const { authentication, unVerified } = require('../api/constants/errorCodes')
 const { accountStatus } = require('../api/constants/TBH.enum')
-
 module.exports = {
   verifiedPhone: (req, res, next) => {
-    jwt.verify(
-      req.headers.authorization,
-      secretOrKey,
-      (err, authorizedData) => {
-        if (!err) {
-          const header = req.headers.authorization
-          const token = header
-          console.log(authorizedData.status)
-          if (authorizedData.status === accountStatus.VERIFIED) {
-            req.data = authorizedData
-            req.token = token
-            return next()
-          }
-          return res.json({
-            code: unVerified,
-            error: 'Phone number is not verified',
-          })
-        }
-        return res.json({ code: authentication, error: 'breach' })
+    try {
+      const { Account } = req.body
+      if (!Account) {
+        return res.json({ code: authentication, error: 'breach not account' })
       }
-    )
+      console.log(req.data)
+      if (req.data.status !== accountStatus.VERIFIED) {
+        return res.json({ code: unVerified, error: 'PhoneNumber not verified' })
+      }
+      return next()
+    } catch (exception) {
+      console.log(exception)
+      return res.json({ code: authentication, error: 'breach exception' })
+    }
   },
 }

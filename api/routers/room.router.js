@@ -13,6 +13,6 @@ const { verifyUser } = require('../../config/authUser')
 router.post('/createRoom', verifyAdmin, createRoom)
 router.post('/editRoom', verifyAdmin, editRoom)
 router.post('/deleteRoom', verifyAdmin, deleteRoom)
-router.post('/viewRoom', verifyAdmin, viewRoom)
+router.post('/viewRoom', verifyToken, verifyUser, viewRoom)
 
 module.exports = router

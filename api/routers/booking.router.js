@@ -27,20 +27,39 @@ const {
   validateEditMyBooking,
 } = require('../helpers/validations/bookingValidations')
 
-router.post('/bookRoom', verifyUser, verifiedPhone, validateBookRoom, bookRoom)
-router.post('/tryBooking', verifyUser, validateBookRoom, tryBooking)
-
+router.post(
+  '/bookRoom',
+  verifyToken,
+  verifyUser,
+  verifiedPhone,
+  validateBookRoom,
+  bookRoom
+)
+router.post(
+  '/tryBooking',
+  verifyToken,
+  verifyUser,
+  validateBookRoom,
+  tryBooking
+)
 router.post(
   '/editBooking',
+  verifyToken,
   verifyUser,
   verifiedPhone,
   validateEditMyBooking,
   editBooking
 )
-
-router.post('/viewCalendar', verifyUser, validateViewCalendar, viewCalendar)
+router.post(
+  '/viewCalendar',
+  verifyToken,
+  verifyUser,
+  validateViewCalendar,
+  viewCalendar
+)
 router.post(
   '/cancelBooking',
+  verifyToken,
   verifyUser,
   verifiedPhone,
   validateCancelBooking,
@@ -48,6 +67,7 @@ router.post(
 )
 router.post(
   '/viewMyBookings',
+  verifyToken,
   verifyUser,
   verifiedPhone,
   validateViewMyBooking,
