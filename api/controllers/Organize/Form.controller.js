@@ -54,7 +54,10 @@ const editForm = async (req, res) => {
       },
     })
     if (!formid) {
-      return res.json({ msg: 'form doesnt exist', statusCode: errorCodes.form })
+      return res.json({
+        msg: 'form doesnt exist',
+        statusCode: errorCodes.formNotFound,
+      })
     }
     delete form.id
     FormModel.update(form, { where: { id: formID } })
@@ -67,7 +70,29 @@ const editForm = async (req, res) => {
   }
 }
 
+const viewForm = async (req, res) => {
+  try {
+    const formId = req.body.Form.id
+
+    const checkForm = await FormModel.findOne({
+      where: {
+        id: formId,
+      },
+    })
+    if (!checkForm) {
+      return res.json({
+        error: 'Form does not exist',
+        statusCode: '7',
+      })
+    }
+    return res.json({ Form: checkForm, statusCode: '0' })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ error: 'Something went wrong' })
+  }
+}
 module.exports = {
   createForm,
   editForm,
+  viewForm
 }

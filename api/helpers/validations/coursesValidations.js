@@ -66,7 +66,6 @@ const validateViewAllCourses = (req, res, next) => {
   return next()
 }
 
-
 const validateEditCourse = (req, res, next) => {
   const schema = {
     Course: Joi.object({
@@ -114,10 +113,11 @@ const validateDeleteCourse = (req, res, next) => {
   }
   return next()
 }
-module.exports = { validateCreate, validateEditCourse, validateDeleteCourse }
+
 module.exports = {
   validateCreate,
   validateViewCourse,
   validateViewAllCourses,
   validateEditCourse,
+  validateDeleteCourse,
 }

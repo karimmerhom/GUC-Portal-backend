@@ -46,6 +46,7 @@ const createCourse = async (req, res) => {
   }
 }
 
+
 const viewCourse = async (req, res) => {
   try {
     const courseId = req.body.Course.id
