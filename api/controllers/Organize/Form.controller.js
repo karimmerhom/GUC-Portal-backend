@@ -82,17 +82,20 @@ const viewForm = async (req, res) => {
     if (!checkForm) {
       return res.json({
         error: 'Form does not exist',
-        statusCode: '7',
+        statusCode: errorCodes.formNotFound,
       })
     }
-    return res.json({ Form: checkForm, statusCode: '0' })
+    return res.json({ Form: checkForm, statusCode: errorCodes.success })
   } catch (exception) {
     console.log(exception)
-    return res.json({ error: 'Something went wrong' })
+    return res.json({
+      error: 'Something went wrong',
+      statusCode: errorCodes.unknown,
+    })
   }
 }
 module.exports = {
   createForm,
   editForm,
-  viewForm
+  viewForm,
 }

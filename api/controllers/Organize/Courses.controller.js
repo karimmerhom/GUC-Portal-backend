@@ -46,7 +46,6 @@ const createCourse = async (req, res) => {
   }
 }
 
-
 const viewCourse = async (req, res) => {
   try {
     const courseId = req.body.Course.id
@@ -58,12 +57,15 @@ const viewCourse = async (req, res) => {
     if (!checkCourse) {
       return res.json({
         error: 'Course does not exist',
-        statusCode: '7',
+        statusCode: errorCodes.cousrseDoesntExist,
       })
     }
-    return res.json({ Course: checkCourse, statusCode: '0' })
+    return res.json({ Course: checkCourse, statusCode: errorCodes.success })
   } catch (exception) {
-    return res.json({ error: 'Something went wrong' })
+    return res.json({
+      error: 'Something went wrong',
+      statusCode: errorCodes.unknown,
+    })
   }
 }
 
@@ -71,9 +73,12 @@ const viewAllCourses = async (req, res) => {
   try {
     const result = await CoursesModel.findAll()
 
-    return res.json({ AllCourses: result, statusCode: '0' })
+    return res.json({ AllCourses: result, statusCode: errorCodes.success })
   } catch (exception) {
-    return res.json({ error: 'Something went wrong', statusCode: unknown })
+    return res.json({
+      error: 'no courses found',
+      statusCode: errorCodes.unknown,
+    })
   }
 }
 const editCourse = async (req, res) => {
