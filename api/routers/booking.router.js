@@ -1,6 +1,7 @@
 const express = require('express')
 
 const router = express.Router()
+const { verifiedPhone } = require('../../config/verifiedAuthentication')
 
 const { verifyToken } = require('../../config/AuthenticationMiddleWare')
 const { verifyAdmin } = require('../../config/AdminAuthentication')
@@ -26,15 +27,38 @@ const {
   validateEditMyBooking,
 } = require('../helpers/validations/bookingValidations')
 
-router.post('/bookRoom', validateBookRoom, bookRoom)
-router.post('/tryBooking', validateBookRoom, tryBooking)
+router.post('/bookRoom', verifyUser, verifiedPhone, validateBookRoom, bookRoom)
+router.post('/tryBooking', verifyUser, validateBookRoom, tryBooking)
 
-router.post('/editBooking', validateEditMyBooking, editBooking)
+router.post(
+  '/editBooking',
+  verifyUser,
+  verifiedPhone,
+  validateEditMyBooking,
+  editBooking
+)
 
-router.post('/viewCalendar', validateViewCalendar, viewCalendar)
-router.post('/cancelBooking', validateCancelBooking, cancelBooking)
-router.post('/viewMyBookings', validateViewMyBooking, viewMyBookings)
-router.post('/viewDateBookings', validateViewDateBookings, viewDateBookings)
-router.post('/viewAllBookings', viewAllBookings)
+router.post('/viewCalendar', verifyUser, validateViewCalendar, viewCalendar)
+router.post(
+  '/cancelBooking',
+  verifyUser,
+  verifiedPhone,
+  validateCancelBooking,
+  cancelBooking
+)
+router.post(
+  '/viewMyBookings',
+  verifyUser,
+  verifiedPhone,
+  validateViewMyBooking,
+  viewMyBookings
+)
+router.post(
+  '/viewDateBookings',
+  verifyAdmin,
+  validateViewDateBookings,
+  viewDateBookings
+)
+router.post('/viewAllBookings', verifyAdmin, viewAllBookings)
 
 module.exports = router

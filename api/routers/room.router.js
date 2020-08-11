@@ -10,9 +10,9 @@ const { verifyToken } = require('../../config/AuthenticationMiddleWare')
 const { verifyAdmin } = require('../../config/AdminAuthentication')
 const { verifyUser } = require('../../config/authUser')
 
-router.post('/createRoom', createRoom)
-router.post('/editRoom', editRoom)
-router.post('/deleteRoom', deleteRoom)
-router.post('/viewRoom', viewRoom)
+router.post('/createRoom', verifyAdmin, createRoom)
+router.post('/editRoom', verifyAdmin, editRoom)
+router.post('/deleteRoom', verifyAdmin, deleteRoom)
+router.post('/viewRoom', verifyAdmin, viewRoom)
 
 module.exports = router

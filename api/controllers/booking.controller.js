@@ -319,6 +319,7 @@ const viewAllBookings = async (req, res) => {
 
     return res.json({ booking, code: errorCodes.success })
   } catch (exception) {
+    console.log(exception.message)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }

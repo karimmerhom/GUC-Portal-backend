@@ -34,9 +34,6 @@ Booking.init(
     paymentMethod: {
       type: Sequelize.STRING,
     },
-    unit: {
-      type: Sequelize.STRING,
-    },
   },
   {
     sequelize,
