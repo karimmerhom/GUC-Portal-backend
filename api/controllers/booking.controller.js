@@ -220,7 +220,11 @@ const tryBooking = async (req, res) => {
         statusCode: 7000,
       })
     } else {
-      return res.json({ statusCode: 0, price: 0, bookingDetails })
+      const pricing = calculatePrice(
+        bookingDetails.roomSize,
+        bookingDetails.slots.length
+      )
+      return res.json({ statusCode: 0, pricing, bookingDetails })
     }
   } catch (e) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
