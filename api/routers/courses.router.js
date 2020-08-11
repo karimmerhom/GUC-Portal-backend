@@ -5,13 +5,16 @@ const {
   validateCreate,
   validateViewCourse,
   validateViewAllCourses,
+  validateEditCourse,
 } = require('../helpers/validations/coursesValidations')
 const coursesController = require('../controllers/Organize/Courses.controller')
 
-const { viewCourse } = require('../controllers/Organize/Courses.controller')
-
-const { createCourse } = coursesController
-const { viewAllCourses } = require('../controllers/Organize/Courses.controller')
+const {
+  viewCourse,
+  createCourse,
+  viewAllCourses,
+  editCourse,
+} = coursesController
 
 // const { verifyToken } = require('../../config/AuthenticationMiddleWare')
 // const { verifyAdmin } = require('../../config/AdminAuthentication')
@@ -20,6 +23,7 @@ const { viewAllCourses } = require('../controllers/Organize/Courses.controller')
 router.post('/createCourse', validateCreate, createCourse)
 router.post('/viewCourse', validateViewCourse, viewCourse)
 router.post('/viewAllCourses', validateViewAllCourses, viewAllCourses)
+router.post('/editCourse', validateEditCourse, editCourse)
 
 //router.post('/verify', verifyToken, verify)
 
