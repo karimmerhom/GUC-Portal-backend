@@ -6,13 +6,10 @@ const formController = require('../controllers/Organize/Form.controller')
 const {
   validateCreateForm,
   validateEditForm,
-  validateViewForm
-  
+  validateViewForm,
 } = require('../helpers/validations/formValidations')
 
 const { createForm, editForm, viewForm } = formController
-
-
 
 // const { verifyToken } = require('../../config/AuthenticationMiddleWare')
 // const { verifyAdmin } = require('../../config/AdminAuthentication')

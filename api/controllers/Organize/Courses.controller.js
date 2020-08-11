@@ -83,8 +83,9 @@ const viewAllCourses = async (req, res) => {
 }
 const editCourse = async (req, res) => {
   try {
-    const courseID = req.body.Course.id
     const { Course } = req.body
+    const courseID = req.body.Course.id
+  
     const courseid = await CoursesModel.findOne({
       where: {
         id: courseID,
@@ -103,6 +104,7 @@ const editCourse = async (req, res) => {
       statusCode: errorCodes.success,
     })
   } catch (exception) {
+    console.log(exception)
     return res.json({
       error: 'Something went wrong',
       statusCode: errorCodes.unknown,

@@ -11,7 +11,11 @@ const validateCreateForm = (req, res, next) => {
     form: Joi.object({
       degree: Joi.string().required(),
       university: Joi.string().required(),
-      yearOfGraduation: Joi.string().required(),
+      yearOfGraduation: Joi.string()
+        .regex(
+          /^(0[1-9]|[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|[1-9]|1[012])[- /.](19|20)\d\d$/
+        )
+        .required(),
       CV: Joi.string().required(),
       englishLevel: Joi.string()
         .valid(
@@ -44,6 +48,16 @@ const validateCreateForm = (req, res, next) => {
       id: Joi.number().required(),
     }),
   }
+
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: isValid.error.details[0].message,
+    })
+  }
+
+  return next()
 }
 const validateViewForm = (req, res, next) => {
   const schema = {
