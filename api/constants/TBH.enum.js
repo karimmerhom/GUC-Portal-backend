@@ -76,6 +76,25 @@ const eventStatus = {
   CANCELED: 'canceled',
   CONFIRMED: 'confirmed',
 }
+const englishLevel = {
+  NONE: 'None',
+  BEGINNER: 'Beginner',
+  FAIR: 'Fair',
+  GOOD: 'Good',
+  FLUENT: 'Fluent',
+  NATIVE: 'Native',
+}
+const previousOrganizingExperience = {
+  PROF: 'In person (Professionally)',
+  INFORMAL: 'In person (Informally)',
+  ONLINE: 'Online',
+  OTHER: 'Other',
+}
+const AvailableAudience = {
+  NOTNOW: 'Not at the moment',
+  SMALLGROUP: 'I have a small following group',
+  LARGEGROUP: 'I have a sizable following',
+}
 const roomSize = {
   LARGE: 'large group',
   SMALL: 'small group',
@@ -124,6 +143,9 @@ module.exports = {
   userTypes,
   invitationStatus,
   eventStatus,
+  englishLevel,
+  previousOrganizingExperience,
+  AvailableAudience,
   roomSize,
   roomType,
   calStatus,

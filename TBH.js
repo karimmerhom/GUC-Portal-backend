@@ -11,6 +11,8 @@ const { populate_users } = require('./config/populateUser')
 const app = express()
 
 const account = require('./api/routers/account.router')
+const courses = require('./api/routers/courses.router')
+const form = require('./api/routers/form.router')
 const booking = require('./api/routers/booking.router')
 const room = require('./api/routers/room.router')
 const pricing = require('./api/routers/pricing.router')
@@ -58,6 +60,8 @@ const explore = (req, res) => {
 }
 
 app.use('/tbhapp/accounts', account)
+app.use('/tbhapp/Courses', courses)
+app.use('/tbhapp/Form', form)
 app.use('/tbhapp/room', room)
 app.use('/tbhapp/booking', booking)
 app.use('/tbhapp/pricing', pricing)
