@@ -83,6 +83,18 @@ const packageStatus = {
   EXPIRED: "expired",
 }
 
+const packageType = {
+  REGULAR: "regular",
+  EXTREME: "extreme",
+  
+}
+
+const ability = {
+  TRUE: "true",
+  FALSE: "false",
+  
+}
+
 module.exports = {
   packageStatus,
   accountStatus,
@@ -94,4 +106,6 @@ module.exports = {
   userTypes,
   invitationStatus,
   eventStatus,
+  ability,
+  packageType
 }

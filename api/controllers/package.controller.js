@@ -1,7 +1,7 @@
 const extremePackage = require('../../models/extremePackage.model')
 const regularPackage = require('../../models/regularPackage.model')
 const purchasedPackage = require('../../models/purchasedPackages.model')
-const { packageStatus } = require('../constants/TBH.enum')
+const { packageStatus ,   packageType} = require('../constants/TBH.enum')
 const errorCodes = require('../constants/errorCodes')
 const { deductPoints , addPoints } = require('../helpers/helpers')
 
@@ -17,11 +17,14 @@ const createPackage = async (req, res) => {
     const name = req.body.packageName
     const Type = req.body.packageType
 
+    delete body.packageType
     if (Type === 'regular') {
+      
       delete body.packageType
-      const found = regularPackage.findOne({where: {
-        packageName: name,
+      const found = await regularPackage.findOne({where: {
+        packageName: name
       }},)
+ 
       if(!found)
       {
       await regularPackage.create(body)
@@ -29,11 +32,11 @@ const createPackage = async (req, res) => {
         code: 7000,
       })
     }
-    return res.json({ code: 7006, error: "name already exists" })
+    
     }
     if (Type === "extreme") {
       delete body.packageType
-      const found = extremePackage.findOne({where: {
+      const found = await extremePackage.findOne({where: {
         packageName: name,
       }},)
       if(!found)
@@ -46,7 +49,6 @@ const createPackage = async (req, res) => {
   }
   return res.json({ code: 7006, error: "name already exists" })
   } catch (exception) {
-    console.log(exception + '  jjjjjjjjj')
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
