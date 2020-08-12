@@ -9,8 +9,6 @@ const {
 } = require('../api/constants/TBH.enum')
 
 const UserModel = require('./account.model')
-const RegularPackageModel = require('./regularpackage.model')
-const ExtremePackageModel = require('./extremepackage.model')
 const { Model } = Sequelize
 
 class Purchase extends Model {}
