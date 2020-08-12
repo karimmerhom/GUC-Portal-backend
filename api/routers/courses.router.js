@@ -10,25 +10,63 @@ const {
 } = require('../helpers/validations/coursesValidations')
 const coursesController = require('../controllers/Organize/Courses.controller')
 
-
 const {
   viewCourse,
   createCourse,
   viewAllCourses,
   editCourse,
-  deleteCourse
+  deleteCourse,
+  viewAllCoursesAdmin,
 } = coursesController
 
-// const { verifyToken } = require('../../config/AuthenticationMiddleWare')
-// const { verifyAdmin } = require('../../config/AdminAuthentication')
-// const { verifyUser } = require('../../config/authUser')
+const { verifyToken } = require('../../config/AuthenticationMiddleWare')
+const { verifyAdmin } = require('../../config/AdminAuthentication')
+const { verifyUser } = require('../../config/authUser')
+const { verifiedPhone } = require('../../config/verifiedAuthentication')
 
-router.post('/createCourse', validateCreate, createCourse)
-router.post('/viewCourse', validateViewCourse, viewCourse)
-router.post('/viewAllCourses', validateViewAllCourses, viewAllCourses)
-router.post('/editCourse', validateEditCourse, editCourse)
-router.post('/deleteCourse', validateDeleteCourse, deleteCourse)
+router.post(
+  '/createCourse',
+  verifyToken,
+  verifyUser,
+  verifiedPhone,
+  validateCreate,
+  createCourse
+)
+router.post(
+  '/viewCourse',
+  verifyToken,
+  verifyUser,
+  verifiedPhone,
+  validateViewCourse,
+  viewCourse
+)
+router.post(
+  '/viewAllCourses',
+  verifyToken,
+  verifyUser,
+  verifiedPhone,
+  validateViewAllCourses,
+  viewAllCourses
+)
+router.post(
+  '/editCourse',
+  verifyToken,
+  verifyUser,
+  verifiedPhone,
+  validateEditCourse,
+  editCourse
+)
+router.post(
+  '/deleteCourse',
+  verifyToken,
+  verifyUser,
+  verifiedPhone,
+  validateDeleteCourse,
+  deleteCourse
+)
 
-//router.post('/verify', verifyToken, verify)
+router.post('/viewAllCoursesAdmin', verifyAdmin, viewAllCoursesAdmin)
+
+// router.post('/verify', verifyToken, verify)
 
 module.exports = router
