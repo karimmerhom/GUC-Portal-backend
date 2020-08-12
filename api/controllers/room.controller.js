@@ -72,7 +72,6 @@ const editRoom = async (req, res) => {
     res.json({ statusCode: 7000, error: 'Something went wrong' })
   }
 }
-
 const viewRoom = async (req, res) => {
   try {
     const room = req.body

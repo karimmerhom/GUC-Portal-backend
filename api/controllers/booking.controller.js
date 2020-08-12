@@ -8,7 +8,7 @@ const pricingModel = require('../../models/pricing.model')
 
 const validator = require('../helpers/validations/bookingValidations')
 const errorCodes = require('../constants/errorCodes')
-const { Op } = require('sequelize')
+const { Op, where } = require('sequelize')
 
 const {
   secretOrKey,
@@ -20,6 +20,31 @@ const { slots, calStatus, bookingStatus } = require('../constants/TBH.enum')
 const {} = require('../helpers/helpers')
 const { object } = require('joi')
 const { calendar } = require('googleapis/build/src/apis/calendar')
+const Pricing = require('../../models/pricing.model')
+
+const calculatePrice = async (type, slots) => {
+  try {
+    var pricing
+    pricing.points = 0
+    pricing.cash = 0
+
+    const pricingfound = await pricingModel.findOne({
+      where: { pricingType: 'flat_rate', roomType: type },
+    })
+
+    pricing.cash = pricingfound.value * slots
+
+    const pricingfound1 = await pricingModel.findOne({
+      where: { pricingType: 'points', roomType: type },
+    })
+
+    pricing.points = pricingfound1.value * slots
+
+    return pricing
+  } catch (exception) {
+    return console.log('toot')
+  }
+}
 
 const viewCalendar = async (req, res) => {
   try {
@@ -37,7 +62,10 @@ const viewCalendar = async (req, res) => {
       r.filtered = false
       r.notFreeSlots = {}
 
-      if (room.roomType === filterRoomType) {
+      if (
+        room.roomType !== filterRoomType ||
+        room.roomSize !== filterRoomSize
+      ) {
         r.filtered = true
         calendar.push(r)
       } else {
@@ -73,18 +101,42 @@ const editBooking = async (req, res) => {
       where: { id: req.body.bookingId },
     })
     if (booked) {
-      let foundSlots = await CalendarModel.findAll({
-        where: {
-          bookingId: booked.id,
-        },
-      })
-      foundSlots.map((slot) => {
-        slot.destroy()
-      })
+      let bookingDetails = req.body
+      const status =
+        bookingDetails.paymentMethod === 'points' ? 'confirmed' : 'pending'
+      bookingDetails.status = status
 
-      booked.destroy()
-      bookRoom(req, res)
-      return res.json({ code: errorCodes.success })
+      let noAvailableSlots = false
+      for (let i = 0; i < bookingDetails.slots.length; i++) {
+        let sl = bookingDetails.slots[i]
+        const notAvSl = await CalendarModel.findAll({
+          where: {
+            roomNumber: bookingDetails.roomNumber,
+            date: bookingDetails.date,
+            slot: sl,
+          },
+        })
+        if (notAvSl.length !== 0) noAvailableSlots = true
+      }
+      if (noAvailableSlots) {
+        res.json({
+          error: 'one room or more is/are busy in that timeslot',
+          statusCode: 7000,
+        })
+      } else {
+        let foundSlots = await CalendarModel.findAll({
+          where: {
+            bookingId: booked.id,
+          },
+        })
+        foundSlots.map((slot) => {
+          slot.destroy()
+        })
+
+        booked.destroy()
+        bookRoom(req, res)
+        return res.json({ code: errorCodes.success })
+      }
     } else {
       return res.json({ code: errorCodes.unknown, error: 'Booking not found' })
     }
@@ -155,7 +207,54 @@ const bookRoom = async (req, res) => {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
+const tryBooking = async (req, res) => {
+  try {
+    let bookingDetails = req.body
+    const status =
+      bookingDetails.paymentMethod === 'points' ? 'confirmed' : 'pending'
+    bookingDetails.status = status
 
+    const roomFound = await RoomModel.findOne({
+      where: { roomNumber: bookingDetails.roomNumber },
+    })
+
+    if (!roomFound) {
+      res.json({ error: 'room doesnt exist', statusCode: 7000 })
+    }
+
+    bookingDetails.roomId = roomFound.id
+    bookingDetails.accountId = req.body.Account.id
+
+    let noAvailableSlots = false
+    for (let i = 0; i < bookingDetails.slots.length; i++) {
+      let sl = bookingDetails.slots[i]
+      const notAvSl = await CalendarModel.findAll({
+        where: {
+          roomNumber: bookingDetails.roomNumber,
+          date: bookingDetails.date,
+          slot: sl,
+        },
+      })
+      if (notAvSl.length !== 0) noAvailableSlots = true
+    }
+
+    console.log(noAvailableSlots)
+    if (noAvailableSlots) {
+      res.json({
+        error: 'one room or more is/are busy in that timeslot',
+        statusCode: 7000,
+      })
+    } else {
+      const pricing = calculatePrice(
+        bookingDetails.roomSize,
+        bookingDetails.slots.length
+      )
+      return res.json({ statusCode: 0, pricing, bookingDetails })
+    }
+  } catch (e) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
 const cancelBooking = async (req, res) => {
   try {
     const { Account, bookingId } = req.body
@@ -220,6 +319,7 @@ const viewAllBookings = async (req, res) => {
 
     return res.json({ booking, code: errorCodes.success })
   } catch (exception) {
+    console.log(exception.message)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -252,4 +352,5 @@ module.exports = {
   viewCalendar,
   bookRoom,
   editBooking,
+  tryBooking,
 }

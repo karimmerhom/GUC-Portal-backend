@@ -9,7 +9,16 @@ const { Model } = Sequelize
 class Pricing extends Model {}
 Pricing.init(
   {
-    price: {
+    pricingType: {
+      type: Sequelize.STRING,
+    },
+    roomType: {
+      type: Sequelize.STRING,
+    },
+    value: {
+      type: Sequelize.INTEGER,
+    },
+    unit: {
       type: Sequelize.STRING,
     },
   },

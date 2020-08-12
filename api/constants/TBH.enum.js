@@ -17,6 +17,7 @@ const userTypes = {
 const paymentMethods = {
   CASH: 'cash',
   VODAFONECASH: 'vodafone cash',
+  POINTS: 'points',
 }
 
 const gender = {
