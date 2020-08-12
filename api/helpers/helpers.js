@@ -13,80 +13,104 @@ const generateOTP = async () => {
   return text
 }
 
-const deductPoints = async (accountId , points) => {
-  const purchase = await purchasedPackage.findAll({where : {accountId : accountId}})
-  if(!purchase){
-    return ({error:"account did not purchase any packages"})
+const deductPoints = async (accountId, points) => {
+  const purchase = await purchasedPackage.findAll({
+    where: { accountId: accountId },
+  })
+  if (!purchase) {
+    return { error: 'account did not purchase any packages' }
   }
-  const activePackages = purchase.filter(account => account.status === 'active' && account.packageType === 'regular')
+  const activePackages = purchase.filter(
+    (account) =>
+      account.status === 'active' && account.packageType === 'regular'
+  )
   let total = 0
-  for(package of activePackages){
+  for (package of activePackages) {
     total += parseInt(package.totalPoints)
   }
-  if(total<points){
-    return ({error : "not enough points to be deducted"})
+  if (total < points) {
+    return { error: 'not enough points to be deducted' }
   }
-  activePackages.sort(function(a, b) {
-    var dateA = new Date(a.expiryDate), dateB = new Date(b.expiryDate);
-    return dateA - dateB;
-});
-  for(package of activePackages){
-    const availablePoints = parseInt(package.totalPoints) - parseInt(package.usedPoints)
-    if(availablePoints>points){
-      console.log(availablePoints + "  " + points);
-      purchasedPackage.update({usedPoints: parseInt(package.usedPoints) + parseInt(points)},{where :{ id : package.id}})
+  activePackages.sort(function (a, b) {
+    var dateA = new Date(a.expiryDate),
+      dateB = new Date(b.expiryDate)
+    return dateA - dateB
+  })
+  for (package of activePackages) {
+    const availablePoints =
+      parseInt(package.totalPoints) - parseInt(package.usedPoints)
+    if (availablePoints > points) {
+      console.log(availablePoints + '  ' + points)
+      purchasedPackage.update(
+        { usedPoints: parseInt(package.usedPoints) + parseInt(points) },
+        { where: { id: package.id } }
+      )
 
       break
     }
-    purchasedPackage.update({usedPoints: parseInt(package.totalPoints) },{where :{ id : package.id}})
-    purchasedPackage.update({status: "expired" },{where :{ id : package.id}})
+    purchasedPackage.update(
+      { usedPoints: parseInt(package.totalPoints) },
+      { where: { id: package.id } }
+    )
+    purchasedPackage.update(
+      { status: 'expired' },
+      { where: { id: package.id } }
+    )
 
     points -= availablePoints
   }
-  return ({error:"success"})
-
-
-
-
-
+  return { error: 'success' }
 }
 
-const refund = async (accountId , points) => {
-  const purchase = await purchasedPackage.findAll({where : {accountId : accountId}})
-  if(!purchase){
-    return ({error:"account did not purchase any packages"})
+const refund = async (accountId, points) => {
+  const purchase = await purchasedPackage.findAll({
+    where: { accountId: accountId },
+  })
+  if (!purchase) {
+    return { error: 'account did not purchase any packages' }
   }
-  const activePackages = purchase.filter(account => account.status === 'active' && account.packageType === 'regular')
+  const activePackages = purchase.filter(
+    (account) =>
+      account.status === 'active' && account.packageType === 'regular'
+  )
   let total = 0
-  for(package of activePackages){
+  for (package of activePackages) {
     total += parseInt(package.totalPoints)
   }
-  if(total<points){
-    return ({error : "not enough points to be deducted"})
+  if (total < points) {
+    addPoints(accountId , "regular" , "gift" , )
   }
-  activePackages.sort(function(a, b) {
-    var dateA = new Date(a.expiryDate), dateB = new Date(b.expiryDate);
-    return dateA - dateB;
-});
-  for(package of activePackages){
-    const availablePoints = parseInt(package.totalPoints) - parseInt(package.usedPoints)
-    if(availablePoints>points){
-      console.log(availablePoints + "  " + points);
-      purchasedPackage.update({usedPoints: parseInt(package.usedPoints) + parseInt(points)},{where :{ id : package.id}})
+  activePackages.sort(function (a, b) {
+    var dateA = new Date(a.expiryDate),
+      dateB = new Date(b.expiryDate)
+    return dateA - dateB
+  })
+  activePackages.reverse()
+
+  for (package of activePackages) {
+    const availablePoints = parseInt(package.usedPoints)
+    if (availablePoints > points) {
+      console.log(availablePoints + '  ' + points)
+      purchasedPackage.update(
+        { usedPoints: parseInt(package.usedPoints) - parseInt(points) },
+        { where: { id: package.id } }
+      )
       // package.usedPoints = parseInt(package.usedPoints) + parseInt(points)
       break
     }
-    purchasedPackage.update({usedPoints: parseInt(package.totalPoints) , status : "expired" },{where :{ id : package.id}})
+    purchasedPackage.update(
+      { usedPoints: 0 },
+      { where: { id: package.id } }
+    )
 
     // package.usedPoints = parseInt(package.totalPoints)
     points -= availablePoints
   }
-  return ({error:"success"})
-
+  return { error: 'success' }
 }
 
-const addPoints = async (accountId , packageType , packageId) => {
-  try{
+const addPoints = async (accountId, packageType, packageId) => {
+  try {
     const body = {}
     body.packageType = packageType
     body.accountId = accountId
@@ -100,9 +124,9 @@ const addPoints = async (accountId , packageType , packageId) => {
       body.status = packageStatus.PENDING
 
       await purchasedPackage.create(body)
-      return ({
+      return {
         code: errorCodes.success,
-      })
+      }
     }
     if (Type === 'extreme') {
       const packageBody = await extremePackage.findByPk(Id)
@@ -110,24 +134,24 @@ const addPoints = async (accountId , packageType , packageId) => {
       body.expiryDate = body.purchaseDate.addDays(packageBody.expiryDuration)
       body.status = packageStatus.PENDING
       await purchasedPackage.create(body)
-      return ({
+      return {
         code: errorCodes.success,
-      })
+      }
     }
 
-    return ({
+    return {
       code: errorCodes.unknown,
       error: 'Package Type not found',
-    })
+    }
   } catch (exception) {
     console.log(exception)
-    return ({ code: errorCodes.unknown, error: 'Something went wrong' })
+    return { code: errorCodes.unknown, error: 'Something went wrong' }
   }
-
 }
 
 module.exports = {
   generateOTP,
   deductPoints,
-  addPoints, 
+  addPoints,
+  refund,
 }
