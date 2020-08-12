@@ -4,7 +4,7 @@ const router = express.Router()
 
 const packageController = require("../controllers/package.controller")
 
-
+const { verifiedPhone } = require('../../config/verifiedAuthentication')
 const { verifyToken } = require("../../config/AuthenticationMiddleWare")
 const { verifyAdmin } = require("../../config/AdminAuthentication")
 const { verifyUser } = require("../../config/authUser")
@@ -33,12 +33,12 @@ const {
 } = packageValidations
 
 
-router.post('/createPackage',validateCreatePackage, createPackage)
-router.post('/editPackage',validateEditPackage, editPackage)
-router.post('/viewPackage',validateViewPackage, viewPackage)
-router.post('/viewAllExtremePackages',validateViewAllPackages, viewAllExtremePackages)
-router.post('/viewAllRegularPackages',validateViewAllPackages,  viewAllRegularPackages)
-router.post('/deletePackage',validateViewPackage, deletePackage)
+router.post('/createPackage', verifyAdmin ,validateCreatePackage, createPackage)
+router.post('/editPackage', verifyAdmin ,validateEditPackage, editPackage)
+router.post('/viewPackage' ,verifyToken,verifyUser,validateViewPackage, viewPackage)
+router.post('/viewAllExtremePackages',verifyToken,verifyUser,validateViewAllPackages, viewAllExtremePackages)
+router.post('/viewAllRegularPackages',verifyToken,verifyUser,validateViewAllPackages,  viewAllRegularPackages)
+router.post('/deletePackage', verifyAdmin ,validateViewPackage, deletePackage)
 
 router.post("/purchasePackage",validatePurchasePackage, purchasePackage)
 router.post("/cancelPackage",validateCancelPackage, cancelPackage)
