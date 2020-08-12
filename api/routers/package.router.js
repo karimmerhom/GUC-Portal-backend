@@ -14,11 +14,12 @@ const {
   createPackage,
   editPackage,
   viewPackage,
-  viewAllPackages,
   purchasePackage,
   cancelPackage,
   viewMyPackages,
   deletePackage,
+  viewAllExtremePackages,
+  viewAllRegularPackages
 } = packageController
 
 const {
@@ -35,7 +36,8 @@ const {
 router.post('/createPackage',validateCreatePackage, createPackage)
 router.post('/editPackage',validateEditPackage, editPackage)
 router.post('/viewPackage',validateViewPackage, viewPackage)
-router.post('/viewAllPackages',validateViewAllPackages, viewAllPackages)
+router.post('/viewAllExtremePackages',validateViewAllPackages, viewAllExtremePackages)
+router.post('/viewAllRegularPackages',validateViewAllPackages,  viewAllRegularPackages)
 router.post('/deletePackage',validateViewPackage, deletePackage)
 
 router.post("/purchasePackage",validatePurchasePackage, purchasePackage)

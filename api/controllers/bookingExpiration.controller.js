@@ -1,31 +1,31 @@
-const giftPackageAccess = require('../../models/giftPackageAccess.model')
-const { packageStatus } = require('../constants/TBH.enum')
+const bookingExpiration = require('../../models/bookingExpiration.model')
 const errorCodes = require('../constants/errorCodes')
 
 
-const createGiftPackageAccess = async (req, res) => {
+const createBookingExpiration = async (req, res) => {
   try {
-     await giftPackageAccess.create(req.body)
+     await bookingExpiration.create(req.body)
       return res.json({
         code: errorCodes.success,
       })
   } catch (exception) {
+    console.log(exception+"a7aaaaaaaaaaaaaaaaaaaaaaaa")
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 
-const editGiftPackageAccess = async (req, res) => {
+const editBookingExpiration = async (req, res) => {
   try {
     const body = req.body
     const id = req.body.id
-    const found = await giftPackageAccess.findOne({
+    const found = await bookingExpiration.findOne({
       where: {
         id: parseInt(id),
       },
     })
     if (found) {
       delete body.id
-     await giftPackageAccess.update(req.body ,
+     await bookingExpiration.update(req.body ,
       {
         where: {
           id: parseInt(id),
@@ -41,10 +41,10 @@ const editGiftPackageAccess = async (req, res) => {
   }
 }
 
-const deleteGiftPackageAccess = async (req, res) => {
+const deleteBookingExpiration = async (req, res) => {
   try {
     const id = req.body.id
-    const found = await giftPackageAccess.findOne({
+    const found = await bookingExpiration.findOne({
       where: {
         id: parseInt(id),
       },
@@ -62,9 +62,9 @@ const deleteGiftPackageAccess = async (req, res) => {
 }
 
 module.exports = {
-  createGiftPackageAccess,
-  editGiftPackageAccess,
-  deleteGiftPackageAccess
+  createBookingExpiration,
+  editBookingExpiration,
+  deleteBookingExpiration
 }
 
 

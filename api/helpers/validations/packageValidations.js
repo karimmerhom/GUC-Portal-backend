@@ -1,4 +1,5 @@
 const Joi = require('joi')
+const errorCodes = require('../../constants/errorCodes')
 
 const validateCreatePackage = (req, res, next) => {
   const schema = Joi.object({
@@ -53,7 +54,7 @@ const validateCreatePackage = (req, res, next) => {
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
     return res.json({
-      statusCode: 7001,
+      statusCode: errorCodes.validation,
       error: isValid.error.details[0].message,
     })
   }
@@ -69,7 +70,7 @@ const validatePurchasePackage = (req, res, next) => {
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
     return res.json({
-      statusCode: 7001,
+      statusCode: errorCodes.validation,
       error: isValid.error.details[0].message,
     })
   }
@@ -84,7 +85,7 @@ const validateCancelPackage = (req, res, next) => {
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
     return res.json({
-      statusCode: 7001,
+      statusCode: errorCodes.validation,
       error: isValid.error.details[0].message,
     })
   }
@@ -98,7 +99,7 @@ const validateViewMyPackages = (req, res, next) => {
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
     return res.json({
-      statusCode: 7001,
+      statusCode:errorCodes.validation,
       error: isValid.error.details[0].message,
     })
   }
@@ -159,7 +160,7 @@ const validateEditPackage = (req, res, next) => {
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
     return res.json({
-      statusCode: 7002,
+      statusCode: errorCodes.validation,
       error: isValid.error.details[0].message,
     })
   }
@@ -179,7 +180,7 @@ const validateViewPackage = (req, res, next) => {
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
     return res.json({
-      statusCode: 7002,
+      statusCode: errorCodes.validation,
       error: isValid.error.details[0].message,
     })
   }
@@ -197,7 +198,7 @@ const validateViewAllPackages = (req, res, next) => {
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
     return res.json({
-      statusCode: 7002,
+      statusCode: errorCodes.validation,
       error: isValid.error.details[0].message,
     })
   }

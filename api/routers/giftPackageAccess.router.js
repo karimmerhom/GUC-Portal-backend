@@ -12,17 +12,20 @@ const packageValidations = require('../helpers/validations/giftPackageAccessVali
 
 const {
  createGiftPackageAccess,
- editGiftPackageAccess
+ editGiftPackageAccess,
+ deleteGiftPackageAccess
 } = packageController
 
 const {
  validateCreateGiftPackageAccess,
- validateEditGiftPackageAccess
+ validateEditGiftPackageAccess,
+ validateDeleteGiftPackageAccess
 
 } = packageValidations
 
 
 router.post('/createGiftPackageAccess',validateCreateGiftPackageAccess, createGiftPackageAccess)
 router.post('/editGiftPackageAccess',validateEditGiftPackageAccess, editGiftPackageAccess)
+router.post('/deleteGiftPackageAccess',validateDeleteGiftPackageAccess, deleteGiftPackageAccess)
 
 module.exports = router
