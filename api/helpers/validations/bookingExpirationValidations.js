@@ -1,9 +1,10 @@
 const Joi = require('joi')
 const errorCodes = require('../../constants/errorCodes')
-const validateCreateGiftPackageAccess = (req, res, next) => {
+const validateCreateBookingExpiration = (req, res, next) => {
   const schema = Joi.object({
- 
-    gifting: Joi.string().valid(['true', 'false']).required(),
+    
+    expiryPeriod: Joi.number().required(),
+    expiry: Joi.string().valid(['true', 'false']).required(),
     Account: Joi.object({
       id: Joi.string().length(3).required(),
     }).required(),
@@ -19,10 +20,11 @@ const validateCreateGiftPackageAccess = (req, res, next) => {
   return next()
 }
 
-const validateEditGiftPackageAccess = (req, res, next) => {
+const validateEditBookingExpiration = (req, res, next) => {
   const schema = Joi.object({
        
-    gifting: Joi.string().valid(['true', 'false']),
+    expiryPeriod: Joi.number(),
+    expiry: Joi.string().valid(['true', 'false']),
     id: Joi.number().required(),
     Account: Joi.object({
       id: Joi.string().length(3).required(),
@@ -39,9 +41,8 @@ const validateEditGiftPackageAccess = (req, res, next) => {
   return next()
 }
 
-const validateDeleteGiftPackageAccess = (req, res, next) => {
+const validateDeleteBookingExpiration = (req, res, next) => {
   const schema = Joi.object({
-       
     
     id: Joi.number().required(),
     Account: Joi.object({
@@ -60,7 +61,7 @@ const validateDeleteGiftPackageAccess = (req, res, next) => {
 }
 
 module.exports = {
-  validateCreateGiftPackageAccess,
-  validateEditGiftPackageAccess,
-  validateDeleteGiftPackageAccess
+  validateCreateBookingExpiration,
+  validateEditBookingExpiration,
+  validateDeleteBookingExpiration
 }

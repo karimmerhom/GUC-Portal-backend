@@ -71,6 +71,9 @@ const formExists = 135
 const formNotFound = 136
 const cousrseDoesntExist = 137
 
+const nameExists = 138
+const invalidId = 139
+
 module.exports = {
   success,
   validation,
@@ -110,4 +113,6 @@ module.exports = {
   formExists,
   formNotFound,
   cousrseDoesntExist,
+  nameExists,
+  invalidId
 }
