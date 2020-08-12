@@ -1,384 +1,189 @@
-const joi = require('joi')
+const Joi = require('joi')
+const statusCodes = require('../../constants/errorCodes')
 
-const { paymentMethods } = require('../../constants/TBH.enum')
+const {
+  roomType,
+  roomSize,
+  slots,
+  paymentMethods,
+} = require('../../constants/TBH.enum')
 
-const validateBookingWithPackage = request => {
+const validateViewCalendar = (req, res, next) => {
   const schema = {
-    Booking: joi
-      .object({
-        id: joi.number().required(),
-        packageCode: joi.string().required()
-      })
+    Account: Joi.object({
+      id: Joi.number().required(),
+    }).required(),
+    startDate: Joi.string().required(),
+    filterRoomType: Joi.string().valid([
+      roomType.MEETING,
+      roomType.TRAINING,
+      '',
+    ]),
+    filterRoomSize: Joi.string().valid([roomSize.LARGE, roomSize.SMALL, '']),
+  }
+
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: statusCodes.validation,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
+
+const validateCancelBooking = (req, res, next) => {
+  const schema = {
+    Account: Joi.object({
+      id: Joi.number().required(),
+    }).required(),
+    bookingId: Joi.number().required(),
+  }
+
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: statusCodes.validation,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
+
+const validateViewDateBookings = (req, res, next) => {
+  const schema = {
+    Account: Joi.object({
+      id: Joi.number().required(),
+    }).required(),
+    date: Joi.string().required(),
+  }
+
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: statusCodes.validation,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
+
+const validateViewMyBooking = (req, res, next) => {
+  const schema = Joi.object({
+    Account: Joi.object({
+      id: Joi.number().required(),
+    }).required(),
+  })
+
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: statusCodes.validation,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
+
+const validateBookRoom = (req, res, next) => {
+  const schema = Joi.object({
+    Account: Joi.object({
+      id: Joi.number().required(),
+    }).required(),
+    date: Joi.date().required(),
+    paymentMethod: Joi.string()
+      .valid([
+        paymentMethods.CASH,
+        paymentMethods.POINTS,
+        paymentMethods.VODAFONECASH,
+      ])
       .required(),
-    Account: joi
-      .object({
-        id: joi.number().required()
-      })
-      .required()
-  }
-  return joi.validate(request, schema)
-}
-
-const validateAddBooking = request => {
-  const schema = {
-    Booking: joi
-      .object({
-        date: joi.date().required(),
-        slot: joi
-          .array()
-          .items(
-            joi
-              .string()
-              .valid([
-                '09AM',
-                '10AM',
-                '11AM',
-                '12PM',
-                '01PM',
-                '02PM',
-                '03PM',
-                '04PM',
-                '05PM',
-                '06PM',
-                '07PM',
-                '08PM',
-                '09PM'
-              ])
-          )
-          .min(1)
-          .max(12)
-          .required(),
-        roomType: joi
-          .string()
-          .valid(['meeting room', 'training room'])
-          .required(),
-        roomNumber: joi
-          .string()
-          .valid(['1', '2', '3', '4'])
-          .required(),
-        amountOfPeople: joi
-          .number()
-          .positive()
-          .required(),
-        paymentMethod: joi
-          .string()
-          .valid([paymentMethods.CASH, paymentMethods.VODAFONECASH])
-          .required(),
-        packageCode: joi
-          .string()
-          .allow('')
-          .required()
-      })
+    slots: Joi.array()
+      .items([
+        slots.TEN_ELEVEN,
+        slots.NINE_TEN,
+        slots.ELEVEN_TWELVE,
+        slots.TWELVE_THIRTEEN,
+        slots.THIRTEEN_FOURTEEN,
+        slots.FOURTEEN_FIFTEEN,
+        slots.FIFTEEN_SIXTEEN,
+        slots.SIXTEEN_SEVENTEEN,
+        slots.SEVENTEEN_EIGHTEEN,
+        slots.EIGHTEEN_NINETEEN,
+        slots.NINETEEN_TWENTY,
+        slots.TWENTY_TWENTYONE,
+        slots.TWENTYONE_TWENTYTWO,
+      ])
       .required(),
-    Account: joi
-      .object({
-        id: joi.number().required()
-      })
-      .required()
-  }
-  return joi.validate(request, schema)
-}
-
-const validateShowBookings = request => {
-  const schema = {
-    BookingDate: joi
-      .object({
-        from: joi.date().required(),
-        to: joi.date().required()
-      })
-      .required()
-  }
-  return joi.validate(request, schema)
-}
-
-const validateConfirmBooking = request => {
-  const schema = {
-    Booking: joi
-      .object({
-        id: joi.number().required(),
-        packageCode: joi
-          .string()
-          .allow('')
-          .required()
-      })
+    roomNumber: Joi.number().valid([1, 2, 3, 4]).required(),
+    roomType: Joi.string()
+      .valid([roomType.MEETING, roomType.TRAINING])
       .required(),
-    Account: joi
-      .object({
-        id: joi.number().required()
-      })
-      .required()
-  }
-  return joi.validate(request, schema)
-}
+    roomLayout: Joi.string().required(),
+    roomSize: Joi.string().valid([roomSize.LARGE, roomSize.SMALL]).required(),
+  })
 
-const validateCreatePackage = request => {
-  const schema = {
-    Package: joi
-      .object({
-        numberOfHours: joi
-          .number()
-          .positive()
-          .max(1000)
-          .required(),
-        package: joi
-          .string()
-          .valid(
-            'MRSG10',
-            'MRSG30',
-            'MRSG50',
-            'TRSG10',
-            'TRSG30',
-            'TRSG50',
-            'MRLG10',
-            'MRLG30',
-            'MRLG50',
-            'TRLG10',
-            'TRLG30',
-            'TRLG50',
-            'MRFRSG',
-            'MRFRLG',
-            'TRFRSG',
-            'TRFRLG'
-          )
-          .required(),
-        roomType: joi.string().required()
-      })
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: statusCodes.validation,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
+const validateEditMyBooking = (req, res, next) => {
+  const schema = Joi.object({
+    Account: Joi.object({
+      id: Joi.number().required(),
+    }).required(),
+    date: Joi.date().required(),
+    paymentMethod: Joi.string()
+      .valid([
+        paymentMethods.CASH,
+        paymentMethods.POINTS,
+        paymentMethods.VODAFONECASH,
+      ])
       .required(),
-    Account: joi
-      .object({
-        id: joi.number().required()
-      })
-      .required()
-  }
-  return joi.validate(request, schema)
-}
-
-const validateCancelSpecificPackage = request => {
-  const schema = {
-    Package: joi
-      .object({
-        code: joi.string().required()
-      })
-      .required()
-  }
-  return joi.validate(request, schema)
-}
-
-const validateCancelAllPackages = request => {
-  const schema = {
-    Package: joi
-      .object({
-        name: joi.string().required()
-      })
-      .required()
-  }
-  return joi.validate(request, schema)
-}
-
-const validateShowMyBooking = request => {
-  const schema = {
-    Account: joi
-      .object({
-        id: joi.number().required()
-      })
-      .required()
-  }
-  return joi.validate(request, schema)
-}
-
-const validateViewPackageByCode = request => {
-  const schema = {
-    Package: joi
-      .object({
-        code: joi.string().required()
-      })
+    slots: Joi.array()
+      .items([
+        slots.TEN_ELEVEN,
+        slots.NINE_TEN,
+        slots.ELEVEN_TWELVE,
+        slots.TWELVE_THIRTEEN,
+        slots.THIRTEEN_FOURTEEN,
+        slots.FOURTEEN_FIFTEEN,
+        slots.FIFTEEN_SIXTEEN,
+        slots.SIXTEEN_SEVENTEEN,
+        slots.SEVENTEEN_EIGHTEEN,
+        slots.EIGHTEEN_NINETEEN,
+        slots.NINETEEN_TWENTY,
+        slots.TWENTY_TWENTYONE,
+        slots.TWENTYONE_TWENTYTWO,
+      ])
       .required(),
-    Account: joi.object({ id: joi.number() }).required()
-  }
-  return joi.validate(request, schema)
-}
-
-const validateViewPackageByName = request => {
-  const schema = {
-    Package: joi
-      .object({
-        name: joi.string().required()
-      })
-      .required()
-  }
-  return joi.validate(request, schema)
-}
-
-const validateEditBooking = request => {
-  const schema = {
-    Booking: joi
-      .object({
-        id: joi.number().required(),
-        status: joi.string().valid('confirmed', 'canceled', 'pending')
-      })
-      .required()
-  }
-  return joi.validate(request, schema)
-}
-const validateCancelBooking = request => {
-  const schema = {
-    Booking: joi
-      .object({
-        id: joi.number().required(),
-        status: joi.string().valid('canceled')
-      })
+    roomNumber: Joi.number().valid([1, 2, 3, 4]).required(),
+    roomType: Joi.string()
+      .valid([roomType.MEETING, roomType.TRAINING])
       .required(),
-    Account: joi
-      .object({
-        id: joi.number().required()
-      })
-      .required()
+    roomLayout: Joi.string().required(),
+    roomSize: Joi.string().valid([roomSize.LARGE, roomSize.SMALL]).required(),
+    bookingId: Joi.number().required(),
+  })
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: statusCodes.validation,
+      error: isValid.error.details[0].message,
+    })
   }
-  return joi.validate(request, schema)
+  return next()
 }
-
-const validateEditPackageByCode = request => {
-  const schema = {
-    Package: joi
-      .object({
-        code: joi.string().required(),
-        status: joi
-          .string()
-          .valid(['canceled', 'active', 'used', 'pending'])
-          .required()
-      })
-      .required()
-  }
-  return joi.validate(request, schema)
-}
-
-const validateEditPackageByName = request => {
-  const schema = {
-    Package: joi
-      .object({
-        name: joi.string().required(),
-        status: joi
-          .string()
-          .valid(['canceled', 'active', 'used'])
-          .required()
-      })
-      .required()
-  }
-  return joi.validate(request, schema)
-}
-
-const validateShowMyPackages = request => {
-  const schema = {
-    Account: joi
-      .object({
-        id: joi.number().required()
-      })
-      .required()
-  }
-  return joi.validate(request, schema)
-}
-const validateBookingDetails = request => {
-  const schema = {
-    Account: joi.object({ id: joi.number().required() }).required(),
-    Booking: joi.object({ id: joi.number().required() }).required()
-  }
-  return joi.validate(request, schema)
-}
-
-const validateGiftPackage = request => {
-  const schema = {
-    Package: joi
-      .object({
-        numberOfHours: joi
-          .number()
-          .positive()
-          .required(),
-        roomType: joi
-          .string()
-          .valid('meeting room', 'training room')
-          .required()
-      })
-      .required(),
-    Account: joi
-      .object({
-        id: joi.number().required()
-      })
-      .required()
-  }
-  return joi.validate(request, schema)
-}
-
-const validateEditTiming = request => {
-  const schema = {
-    Booking: joi
-      .object({
-        id: joi.number().required(),
-        slot: joi
-          .array()
-          .items(
-            joi
-              .string()
-              .valid([
-                '09AM',
-                '10AM',
-                '11AM',
-                '12PM',
-                '01PM',
-                '02PM',
-                '03PM',
-                '04PM',
-                '05PM',
-                '06PM',
-                '07PM',
-                '08PM',
-                '09PM'
-              ])
-          )
-          .min(1)
-          .max(12)
-          .required(),
-        date: joi.date().required()
-      })
-      .required(),
-    Account: joi.object({ id: joi.number().required() }).required()
-  }
-  return joi.validate(request, schema)
-}
-const validateCreateEvent = request => {
-  const schema = {
-    Account: joi.object({ id: joi.number().required() }).required(),
-    Event: joi
-      .object({
-        name: joi.string().required(),
-        dateFrom: joi.date().required(),
-        dateTo: joi.date().required(),
-        description: joi.string().required(),
-        type: joi.string().required(),
-        price: joi.number().required()
-      })
-      .required()
-  }
-  return joi.validate(request, schema)
-}
-
 module.exports = {
-  validateAddBooking,
-  validateShowBookings,
-  validateConfirmBooking,
-  validateCreatePackage,
-  validateCancelAllPackages,
-  validateCancelSpecificPackage,
-  validateShowMyBooking,
-  validateViewPackageByCode,
-  validateViewPackageByName,
-  validateEditBooking,
-  validateEditPackageByCode,
-  validateEditPackageByName,
-  validateBookingWithPackage,
-  validateShowMyPackages,
-  validateGiftPackage,
-  validateBookingDetails,
+  validateViewMyBooking,
   validateCancelBooking,
-  validateEditTiming,
-  validateCreateEvent
+  validateViewCalendar,
+  validateViewDateBookings,
+  validateEditMyBooking,
+  validateBookRoom,
 }
