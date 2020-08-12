@@ -60,6 +60,33 @@ const roomPricing = {
 }
 
 const invitationStatus = {
+  ACCEPTED: 'accepted',
+  REJECTED: 'rejected',
+  PENDING: 'pending',
+  REGISTERED: 'registered',
+  INQUEUE: 'Inqueue',
+}
+
+const eventStatus = {
+  POSTED: 'posted',
+  OPENFORREGISTERATION: 'open for registeration',
+  FULLYBOOKED: 'fully booked',
+  STARTED: 'started',
+  ENDED: 'ended',
+  CANCELED: 'canceled',
+  CONFIRMED: 'confirmed',
+}
+const englishLevel = {
+  NONE: 'None',
+  BEGINNER: 'Beginner',
+  FAIR: 'Fair',
+  GOOD: 'Good',
+  FLUENT: 'Fluent',
+  NATIVE: 'Native',
+}
+const previousOrganizingExperience = {
+  PROF: 'In person (Professionally)',
+  INFORMAL: 'In person (Informally)',
   ONLINE: 'Online',
   OTHER: 'Other',
 }
@@ -105,16 +132,21 @@ const bookingStatus = {
   PENDING: 'pending',
   CANCELED: 'canceled',
 }
-
-const packageType = {
-  REGULAR: "regular",
-  EXTREME: "extreme",
-  
+const packageStatus = {
+  PENDING: "pending",
+  CANCELED: "canceled",
+  ACTIVE: "active",
+  EXPIRED: "expired",
 }
 
 const ability = {
   TRUE: "true",
   FALSE: "false",
+}
+
+const  packageType = {
+  REGULAR: "regular",
+  EXTREME: "extreme",
 }
 
 module.exports = {
