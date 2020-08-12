@@ -75,10 +75,10 @@ const viewCourse = async (req, res) => {
 const viewAllCourses = async (req, res) => {
   try {
     const accountId = req.body.Account.id
-    
+
     const checkCourse = await CoursesModel.findOne({
       where: {
-      accountId,
+        accountId,
       },
     })
     if (!checkCourse) {
@@ -88,6 +88,19 @@ const viewAllCourses = async (req, res) => {
       })
     }
 
+    const result = await CoursesModel.findAll()
+
+    return res.json({ AllCourses: result, statusCode: errorCodes.success })
+  } catch (exception) {
+    return res.json({
+      error: 'no courses found',
+      statusCode: errorCodes.unknown,
+    })
+  }
+}
+
+const viewAllCoursesAdmin = async (req, res) => {
+  try {
     const result = await CoursesModel.findAll()
 
     return res.json({ AllCourses: result, statusCode: errorCodes.success })
@@ -165,6 +178,7 @@ module.exports = {
   createCourse,
   viewCourse,
   viewAllCourses,
+viewAllCoursesAdmin,
   editCourse,
   deleteCourse,
 }
