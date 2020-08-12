@@ -9,10 +9,8 @@ class giftPackageAccess extends Model {}
 giftPackageAccess.init(
   {
   
-    accountId: {
-      type: Sequelize.STRING
-    },
-    ability : {
+   
+    gifting : {
       type: Sequelize.ENUM,
       values: [
         ability.TRUE,

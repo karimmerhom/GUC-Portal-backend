@@ -5,44 +5,50 @@ const errorCodes = require('../constants/errorCodes')
 
 const createGiftPackageAccess = async (req, res) => {
   try {
-    const accId = req.body.accountId
-
-    const found = giftPackageAccess.findOne({where: {
-      accountId: accId,
-    }},)
-
-    if (! found) {
-     await giftPackageAccess.create(body)
+  
+    
+     await giftPackageAccess.create(req.body)
       return res.json({
         code: errorCodes.success,
       })
-    }
-  return res.json({ code: 7006, error: "account already given access" })
   } catch (exception) {
-    console.log(exception + '  jjjjjjjjj')
+    console.log(exception +"sssssssss")
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 
 const editGiftPackageAccess = async (req, res) => {
   try {
+    const body = req.body
     const id = req.body.id
 
-    const found = giftPackageAccess.findOne({where: {
-      id: id,
-    }},)
-
-    if (! found) {
-     await giftPackageAccess.update(body)
+    const found = await giftPackageAccess.findOne({
+      where: {
+        id: parseInt(id),
+      },
+    })
+    if (found) {
+      delete body.id
+     await giftPackageAccess.update(req.body ,
+      {
+        where: {
+          id: parseInt(id),
+        },
+      } )
       return res.json({
         code: errorCodes.success,
       })
     }
-  return res.json({ code: 7006, error: "account already given access" })
+  return res.json({ code: 7006, error: "id not found" })
   } catch (exception) {
-    console.log(exception + '  jjjjjjjjj')
+    console.log(exception +"sssssssss")
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
+}
+
+module.exports = {
+  createGiftPackageAccess,
+  editGiftPackageAccess
 }
 
 
