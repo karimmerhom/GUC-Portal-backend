@@ -1,13 +1,7 @@
 const express = require("express")
-
 const router = express.Router()
-
 const packageController = require("../controllers/giftPackageAccess.controller")
-
-
-const { verifyToken } = require("../../config/AuthenticationMiddleWare")
 const { verifyAdmin } = require("../../config/AdminAuthentication")
-const { verifyUser } = require("../../config/authUser")
 const packageValidations = require('../helpers/validations/giftPackageAccessValidations')
 
 const {
@@ -24,8 +18,8 @@ const {
 } = packageValidations
 
 
-router.post('/createGiftPackageAccess',validateCreateGiftPackageAccess, createGiftPackageAccess)
-router.post('/editGiftPackageAccess',validateEditGiftPackageAccess, editGiftPackageAccess)
-router.post('/deleteGiftPackageAccess',validateDeleteGiftPackageAccess, deleteGiftPackageAccess)
+router.post('/createGiftPackageAccess', verifyAdmin ,validateCreateGiftPackageAccess, createGiftPackageAccess)
+router.post('/editGiftPackageAccess', verifyAdmin ,validateEditGiftPackageAccess, editGiftPackageAccess)
+router.post('/deleteGiftPackageAccess', verifyAdmin ,validateDeleteGiftPackageAccess, deleteGiftPackageAccess)
 
 module.exports = router
