@@ -17,6 +17,7 @@ const userTypes = {
 const paymentMethods = {
   CASH: 'cash',
   VODAFONECASH: 'vodafone cash',
+  POINTS: 'points',
 }
 
 const gender = {
@@ -94,6 +95,43 @@ const AvailableAudience = {
   SMALLGROUP: 'I have a small following group',
   LARGEGROUP: 'I have a sizable following',
 }
+const roomSize = {
+  LARGE: 'large group',
+  SMALL: 'small group',
+}
+const roomType = {
+  MEETING: 'meeting room',
+  TRAINING: 'training room',
+}
+
+const slots = {
+  NINE_TEN: 'NINE_TEN',
+  TEN_ELEVEN: 'TEN_ELEVEN',
+  ELEVEN_TWELVE: 'ELEVEN_TWELVE',
+  TWELVE_THIRTEEN: 'TWELVE_THIRTEEN',
+  THIRTEEN_FOURTEEN: 'THIRTEEN_FOURTEEN',
+  FOURTEEN_FIFTEEN: 'FOURTEEN_FIFTEEN',
+  FIFTEEN_SIXTEEN: 'FIFTEEN_SIXTEEN',
+  SIXTEEN_SEVENTEEN: 'SIXTEEN_SEVENTEEN',
+  SEVENTEEN_EIGHTEEN: 'SEVENTEEN_EIGHTEEN',
+  EIGHTEEN_NINETEEN: 'EIGHTEEN_NINETEEN',
+  NINETEEN_TWENTY: 'NINETEEN_TWENTY',
+  TWENTY_TWENTYONE: 'TWENTY_TWENTYONE',
+  TWENTYONE_TWENTYTWO: 'TWENTYONE_TWENTYTWO',
+}
+
+const calStatus = {
+  CONFIRMED: 'confirmed',
+  PENDING: 'pending',
+  FREE: 'free',
+  FILTERED: 'filtered',
+}
+
+const bookingStatus = {
+  CONFIRMED: 'confirmed',
+  PENDING: 'pending',
+  CANCELED: 'canceled',
+}
 
 module.exports = {
   accountStatus,
@@ -108,4 +146,9 @@ module.exports = {
   englishLevel,
   previousOrganizingExperience,
   AvailableAudience,
+  roomSize,
+  roomType,
+  calStatus,
+  slots,
+  bookingStatus,
 }

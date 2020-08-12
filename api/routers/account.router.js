@@ -24,12 +24,12 @@ const {
   login_facebook,
 } = accountController
 
-// const {
-//   get_url,
-//   facebook_callback,
-// } = require('../controllers/facebook/callback')
+const {
+  get_url,
+  facebook_callback,
+} = require('../controllers/facebook/callback')
 
-// const { urlGoogle, callback } = require('../controllers/google/callback')
+const { urlGoogle, callback } = require('../controllers/google/callback')
 
 const { verifyToken } = require('../../config/AuthenticationMiddleWare')
 const { verifyAdmin } = require('../../config/AdminAuthentication')
@@ -50,6 +50,7 @@ const {
   validateAccountGoogle,
   validateLoginGoogle,
   validateConfirmVerifyEmail,
+  validateCallbackGoogle,
 } = require('../helpers/validations/accountValidations')
 
 router.post('/register', validateAccount, register)
@@ -102,10 +103,10 @@ router.post(
   verifyAdmin,
   suspend_account
 )
-// router.post('/getgoogleurl', urlGoogle) //request url google
-// router.post('/getfacebookurl', get_url) //request url facebook
-// router.post('/facebookcallback', facebook_callback)
-// router.post('/googlecallback', callback)
+router.post('/getgoogleurl', validateCallbackGoogle, urlGoogle) //request url google
+router.post('/getfacebookurl', validateCallbackGoogle, get_url) //request url facebook
+router.post('/facebookcallback', validateCallbackGoogle, facebook_callback)
+router.post('/googlecallback', validateCallbackGoogle, callback)
 router.post('/registergoogle', validateAccountGoogle, register_google)
 router.post('/logingoogle', validateLoginGoogle, login_google)
 router.post('/registerfacebook', validateAccountGoogle, register_facebook)
