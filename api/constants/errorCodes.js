@@ -71,10 +71,14 @@ const formExists = 135
 const formNotFound = 136
 const cousrseDoesntExist = 137
 
+const invalidOtp = 138
+const insufficientPoints = 139
 const nameExists = 138
 const invalidId = 139
 
 module.exports = {
+  insufficientPoints,
+  invalidOtp,
   success,
   validation,
   emailExists,
@@ -114,5 +118,5 @@ module.exports = {
   formNotFound,
   cousrseDoesntExist,
   nameExists,
-  invalidId
+  invalidId,
 }

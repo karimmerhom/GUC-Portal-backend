@@ -18,6 +18,8 @@ const {
   cancelPackage,
   viewMyPackages,
   deletePackage,
+  redeemGift,
+  sendGift,
   viewAllExtremePackages,
   viewAllRegularPackages,
 } = packageController
@@ -30,6 +32,8 @@ const {
   validatePurchasePackage,
   validateCancelPackage,
   validateViewMyPackages,
+  validateRedeemGift,
+  validateSendGift,
 } = packageValidations
 
 router.post('/createPackage', validateCreatePackage, createPackage)
@@ -62,8 +66,45 @@ router.post(
 )
 router.post('/deletePackage', verifyAdmin, validateViewPackage, deletePackage)
 
-router.post('/purchasePackage', validatePurchasePackage, purchasePackage)
-router.post('/cancelPackage', validateCancelPackage, cancelPackage)
-router.post('/viewMyPackages', validateViewMyPackages, viewMyPackages)
+router.post(
+  '/purchasePackage',
+  validatePurchasePackage,
+  verifyToken,
+  verifyUser,
+  verifiedPhone,
+  purchasePackage
+)
+router.post(
+  '/cancelPackage',
+  validateCancelPackage,
+  verifyToken,
+  verifyUser,
+  verifiedPhone,
+  cancelPackage
+)
+router.post(
+  '/viewMyPackages',
+  validateViewMyPackages,
+  verifyToken,
+  verifyUser,
+  verifiedPhone,
+  viewMyPackages
+)
+router.post(
+  '/redeemGift',
+  validateRedeemGift,
+  verifyToken,
+  verifyUser,
+  verifiedPhone,
+  redeemGift
+)
+router.post(
+  '/sendGift',
+  validateSendGift,
+  verifyToken,
+  verifyUser,
+  verifiedPhone,
+  sendGift
+)
 
 module.exports = router
