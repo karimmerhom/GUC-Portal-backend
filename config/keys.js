@@ -1,1 +1,1 @@
-module.exports = require('../keys_dev')
+module.exports = require('./keys_dev')
