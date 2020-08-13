@@ -67,8 +67,15 @@ const eventFullyBooked = 132
 const eventNotOpenForRegisteration = 133
 
 const cannotEditRegisteration = 134
+const formExists = 135
+const formNotFound = 136
+const cousrseDoesntExist = 137
 
+const invalidOtp = 138
+const insufficientPoints = 139
 module.exports = {
+  insufficientPoints,
+  invalidOtp,
   success,
   validation,
   emailExists,
@@ -103,5 +110,8 @@ module.exports = {
   collaboratorExists,
   eventNotOpenForRegisteration,
   eventFullyBooked,
-  cannotEditRegisteration
+  cannotEditRegisteration,
+  formExists,
+  formNotFound,
+  cousrseDoesntExist,
 }

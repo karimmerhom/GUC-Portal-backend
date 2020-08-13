@@ -12,6 +12,12 @@ const app = express()
 
 const account = require('./api/routers/account.router')
 const package = require("./api/routers/package.router")
+const giftPackageAccess = require("./api/routers/giftPackageAccess.router")
+const courses = require('./api/routers/courses.router')
+const form = require('./api/routers/form.router')
+const booking = require('./api/routers/booking.router')
+const room = require('./api/routers/room.router')
+const pricing = require('./api/routers/pricing.router')
 
 // import db configuration
 const sequelize = require('./config/DBConfig')
@@ -56,8 +62,15 @@ const explore = (req, res) => {
 }
 
 app.use('/tbhapp/accounts', account)
+app.use('/tbhapp/Courses', courses)
+app.use('/tbhapp/Form', form)
+app.use('/tbhapp/room', room)
+app.use('/tbhapp/booking', booking)
+app.use('/tbhapp/pricing', pricing)
 
 app.use('/tbhapp/package', package)
+
+app.use('/tbhapp/giftPackageAccess', giftPackageAccess)
 
 app.use('/tbhapp/explore', explore)
 

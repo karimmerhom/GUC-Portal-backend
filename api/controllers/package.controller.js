@@ -1,10 +1,11 @@
 const extremePackage = require('../../models/extremePackage.model')
 const regularPackage = require('../../models/regularPackage.model')
 const purchasedPackage = require('../../models/purchasedPackages.model')
+const accountsModel = require('../../models/account.model')
 const giftModel = require('../../models/giftOtp.model')
-const { packageStatus } = require('../constants/TBH.enum')
+const { packageStatus ,   packageType , otpStatus} = require('../constants/TBH.enum')
 const errorCodes = require('../constants/errorCodes')
-const { addPoints, generateOTP } = require('../helpers/helpers')
+const { addPoints, generateOTP, refund , deductPoints } = require('../helpers/helpers')
 const giftOtp = require('../../models/giftOtp.model')
 
 Date.prototype.addDays = function (days) {
@@ -19,38 +20,37 @@ const createPackage = async (req, res) => {
     const name = req.body.packageName
     const Type = req.body.packageType
 
-    if (Type === 'regular') {
+    delete body.packageType
+    if (Type === packageType.REGULAR) {
+      
       delete body.packageType
-      const found = regularPackage.findOne({
-        where: {
-          packageName: name,
-        },
+      const found = await regularPackage.findOne({where: {
+        packageName: name
+      }},)
+ 
+      if(!found)
+      {
+      await regularPackage.create(body)
+      return res.json({
+        code: errorCodes.success ,
       })
-      if (!found) {
-        await regularPackage.create(body)
-        return res.json({
-          code: 7000,
-        })
-      }
-      return res.json({ code: 7006, error: 'name already exists' })
     }
-    if (Type === 'extreme') {
+    }
+    if (Type === packageType.EXTREME) {
       delete body.packageType
-      const found = extremePackage.findOne({
-        where: {
-          packageName: name,
-        },
+      const found = await extremePackage.findOne({where: {
+        packageName: name,
+      }},)
+      if(!found)
+      {
+      await extremePackage.create(body)
+      return res.json({
+        code: errorCodes.success ,
       })
-      if (!found) {
-        await extremePackage.create(body)
-        return res.json({
-          code: 7000,
-        })
-      }
     }
-    return res.json({ code: 7006, error: 'name already exists' })
+  }
+  return res.json({ code: errorCodes.nameExists , error: "name already exists" })
   } catch (exception) {
-    console.log(exception + '  jjjjjjjjj')
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -106,10 +106,21 @@ const purchasePackage = async (req, res) => {
 
 const cancelPackage = async (req, res) => {
   try {
+    if(!purchasedPackage.findOne({where: {id : req.body.Account.id}})){
+      return res.json({ code: errorCodes.unknown, error: 'wrong account' })
+    }
+
     const body = req.body
-    const bodyId = req.body.Id
+    const bodyId = req.body.packageId
+    const package = await purchasedPackage.findByPk(bodyId)
+    if (package.status === packageStatus.CANCELED){
+      return res.json({ code: errorCodes.packageCanceled, error: 'package already canceled' })
+    }
+    if(parseInt(package.accountId) !== parseInt(req.body.Account.id) ){
+      return res.json({ code: errorCodes.unknown, error: 'package does not belong to user' })
+    }
     body.status = packageStatus.CANCELED
-    await purchasedPackage.update(body, { where: { id: purchased.id } })
+    await purchasedPackage.update(body, { where: { id: bodyId } })
     return res.json({
       code: errorCodes.success,
     })
@@ -163,11 +174,29 @@ const viewAllPackages = async (req, res) => {
 
 const viewMyPackages = async (req, res) => {
   try {
-    const purchasedPackages = await purchasedPackage.findAll({})
-    return res.json({ purchasedPackages: purchasedPackages, code: 7000 })
+
+    const purchases = await purchasedPackage.findAll({
+      where: { accountId: req.body.Account.id},
+    })
+    if (!purchases) {
+      return { error: 'account did not purchase any packages' }
+    }
+    const activePackages = purchases.filter(
+      (account) => {
+        return(      
+        account.status === packageStatus.ACTIVE && account.packageType === packageType.REGULAR)}
+    )
+ 
+    let total = 0
+    for (package of activePackages) {
+      total += parseInt(package.totalPoints)
+    }
+    return res.json({ purchasedPackages: {purchases , total: total}, code: 7000 })
   } catch (exception) {
+    console.log(exception);
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
+
 }
 
 const deletePackage = async (req, res) => {
@@ -213,36 +242,91 @@ const deletePackage = async (req, res) => {
 }
 
 const sendGift = async (req, res) => {
+  try{
+  const purchases = await purchasedPackage.findAll({
+    where: { accountId: req.body.Account.id},
+  })
+  if (!purchases) {
+    return { error: 'account did not purchase any packages' }
+  }
+  const activePackages = purchases.filter(
+    (account) => {
+      return(      
+      account.status === packageStatus.ACTIVE && account.packageType === packageType.REGULAR)}
+  )
+
+  let total = 0
+  for (package of activePackages) {
+    total += parseInt(package.totalPoints)
+  }
+  if(total < req.points){
+    return ({code : errorCodes.insufficientPoints , error : "insufficient points"})
+  }
+  const reciever = await accountsModel.findOne({where : {email : req.body.email }})
+  if(reciever){
+    const gift = await regularPackage.findOne({
+      where: { packageName: 'gift1111' },
+    })
+  
+    giftId = gift.id
+   const deductMessage =  await deductPoints(req.body.Account.id  , req.body.points)
+   console.log(deductMessage);
+    if(deductMessage.code !== errorCodes.success){
+      return res.json({ code: errorCodes.unknown, error: 'problem in deduction' })
+    }
+    
+     
+    const addMessage =  await addPoints(reciever.id, packageType.REGULAR, giftId, req.body.points)
+    if(addMessage.code !== errorCodes.success){
+      return res.json({ code: errorCodes.unknown, error: 'problem in addition' })
+    }
+    return res.json({
+      code: errorCodes.success,
+    })
+
+  }
   const code = await generateOTP()
   const body = {}
   body.otpCode = code
-  body.status = 'available'
-  body.points = req.points
+  body.status = otpStatus.AVAILABLE
+  body.points = req.body.points
+  await giftOtp.create(body)
+  return res.json({
+    code: errorCodes.success,
+  })
+
+}
+catch (exception) {
+  console.log(exception);
+  return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+}
 
 }
 
 const redeemGift = async (req, res) => {
   code = req.body.otpCode
   accountId = req.body.Account.id
-  const packageBody = await regularPackage.findOne({
-    where: { packageName: 'gift' },
+  const gift = await regularPackage.findOne({
+    where: { packageName: 'gift1111' },
   })
   otpCode = await giftOtp.findOne({ where: { otpCode: code } })
-  body.totalPoints = otpCode.points
-  body.usedPoints = 0
-  body.packageType = 'regular'
-  body.purchaseDate = new Date()
-  body.expiryDate = body.purchaseDate.addDays(packageBody.expiryDuration)
-  body.status = packageStatus.ACTIVE
+  if(!otpCode){
+    return ({code : errorCodes.invalidOtp , error : "invalid otp"})
+  }
 
   giftOtp.update(
-    { status: "used"},
+    { status:otpStatus.USED},
     { where: { otpCode: code } })
 
-  await purchasedPackage.create(body)
-  return {
-    code: errorCodes.success,
-  }
+  giftId = gift.id
+ 
+ const addMessage =  await addPoints(accountId, packageType.REGULAR, giftId, giftOtp.points)
+ if(addMessage.code !== errorCodes.success){
+   return res.json({ code: errorCodes.unknown, error: 'problem in addition' })
+ }
+ return res.json({
+   code: errorCodes.success,
+ })
 }
 
 module.exports = {

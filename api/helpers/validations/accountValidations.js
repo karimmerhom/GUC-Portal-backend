@@ -1,7 +1,9 @@
 const joi = require('joi')
 const PasswordComplexity = require('joi-password-complexity')
+const { validation } = require('../../constants/errorCodes')
+const validationFail = validation
 
-const validateAccount = request => {
+const validateAccount = (req, res, next) => {
   const complexityOptions = {
     min: 8,
     max: 255,
@@ -9,41 +11,36 @@ const validateAccount = request => {
     upperCase: 1,
     numeric: 1,
     symbol: 0,
-    requirementCount: 8
+    requirementCount: 8,
   }
   const usernamePattern = /^[a-zA-Z0-9!#_$%&*]{3,25}$/
   const schema = {
     Account: joi
       .object({
         password: new PasswordComplexity(complexityOptions).required(),
-        username: joi
-          .string()
-          .regex(usernamePattern)
-          .required(),
-        firstName: joi
-          .string()
-          .min(3)
-          .required(),
-        lastName: joi
-          .string()
-          .min(3)
-          .required(),
+        username: joi.string().regex(usernamePattern).required(),
+        firstName: joi.string().min(3).required(),
+        lastName: joi.string().min(3).required(),
         phoneNumber: joi
           .string()
           .trim()
           .regex(/^[0-9]{11,11}$/)
           .required(),
-        email: joi
-          .string()
-          .email()
-          .required()
+        email: joi.string().email().required(),
       })
-      .required()
+      .required(),
   }
-  return joi.validate(request, schema)
+  const isValid = joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: validationFail,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
 }
 
-const validateUpdateProfile = request => {
+const validateUpdateProfile = (req, res, next) => {
   const schema = {
     Account: joi
       .object({
@@ -57,82 +54,130 @@ const validateUpdateProfile = request => {
         id: joi.number().required(),
         gender: joi.string().valid('Male', 'Female'),
         birthdate: joi.date(),
-        profession: joi.string()
+        profession: joi.string(),
       })
-      .required()
+      .required(),
   }
-  return joi.validate(request, schema)
+  const isValid = joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: validationFail,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
 }
 
-const validateGetProfile = request => {
+const validateGetProfile = (req, res, next) => {
   const schema = {
     Account: joi
       .object({
-        id: joi.number().required()
+        id: joi.number().required(),
       })
-      .required()
+      .required(),
   }
-  return joi.validate(request, schema)
+  const isValid = joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: validationFail,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
 }
 
-const validateLogin = request => {
+const validateLogin = (req, res, next) => {
   const schema = {
     Account: joi
       .object({
         username: joi.string().required(),
-        password: joi.string().required()
+        password: joi.string().required(),
       })
-      .required()
+      .required(),
   }
-  return joi.validate(request, schema)
+  const isValid = joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: validationFail,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
 }
 
-const validateEmail = request => {
-  const schema = {
-    Account: joi
-      .object({
-        id: joi.number().required()
-      })
-      .required()
-  }
-  return joi.validate(request, schema)
-}
-
-const validateConfirmVerifyEmail = request => {
-  const schema = {
-    code: joi.string().required()
-  }
-  return joi.validate(request, schema)
-}
-
-const validateVerify = request => {
+const validateEmail = (req, res, next) => {
   const schema = {
     Account: joi
       .object({
         id: joi.number().required(),
-        verifyBy: joi
-          .string()
-          .valid(['sms'])
-          .required()
       })
-      .required()
+      .required(),
   }
-  return joi.validate(request, schema)
+  const isValid = joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: validationFail,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
 }
 
-const validateConfirmVerify = request => {
+const validateConfirmVerifyEmail = (req, res, next) => {
+  const schema = {
+    Account: joi.object({
+      id: joi.number().required(),
+      code: joi.string().required(),
+    }),
+  }
+  const isValid = joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: validationFail,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
+
+const validateVerify = (req, res, next) => {
   const schema = {
     Account: joi
       .object({
         id: joi.number().required(),
-        code: joi.string().required()
       })
-      .required()
+      .required(),
   }
-  return joi.validate(request, schema)
+  const isValid = joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: validationFail,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
 }
 
-const validateChangePassword = request => {
+const validateConfirmVerify = (req, res, next) => {
+  const schema = {
+    Account: joi
+      .object({
+        id: joi.number().required(),
+        code: joi.string().required(),
+      })
+      .required(),
+  }
+  const isValid = joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: validationFail,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
+
+const validateChangePassword = (req, res, next) => {
   const complexityOptions = {
     min: 8,
     max: 255,
@@ -140,36 +185,47 @@ const validateChangePassword = request => {
     upperCase: 1,
     numeric: 1,
     symbol: 0,
-    requirementCount: 8
+    requirementCount: 8,
   }
   const schema = {
     Account: joi.object({ id: joi.number().required() }).required(),
     Credentials: joi
       .object({
         password: joi.string().required(),
-        newPassword: new PasswordComplexity(complexityOptions).required()
+        newPassword: new PasswordComplexity(complexityOptions).required(),
       })
-      .required()
+      .required(),
   }
-  return joi.validate(request, schema)
+  const isValid = joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: validationFail,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
 }
 
-const validateChangeEmail = request => {
+const validateChangeEmail = (req, res, next) => {
   const schema = {
     Account: joi
       .object({
         id: joi.number().required(),
-        email: joi
-          .string()
-          .email()
-          .required()
+        email: joi.string().email().required(),
       })
-      .required()
+      .required(),
   }
-  return joi.validate(request, schema)
+  const isValid = joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: validationFail,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
 }
 
-const validateChangePhone = request => {
+const validateChangePhone = (req, res, next) => {
   const schema = {
     Account: joi
       .object({
@@ -178,25 +234,39 @@ const validateChangePhone = request => {
           .string()
           .trim()
           .regex(/^[0-9]{11,11}$/)
-          .required()
+          .required(),
       })
-      .required()
+      .required(),
   }
-  return joi.validate(request, schema)
+  const isValid = joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: validationFail,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
 }
 
-const validateForgetPassword = request => {
+const validateForgetPassword = (req, res, next) => {
   const schema = {
     Account: joi
       .object({
-        phoneNumber: joi.string().required()
+        phoneNumber: joi.string().required(),
       })
-      .required()
+      .required(),
   }
-  return joi.validate(request, schema)
+  const isValid = joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: validationFail,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
 }
 
-const validateResetPassword = request => {
+const validateResetPassword = (req, res, next) => {
   const complexityOptions = {
     min: 8,
     max: 255,
@@ -204,45 +274,63 @@ const validateResetPassword = request => {
     upperCase: 1,
     numeric: 1,
     symbol: 0,
-    requirementCount: 8
+    requirementCount: 8,
   }
   const schema = {
     Account: joi
       .object({
         username: joi.string().required(),
-        password: new PasswordComplexity(complexityOptions).required()
+        password: new PasswordComplexity(complexityOptions).required(),
       })
-      .required()
+      .required(),
   }
-  return joi.validate(request, schema)
+  const isValid = joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: validationFail,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
 }
 
-const validateResendPassword = request => {
+const validateResendPassword = (req, res, next) => {
   const schema = {
     Account: joi
       .object({
         id: joi.number().required(),
-        verifyBy: joi
-          .string()
-          .valid(['sms', 'email'])
-          .required()
+        verifyBy: joi.string().valid(['sms', 'email']).required(),
       })
-      .required()
+      .required(),
   }
-  return joi.validate(request, schema)
+  const isValid = joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: validationFail,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
 }
-const validateSuspendAccount = request => {
+const validateSuspendAccount = (req, res, next) => {
   const schema = {
     Account: joi
       .object({
-        id: joi.number().required()
+        id: joi.number().required(),
       })
-      .required()
+      .required(),
   }
-  return joi.validate(request, schema)
+  const isValid = joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: validationFail,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
 }
 
-const validateAccountGoogle = request => {
+const validateAccountGoogle = (req, res, next) => {
   const usernamePattern = /^[a-zA-Z0-9!#_$%&*]{3,25}$/
   const complexityOptions = {
     min: 8,
@@ -251,57 +339,63 @@ const validateAccountGoogle = request => {
     upperCase: 1,
     numeric: 1,
     symbol: 0,
-    requirementCount: 8
+    requirementCount: 8,
   }
   const schema = {
     Account: joi
       .object({
         id: joi.string().required(),
         password: new PasswordComplexity(complexityOptions).required(),
-        username: joi
-          .string()
-          .regex(usernamePattern)
-          .required(),
-        firstName: joi
-          .string()
-          .min(3)
-          .required(),
-        lastName: joi
-          .string()
-          .min(3)
-          .required(),
+        username: joi.string().regex(usernamePattern).required(),
+        firstName: joi.string().min(3).required(),
+        lastName: joi.string().min(3).required(),
         phoneNumber: joi
           .string()
           .trim()
           .regex(/^[0-9]{11,11}$/)
           .required(),
-        email: joi
-          .string()
-          .email()
-          .required()
+        email: joi.string().email().required(),
       })
-      .required()
+      .required(),
   }
-  return joi.validate(request, schema)
+  const isValid = joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: validationFail,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
 }
-const validateLoginGoogle = request => {
+const validateLoginGoogle = (req, res, next) => {
   const schema = {
     Account: joi
       .object({
-        id: joi.string().required()
+        id: joi.string().required(),
       })
-      .required()
+      .required(),
   }
-  return joi.validate(request, schema)
+  const isValid = joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: validationFail,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
 }
-const validateCallbackGoogle = request => {
+const validateCallbackGoogle = (req, res, next) => {
   const schema = {
-    state: joi
-      .string()
-      .valid('signIn', 'signUp')
-      .required()
+    state: joi.string().valid('signIn', 'signUp').required(),
   }
-  return joi.validate(request, schema)
+  const isValid = joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: validationFail,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
 }
 
 module.exports = {
@@ -322,5 +416,5 @@ module.exports = {
   validateAccountGoogle,
   validateLoginGoogle,
   validateCallbackGoogle,
-  validateConfirmVerifyEmail
+  validateConfirmVerifyEmail,
 }

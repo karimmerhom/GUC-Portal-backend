@@ -5,19 +5,12 @@ var {
   client_id,
   client_secret,
   redirect_uri_login,
-  redirect_uri_sign_up
+  redirect_uri_sign_up,
 } = facebookAuth
 const errorCodes = require('../../constants/errorCodes')
 const validator = require('../../helpers/validations/accountValidations')
 
 const get_url = (req, res) => {
-  const isValid = validator.validateCallbackGoogle(req.body)
-  if (isValid.error) {
-    return res.json({
-      code: errorCodes.validation,
-      error: isValid.error.details[0].message
-    })
-  }
   let uri
   const { state } = req.body
   if (state === 'signUp') {
@@ -32,7 +25,7 @@ const get_url = (req, res) => {
     scope: ['email', 'user_friends'].join(','), // comma seperated string
     response_type: 'code',
     auth_type: 'rerequest',
-    display: 'popup'
+    display: 'popup',
   })
   const facebookLoginUrl = `https://www.facebook.com/v4.0/dialog/oauth?${stringifiedParams}`
   return res.json(facebookLoginUrl)
@@ -40,12 +33,8 @@ const get_url = (req, res) => {
 
 const facebook_callback = async (req, res) => {
   try {
-    const isValid = validator.validateCallbackGoogle(req.body)
-    if (isValid.error) {
-      return res.json({
-        code: errorCodes.validation,
-        error: isValid.error.details[0].message
-      })
+    if (!req.query.code) {
+      return res.json({ statusCode: errorCodes.validation })
     }
     const { state } = req.body
     const data = await getAccessTokenFromCode(req.query.code, state)
@@ -72,13 +61,13 @@ async function getAccessTokenFromCode(code, state) {
         client_id,
         client_secret,
         redirect_uri: uri,
-        code
-      }
+        code,
+      },
     })
-      .then(res => {
+      .then((res) => {
         access_token = res.data.access_token
       })
-      .catch(err => console.log(err))
+      .catch((err) => console.log(err))
     const data = await getFacebookUserData(access_token)
     return data
   } catch (exception) {
@@ -93,9 +82,9 @@ async function getFacebookUserData(accesstoken) {
       method: 'get',
       params: {
         fields: ['id', 'email', 'first_name', 'last_name'].join(','),
-        access_token: accesstoken
-      }
-    }).then(res => {
+        access_token: accesstoken,
+      },
+    }).then((res) => {
       let { data } = res
       facebookId = data.id
       firstName = data.first_name

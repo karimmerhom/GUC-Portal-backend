@@ -1,4 +1,7 @@
+const { packageStatus ,   packageType} = require('../../constants/TBH.enum')
+
 const Joi = require('joi')
+
 
 const validateCreatePackage = (req, res, next) => {
   const schema = Joi.object({
@@ -64,7 +67,7 @@ const validatePurchasePackage = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({ id: Joi.string().required() }).required(),
     packageId: Joi.string().required(),
-    packageType: Joi.string().valid(['regular', 'extreme']).required(),
+    packageType: Joi.string().valid([packageType.EXTREME , packageType.REGULAR]).required(),
   })
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
@@ -78,8 +81,8 @@ const validatePurchasePackage = (req, res, next) => {
 
 const validateCancelPackage = (req, res, next) => {
   const schema = Joi.object({
-    Account: Joi.object({ id: Joi.string().length(3).required() }).required(),
-    Id: Joi.string().required(),
+    Account: Joi.object({ id: Joi.string().required() }).required(),
+    packageId: Joi.string().required(),
   })
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
@@ -93,7 +96,7 @@ const validateCancelPackage = (req, res, next) => {
 
 const validateViewMyPackages = (req, res, next) => {
   const schema = Joi.object({
-    Account: Joi.object({ id: Joi.string().length(3).required() }).required(),
+    Account: Joi.object({ id: Joi.string().required() }).required(),
   })
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
@@ -204,7 +207,40 @@ const validateViewAllPackages = (req, res, next) => {
   return next()
 }
 
+const validateRedeemGift = (req,res,next) => {
+  const schema = Joi.object({
+    Account: Joi.object({ id: Joi.string().required() }).required(),
+    otpCode: Joi.string().required(),
+  })
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: 7001,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
+
+const validateSendGift = (req,res,next) => {
+  const schema = Joi.object({
+    Account: Joi.object({ id: Joi.string().required() }).required(),
+    email: Joi.string().required(),
+    points: Joi.string().required(),
+  })
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: 7001,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
+
 module.exports = {
+  validateRedeemGift,
+  validateSendGift , 
   validateCreatePackage,
   validateEditPackage,
   validateViewPackage,

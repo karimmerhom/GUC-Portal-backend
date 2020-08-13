@@ -5,9 +5,6 @@ const { IsJsonString } = require('../api/helpers/helpers')
 module.exports = {
   verifyUser: (req, res, next) => {
     try {
-      if (IsJsonString(req.body.Account)) {
-        req.body.Account = JSON.parse(req.body.Account)
-      }
       const { Account } = req.body
       if (!Account) {
         return res.json({ code: authentication, error: 'breach not account' })
@@ -20,7 +17,8 @@ module.exports = {
       }
       return next()
     } catch (exception) {
+      console.log(exception)
       return res.json({ code: authentication, error: 'breach exception' })
     }
-  }
+  },
 }
