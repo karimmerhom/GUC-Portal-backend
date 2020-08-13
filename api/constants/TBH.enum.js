@@ -140,6 +140,20 @@ const previousOrganizingExperience = {
   ONLINE: 'Online',
   OTHER: 'Other',
 }
+const category = {
+  IT: 'IT & Software',
+  MARKETING: 'Marketing & Sales',
+  Entrepreneurship: 'Entrepreneurship',
+  Finance: 'Finance & Accounting',
+  STATEGY: 'Strategy & Operations',
+  DATA: 'Data Analytics',
+  Productivity: 'Office  Productivity',
+  PDevelopment: 'Personal Development',
+  ARTS: 'Arts & Design',
+  Photography: 'Photography',
+  MUSIC: 'Music',
+  WRITING: 'Writing & Authorship',
+}
 
 const packageStatus = {
   PENDING: 'pending',
@@ -180,4 +194,5 @@ module.exports = {
   ability,
   packageType,
   otpStatus,
+  category,
 }

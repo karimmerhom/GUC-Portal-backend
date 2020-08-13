@@ -1,28 +1,38 @@
-const express = require("express")
-
+const express = require('express')
 const router = express.Router()
-
-const packageController = require("../controllers/giftPackageAccess.controller")
-
-
-const { verifyToken } = require("../../config/AuthenticationMiddleWare")
-const { verifyAdmin } = require("../../config/AdminAuthentication")
-const { verifyUser } = require("../../config/authUser")
+const packageController = require('../controllers/giftPackageAccess.controller')
+const { verifyAdmin } = require('../../config/AdminAuthentication')
 const packageValidations = require('../helpers/validations/giftPackageAccessValidations')
 
 const {
- createGiftPackageAccess,
- editGiftPackageAccess
+  createGiftPackageAccess,
+  editGiftPackageAccess,
+  deleteGiftPackageAccess,
 } = packageController
 
 const {
- validateCreateGiftPackageAccess,
- validateEditGiftPackageAccess
-
+  validateCreateGiftPackageAccess,
+  validateEditGiftPackageAccess,
+  validateDeleteGiftPackageAccess,
 } = packageValidations
 
-
-router.post('/createGiftPackageAccess',validateCreateGiftPackageAccess, createGiftPackageAccess)
-router.post('/editGiftPackageAccess',validateEditGiftPackageAccess, editGiftPackageAccess)
+router.post(
+  '/createGiftPackageAccess',
+  verifyAdmin,
+  validateCreateGiftPackageAccess,
+  createGiftPackageAccess
+)
+router.post(
+  '/editGiftPackageAccess',
+  verifyAdmin,
+  validateEditGiftPackageAccess,
+  editGiftPackageAccess
+)
+router.post(
+  '/deleteGiftPackageAccess',
+  verifyAdmin,
+  validateDeleteGiftPackageAccess,
+  deleteGiftPackageAccess
+)
 
 module.exports = router

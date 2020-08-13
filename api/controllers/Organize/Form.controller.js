@@ -94,8 +94,21 @@ const viewForm = async (req, res) => {
     })
   }
 }
+const viewAllFormsAdmin = async (req, res) => {
+  try {
+    const result = await FormModel.findAll()
+    return res.json({ Form: result, statusCode: errorCodes.success })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({
+      error: 'Something went wrong',
+      statusCode: errorCodes.unknown,
+    })
+  }
+}
 module.exports = {
   createForm,
   editForm,
   viewForm,
+  viewAllFormsAdmin,
 }

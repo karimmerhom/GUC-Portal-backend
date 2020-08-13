@@ -1,12 +1,27 @@
-const Joi = require('Joi')
+const Joi = require('joi')
 const errorCodes = require('../../constants/errorCodes')
-
+const { category } = require('../../constants/TBH.enum')
 const validateCreate = (req, res, next) => {
   const schema = {
     Course: Joi.object({
       title: Joi.string().required(),
       description: Joi.string().required(),
-      category: Joi.string().required(),
+      category: Joi.string()
+        .valid(
+          category.IT,
+          category.Finance,
+          category.MARKETING,
+          category.Entrepreneurship,
+          category.MUSIC,
+          category.PDevelopment,
+          category.Photography,
+          category.Productivity,
+          category.ARTS,
+          category.WRITING,
+          category.DATA,
+          category.STATEGY
+        )
+        .required(),
       attachedMedia: Joi.string().required(),
       durationInHours: Joi.number().required(),
       daysPerWeek: Joi.number().required(),

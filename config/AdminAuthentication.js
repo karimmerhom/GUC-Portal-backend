@@ -18,7 +18,10 @@ module.exports = {
             req.token = token
             return next()
           }
-          return res.json({ code: authentication, error: 'breach' })
+          return res.json({
+            code: authentication,
+            error: 'breach Admin only access',
+          })
         }
         return res.json({ code: authentication, error: 'breach' })
       }

@@ -9,15 +9,38 @@ const {
   validateViewForm,
 } = require('../helpers/validations/formValidations')
 
-const { createForm, editForm, viewForm } = formController
+const { createForm, editForm, viewForm, viewAllFormsAdmin } = formController
 
-// const { verifyToken } = require('../../config/AuthenticationMiddleWare')
-// const { verifyAdmin } = require('../../config/AdminAuthentication')
-// const { verifyUser } = require('../../config/authUser')
+const { verifyToken } = require('../../config/AuthenticationMiddleWare')
+const { verifyAdmin } = require('../../config/AdminAuthentication')
+const { verifyUser } = require('../../config/authUser')
+const { verifiedPhone } = require('../../config/verifiedAuthentication')
 
-router.post('/createForm', validateCreateForm, createForm)
-router.post('/editForm', validateEditForm, editForm)
-router.post('/viewForm', validateViewForm, viewForm)
+router.post(
+  '/createForm',
+  verifyToken,
+  verifyUser,
+  verifiedPhone,
+  validateCreateForm,
+  createForm
+)
+router.post(
+  '/editForm',
+  verifyToken,
+  verifyUser,
+  verifiedPhone,
+  validateEditForm,
+  editForm
+)
+router.post(
+  '/viewForm',
+  verifyToken,
+  verifyUser,
+  verifiedPhone,
+  validateViewForm,
+  viewForm
+)
+router.post('/viewAllFormsAdmin', verifyAdmin, viewAllFormsAdmin)
 
 //router.post('/verify', verifyToken, verify)
 
