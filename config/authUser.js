@@ -13,7 +13,7 @@ module.exports = {
         req.data.id !== parseInt(Account.id) &&
         req.data.type !== userTypes.ADMIN
       ) {
-        return res.json({ code: authentication, error: 'breach breach' })
+        return res.json({ code: authentication, error: 'toot breach' })
       }
       return next()
     } catch (exception) {

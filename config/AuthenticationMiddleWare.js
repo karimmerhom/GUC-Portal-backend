@@ -20,5 +20,5 @@ module.exports = {
         return res.json({ code: authentication, error: 'breach' })
       }
     )
-  }
+  },
 }
