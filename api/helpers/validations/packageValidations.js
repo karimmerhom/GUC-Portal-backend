@@ -1,8 +1,7 @@
-const { packageStatus ,   packageType} = require('../../constants/TBH.enum')
+const { packageStatus, packageType } = require('../../constants/TBH.enum')
 
 const Joi = require('joi')
 const errorCodes = require('../../constants/errorCodes')
-
 
 const validateCreatePackage = (req, res, next) => {
   const schema = Joi.object({
@@ -11,48 +10,40 @@ const validateCreatePackage = (req, res, next) => {
     expiryDuration: Joi.number().required(),
     packageType: Joi.string().valid(['regular', 'extreme']).required(),
 
-    price: Joi.number()
-      .when('packageType', {
-        is: Joi.string().valid(['regular']),
-        then: Joi.number().required()
-      }),
+    price: Joi.number().when('packageType', {
+      is: Joi.string().valid(['regular']),
+      then: Joi.number().required(),
+    }),
 
-    points: Joi.number()
-      .when('packageType', {
-        is: Joi.string().valid(['regular']),
-        then: Joi.number().required()
-      }),
+    points: Joi.number().when('packageType', {
+      is: Joi.string().valid(['regular']),
+      then: Joi.number().required(),
+    }),
 
-    largePrice: Joi.number()
-      .when('packageType', {
-        is: Joi.string().valid(['extreme']),
-        then: Joi.number().required()
-      }),
-     
-    smallPrice: Joi.number()
-      .when('packageType', {
-        is: Joi.string().valid(['extreme']),
-        then: Joi.number().required()
-      }),
+    largePrice: Joi.number().when('packageType', {
+      is: Joi.string().valid(['extreme']),
+      then: Joi.number().required(),
+    }),
 
-    daysPerWeek: Joi.number()
-      .when('packageType', {
-        is: Joi.string().valid(['extreme']),
-        then: Joi.number().required()
-      }),
+    smallPrice: Joi.number().when('packageType', {
+      is: Joi.string().valid(['extreme']),
+      then: Joi.number().required(),
+    }),
 
-    startPeriod: Joi.number()
-      .when('packageType', {
-        is: Joi.string().valid(['extreme']),
-        then: Joi.number().required()
-      }),
+    daysPerWeek: Joi.number().when('packageType', {
+      is: Joi.string().valid(['extreme']),
+      then: Joi.number().required(),
+    }),
 
-    endPeriod: Joi.number()
-      .when('packageType', {
-        is: Joi.string().valid(['extreme']),
-        then: Joi.number().required()
-      }),
-    
+    startPeriod: Joi.number().when('packageType', {
+      is: Joi.string().valid(['extreme']),
+      then: Joi.number().required(),
+    }),
+
+    endPeriod: Joi.number().when('packageType', {
+      is: Joi.string().valid(['extreme']),
+      then: Joi.number().required(),
+    }),
   })
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
@@ -68,7 +59,9 @@ const validatePurchasePackage = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({ id: Joi.string().required() }).required(),
     packageId: Joi.string().required(),
-    packageType: Joi.string().valid([packageType.EXTREME , packageType.REGULAR]).required(),
+    packageType: Joi.string()
+      .valid([packageType.EXTREME, packageType.REGULAR])
+      .required(),
   })
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
@@ -102,7 +95,7 @@ const validateViewMyPackages = (req, res, next) => {
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
     return res.json({
-      statusCode:errorCodes.validation,
+      statusCode: errorCodes.validation,
       error: isValid.error.details[0].message,
     })
   }
@@ -111,54 +104,46 @@ const validateViewMyPackages = (req, res, next) => {
 
 const validateEditPackage = (req, res, next) => {
   const schema = Joi.object({
-    Account: Joi.object({ id: Joi.string().length(24).required() }).required(),
-    id:Joi.number().required(),
+    Account: Joi.object({ id: Joi.string().required() }).required(),
+    id: Joi.number().required(),
     packageName: Joi.string().min(3),
     expiryDuration: Joi.number(),
     packageType: Joi.string().valid(['regular', 'extreme']).required(),
 
-    price: Joi.number()
-      .when('packageType', {
-        is: Joi.string().valid(['regular']),
-        then: Joi.number()
-      }),
+    price: Joi.number().when('packageType', {
+      is: Joi.string().valid(['regular']),
+      then: Joi.number(),
+    }),
 
-    points: Joi.number()
-      .when('packageType', {
-        is: Joi.string().valid(['regular']),
-        then: Joi.number()
-      }),
+    points: Joi.number().when('packageType', {
+      is: Joi.string().valid(['regular']),
+      then: Joi.number(),
+    }),
 
-    largePrice: Joi.number()
-      .when('packageType', {
-        is: Joi.string().valid(['extreme']),
-        then: Joi.number()
-      }),
-     
-    smallPrice: Joi.number()
-      .when('packageType', {
-        is: Joi.string().valid(['extreme']),
-        then: Joi.number()
-      }),
+    largePrice: Joi.number().when('packageType', {
+      is: Joi.string().valid(['extreme']),
+      then: Joi.number(),
+    }),
 
-    daysPerWeek: Joi.number()
-      .when('packageType', {
-        is: Joi.string().valid(['extreme']),
-        then: Joi.number()
-      }),
+    smallPrice: Joi.number().when('packageType', {
+      is: Joi.string().valid(['extreme']),
+      then: Joi.number(),
+    }),
 
-    startPeriod: Joi.number()
-      .when('packageType', {
-        is: Joi.string().valid(['extreme']),
-        then: Joi.number()
-      }),
+    daysPerWeek: Joi.number().when('packageType', {
+      is: Joi.string().valid(['extreme']),
+      then: Joi.number(),
+    }),
 
-    endPeriod: Joi.number()
-      .when('packageType', {
-        is: Joi.string().valid(['extreme']),
-        then: Joi.number()
-      }),
-    
+    startPeriod: Joi.number().when('packageType', {
+      is: Joi.string().valid(['extreme']),
+      then: Joi.number(),
+    }),
+
+    endPeriod: Joi.number().when('packageType', {
+      is: Joi.string().valid(['extreme']),
+      then: Joi.number(),
+    }),
   })
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
@@ -170,13 +155,12 @@ const validateEditPackage = (req, res, next) => {
   return next()
 }
 
-
 const validateViewPackage = (req, res, next) => {
   const schema = Joi.object({
     id: Joi.string().required(),
     packageType: Joi.string().valid(['regular', 'extreme']).required(),
     Account: Joi.object({
-      id: Joi.string().length(24).required(),
+      id: Joi.string().required(),
     }).required(),
   })
 
@@ -193,9 +177,8 @@ const validateViewPackage = (req, res, next) => {
 const validateViewAllPackages = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().length(24).required(),
+      id: Joi.string().required(),
     }).required(),
-    
   })
 
   const isValid = Joi.validate(req.body, schema)
@@ -208,7 +191,7 @@ const validateViewAllPackages = (req, res, next) => {
   return next()
 }
 
-const validateRedeemGift = (req,res,next) => {
+const validateRedeemGift = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({ id: Joi.string().required() }).required(),
     otpCode: Joi.string().required(),
@@ -223,7 +206,7 @@ const validateRedeemGift = (req,res,next) => {
   return next()
 }
 
-const validateSendGift = (req,res,next) => {
+const validateSendGift = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({ id: Joi.string().required() }).required(),
     email: Joi.string().required(),
@@ -241,12 +224,14 @@ const validateSendGift = (req,res,next) => {
 
 module.exports = {
   validateRedeemGift,
-  validateSendGift , 
+  validateSendGift,
   validateCreatePackage,
   validateEditPackage,
   validateViewPackage,
   validateViewAllPackages,
   validatePurchasePackage,
   validateCancelPackage,
-  validateViewMyPackages
+  validateViewMyPackages,
+  validateSendGift,
+  validateRedeemGift,
 }

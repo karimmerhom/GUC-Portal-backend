@@ -36,35 +36,31 @@ const {
   validateSendGift,
 } = packageValidations
 
-router.post('/createPackage', validateCreatePackage, createPackage)
-router.post('/editPackage', validateEditPackage, editPackage)
-router.post('/viewPackage', validateViewPackage, viewPackage)
-router.post('/deletePackage', validateViewPackage, deletePackage)
-
-router.post('/createPackage', verifyAdmin, validateCreatePackage, createPackage)
-router.post('/editPackage', verifyAdmin, validateEditPackage, editPackage)
+router.post('/createPackage', validateCreatePackage, verifyAdmin, createPackage)
+router.post('/editPackage', validateEditPackage, verifyAdmin, editPackage)
 router.post(
   '/viewPackage',
+  validateViewPackage,
   verifyToken,
   verifyUser,
-  validateViewPackage,
   viewPackage
 )
+router.post('/deletePackage', validateViewPackage, verifyAdmin, deletePackage)
+
 router.post(
   '/viewAllExtremePackages',
+  validateViewAllPackages,
   verifyToken,
   verifyUser,
-  validateViewAllPackages,
   viewAllExtremePackages
 )
 router.post(
   '/viewAllRegularPackages',
+  validateViewAllPackages,
   verifyToken,
   verifyUser,
-  validateViewAllPackages,
   viewAllRegularPackages
 )
-router.post('/deletePackage', verifyAdmin, validateViewPackage, deletePackage)
 
 router.post(
   '/purchasePackage',
