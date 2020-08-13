@@ -2,17 +2,14 @@ const giftPackageAccess = require('../../models/giftPackageAccess.model')
 const { packageStatus } = require('../constants/TBH.enum')
 const errorCodes = require('../constants/errorCodes')
 
-
 const createGiftPackageAccess = async (req, res) => {
   try {
-  
-    
-     await giftPackageAccess.create(req.body)
-      return res.json({
-        code: errorCodes.success,
-      })
+    await giftPackageAccess.create(req.body)
+    return res.json({
+      code: errorCodes.success,
+    })
   } catch (exception) {
-    console.log(exception +"sssssssss")
+    console.log(exception + 'sssssssss')
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -29,26 +26,23 @@ const editGiftPackageAccess = async (req, res) => {
     })
     if (found) {
       delete body.id
-     await giftPackageAccess.update(req.body ,
-      {
+      await giftPackageAccess.update(req.body, {
         where: {
           id: parseInt(id),
         },
-      } )
+      })
       return res.json({
         code: errorCodes.success,
       })
     }
-  return res.json({ code: 7006, error: "id not found" })
+    return res.json({ code: 7006, error: 'id not found' })
   } catch (exception) {
-    console.log(exception +"sssssssss")
+    console.log(exception + 'sssssssss')
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 
 module.exports = {
   createGiftPackageAccess,
-  editGiftPackageAccess
+  editGiftPackageAccess,
 }
-
-

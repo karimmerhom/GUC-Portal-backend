@@ -16,6 +16,7 @@ const {
   bookRoom,
   editBooking,
   tryBooking,
+  adminConfirmBooking,
 } = require('../controllers/booking.controller')
 
 const {
@@ -25,6 +26,7 @@ const {
   validateViewDateBookings,
   validateBookRoom,
   validateEditMyBooking,
+  validateAdminConfirmBooking,
 } = require('../helpers/validations/bookingValidations')
 
 router.post(
@@ -80,5 +82,12 @@ router.post(
   viewDateBookings
 )
 router.post('/viewAllBookings', verifyAdmin, viewAllBookings)
+
+router.post(
+  '/adminConfirmBooking',
+  // verifyAdmin,
+  validateAdminConfirmBooking,
+  adminConfirmBooking
+)
 
 module.exports = router

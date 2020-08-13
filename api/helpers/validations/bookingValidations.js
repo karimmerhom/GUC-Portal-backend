@@ -50,6 +50,24 @@ const validateCancelBooking = (req, res, next) => {
   return next()
 }
 
+const validateAdminConfirmBooking = (req, res, next) => {
+  const schema = {
+    Account: Joi.object({
+      id: Joi.number().required(),
+    }).required(),
+    bookingId: Joi.number().required(),
+  }
+
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: statusCodes.validation,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
+
 const validateViewDateBookings = (req, res, next) => {
   const schema = {
     Account: Joi.object({
@@ -186,4 +204,5 @@ module.exports = {
   validateViewDateBookings,
   validateEditMyBooking,
   validateBookRoom,
+  validateAdminConfirmBooking,
 }
