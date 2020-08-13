@@ -18,12 +18,27 @@ const createPackage = async (req, res) => {
     const Type = req.body.packageType
 
     delete body.packageType
+<<<<<<< HEAD
     if (Type === 'regular') {
       delete body.packageType
       const found = await regularPackage.findOne({
         where: {
           packageName: name,
         },
+=======
+    if (Type === packageType.REGULAR) {
+      
+      delete body.packageType
+      const found = await regularPackage.findOne({where: {
+        packageName: name
+      }},)
+ 
+      if(!found)
+      {
+      await regularPackage.create(body)
+      return res.json({
+        code: errorCodes.success ,
+>>>>>>> aa34caa8ea11e267fca85cfd19c35b0bc3b7d2b0
       })
 
       if (!found) {
@@ -33,12 +48,27 @@ const createPackage = async (req, res) => {
         })
       }
     }
+<<<<<<< HEAD
     if (Type === 'extreme') {
       delete body.packageType
       const found = await extremePackage.findOne({
         where: {
           packageName: name,
         },
+=======
+    
+    }
+    if (Type === packageType.EXTREME) {
+      delete body.packageType
+      const found = await extremePackage.findOne({where: {
+        packageName: name,
+      }},)
+      if(!found)
+      {
+      await extremePackage.create(body)
+      return res.json({
+        code: errorCodes.success ,
+>>>>>>> aa34caa8ea11e267fca85cfd19c35b0bc3b7d2b0
       })
       if (!found) {
         await extremePackage.create(body)
@@ -47,7 +77,12 @@ const createPackage = async (req, res) => {
         })
       }
     }
+<<<<<<< HEAD
     return res.json({ code: 7006, error: 'name already exists' })
+=======
+  }
+  return res.json({ code: errorCodes.nameExists , error: "name already exists" })
+>>>>>>> aa34caa8ea11e267fca85cfd19c35b0bc3b7d2b0
   } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
@@ -59,7 +94,7 @@ const editPackage = async (req, res) => {
     const id = req.body.id
     delete body.id
     const Type = req.body.packageType
-    if (Type === 'regular') {
+    if (Type === packageType.REGULAR ) {
       delete body.packageType
       await regularPackage.update(body, {
         where: {
@@ -68,10 +103,10 @@ const editPackage = async (req, res) => {
       })
 
       return res.json({
-        code: 7000,
+        code: errorCodes.success,
       })
     }
-    if (Type === 'extreme') {
+    if (Type === packageType.EXTREME ) {
       delete body.packageType
       await extremePackage.update(body, {
         where: {
@@ -80,11 +115,11 @@ const editPackage = async (req, res) => {
       })
 
       return res.json({
-        code: 7000,
+        code: errorCodes.success,
       })
     }
+    return res.json({ code: errorCodes.invalidId , error: "id does not exist" })
   } catch (exception) {
-    console.log(exception + '  jjjjjjjjj')
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -123,38 +158,43 @@ const viewPackage = async (req, res) => {
     const id = req.body.id
     delete body.id
     const Type = req.body.packageType
-    if (Type === 'regular') {
+    if (Type === packageType.REGULAR ) {
       delete body.packageType
       const packageFound = await regularPackage.findOne({
         where: {
           id: parseInt(id),
         },
       })
-      if (packageFound) return res.json({ package: packageFound, code: 7000 })
+      if (packageFound) return res.json({ package: packageFound, code: errorCodes.success })
     }
-    if (Type === 'extreme') {
+    if (Type === packageType.EXTREME ) {
       const packageFound = await extremePackage.findOne({
         where: {
           id: parseInt(id),
         },
       })
-      if (packageFound) return res.json({ package: packageFound, code: 7000 })
+      if (packageFound) return res.json({ package: packageFound, code:errorCodes.success })
     }
-    return res.json({ statusCode: 7001, error: 'package not found' })
+    return res.json({ statusCode: errorCodes.invalidPackage , error: 'package not found' })
   } catch (exception) {
-    console.log(exception + '  jjjjjjjjj')
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 
-const viewAllPackages = async (req, res) => {
+const viewAllRegularPackages = async (req, res) => {
   try {
     const packagesFound1 = await regularPackage.findAll({})
-    const packagesFound2 = await extremePackage.findAll({})
-    const packagesFound = packagesFound1.concat(packagesFound2)
-    return res.json({ package: packagesFound, code: 7000 })
+    return res.json({ package: packagesFound1, code: errorCodes.success })
   } catch (exception) {
-    console.log(exception + '  jjjjjjjjj')
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
+const viewAllExtremePackages = async (req, res) => {
+  try {
+    const packagesFound2 = await extremePackage.findAll({})
+    return res.json({ package: packagesFound2, code: errorCodes.success })
+  } catch (exception) {
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -174,13 +214,19 @@ const deletePackage = async (req, res) => {
     const id = req.body.id
     delete body.id
     const Type = req.body.packageType
+<<<<<<< HEAD
     if (Type === 'regular') {
+=======
+
+    if (Type === packageType.REGULAR ) {
+>>>>>>> aa34caa8ea11e267fca85cfd19c35b0bc3b7d2b0
       delete body.packageType
       const packageFound = await regularPackage.findOne({
         where: {
           id: parseInt(id),
         },
       })
+<<<<<<< HEAD
       if (packageFound) {
         packageFound.destroy()
         if (packageFound)
@@ -190,6 +236,18 @@ const deletePackage = async (req, res) => {
       }
     }
     if (Type === 'extreme') {
+=======
+      if(packageFound){
+      packageFound.destroy()
+      if(packageFound)
+      return res.json({
+        code: errorCodes.success,
+      })
+    }
+  }
+    if (Type === packageType.EXTREME ) {
+
+>>>>>>> aa34caa8ea11e267fca85cfd19c35b0bc3b7d2b0
       const packageFound = await extremePackage.findOne({
         where: {
           id: parseInt(id),
@@ -199,14 +257,22 @@ const deletePackage = async (req, res) => {
         packageFound.destroy()
 
         return res.json({
-          code: 7000,
+          code: errorCodes.success,
         })
       }
     }
+<<<<<<< HEAD
     return res.json({ statusCode: 7001, error: 'package not found' })
   } catch (exception) {
     console.log(exception + '  jjjjjjjjj')
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+=======
+    return res.json({ statusCode:errorCodes.invalidPackage , error: 'package not found' })
+
+  } catch (exception) {
+   
+    return res.json({ code: errorCodes.unknown, error: "Something went wrong" })
+>>>>>>> aa34caa8ea11e267fca85cfd19c35b0bc3b7d2b0
   }
 }
 
@@ -217,7 +283,11 @@ module.exports = {
   createPackage,
   editPackage,
   viewPackage,
-  viewAllPackages,
   viewMyPackages,
   deletePackage,
+<<<<<<< HEAD
+=======
+  viewAllExtremePackages,
+  viewAllRegularPackages
+>>>>>>> aa34caa8ea11e267fca85cfd19c35b0bc3b7d2b0
 }
