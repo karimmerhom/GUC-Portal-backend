@@ -12,7 +12,7 @@ const bookingExtreme = require('../../models/bookingExtreme.model')
 
 const validator = require('../helpers/validations/bookingValidations')
 const errorCodes = require('../constants/errorCodes')
-const { Op, where } = require('sequelize')
+const { Op, where, INTEGER } = require('sequelize')
 
 const {
   secretOrKey,
@@ -38,17 +38,20 @@ const calculatePrice = async (type, slots) => {
     var pricing = {}
     pricing.points = 0
     pricing.cash = 0
+    // console.log(type)
+    // console.log(slots)
 
     const pricingfound = await pricingModel.findOne({
       where: { pricingType: 'flat_rate', roomType: type },
     })
     pricing.cash = pricingfound.value * slots
+    console.log(pricing.cash)
 
     const pricingfound1 = await pricingModel.findOne({
       where: { pricingType: 'points', roomType: type },
     })
-
     pricing.points = pricingfound1.value * slots
+    console.log(pricing.points)
 
     return pricing
   } catch (exception) {
@@ -115,6 +118,7 @@ const editBooking = async (req, res) => {
     })
     if (booked) {
       let bookingDetails = req.body
+      bookingDetails.expiryDate = booked.expiryDate
       if (booked.accountId !== parseInt(req.body.Account.id)) {
         res.json({
           error: 'This is not the users booking',
@@ -171,6 +175,7 @@ const editBooking = async (req, res) => {
     })
   }
 }
+
 const bookRoom = async (req, res) => {
   try {
     let bookingDetails = req.body
@@ -241,9 +246,10 @@ const bookRoom = async (req, res) => {
       var expiryDate = new Date()
       expiryDate.setDate(expiryDate.getDate() + j.duration)
 
-      // bookingDetails.expiryDate=expiryDate
-      // bookingDetails.pricePoints= pricing.points
-      // bookingDetails.priceCash = pricing.cash
+      bookingDetails.expiryDate = expiryDate
+      bookingDetails.pricePoints = pricing.points
+      bookingDetails.priceCash = pricing.cash
+
       //uncomment this three lines when the model is fixed
 
       const booked = await BookingModel.create(bookingDetails)
@@ -539,8 +545,107 @@ const bookExtremePackage = async (req, res) => {
     }
   }
 }
+const viewAvailableRooms = async (req, res) => {
+  try {
+    const startDate = req.body.startDate
+    const extremeType = req.body.extremeType
+    const weekDays = [
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+    ]
+    const periodsNumber = [
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+    ]
+
+    const extreme = await extremePackageModel.findOne({
+      where: {
+        packageName: extremeType,
+      },
+    })
+    const rooms = await RoomModel.findAll()
+
+    const periodsString = [
+      slots.NINE_TEN,
+      slots.TEN_ELEVEN,
+      slots.ELEVEN_TWELVE,
+      slots.TWELVE_THIRTEEN,
+      slots.THIRTEEN_FOURTEEN,
+      slots.FOURTEEN_FIFTEEN,
+      slots.FIFTEEN_SIXTEEN,
+      slots.SIXTEEN_SEVENTEEN,
+      slots.SEVENTEEN_EIGHTEEN,
+      slots.EIGHTEEN_NINETEEN,
+      slots.NINETEEN_TWENTY,
+      slots.TWENTY_TWENTYONE,
+    ]
+
+    let slotsNeeded = []
+
+    for (let j = extreme.startPeriod - 9; j < extreme.endPeriod - 9; j++) {
+      slotsNeeded.push(periodsString[j])
+    }
+
+    let availableRooms = []
+    for (let j = 0; j < rooms.length; j++) {
+      availableRooms.push(rooms[j].roomNumber)
+    }
+
+    let i = 0
+    var date = new Date(startDate)
+
+    while (i < extreme.daysPerWeek) {
+      let dayNumber = date.getDay()
+
+      for (let j = 0; j < slotsNeeded.length; j++) {
+        const calendar = await CalendarModel.findAll({
+          where: {
+            date: date,
+            slot: slotsNeeded[j],
+          },
+        })
+
+        console.log(calendar)
+
+        let flag = false
+        for (let k = 0; k < calendar.length; k++) {
+          availableRooms = availableRooms.filter(
+            (room) => calendar[k].roomNumber !== room
+          )
+        }
+      }
+
+      if (dayNumber !== 5) i++
+      date.setDate(date.getDate() + 1)
+    }
+    res.json({ statusCode: errorCodes.success, availableRooms })
+  } catch (e) {
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
+  }
+}
 
 module.exports = {
+  bookExtremePackage,
   viewCalendar,
   cancelBooking,
   viewMyBookings,
@@ -551,4 +656,5 @@ module.exports = {
   editBooking,
   tryBooking,
   adminConfirmBooking,
+  viewAvailableRooms,
 }

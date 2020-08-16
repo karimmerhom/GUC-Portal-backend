@@ -17,6 +17,7 @@ const {
   editBooking,
   tryBooking,
   adminConfirmBooking,
+  viewAvailableRooms,
 } = require('../controllers/booking.controller')
 
 const {
@@ -82,6 +83,7 @@ router.post(
   viewDateBookings
 )
 router.post('/viewAllBookings', verifyAdmin, viewAllBookings)
+router.post('/viewAvailableRooms', viewAvailableRooms)
 
 router.post(
   '/adminConfirmBooking',

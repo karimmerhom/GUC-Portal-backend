@@ -15,6 +15,9 @@ Booking.init(
     date: {
       type: Sequelize.DATE,
     },
+    expiryDate: {
+      type: Sequelize.DATE,
+    },
     slots: {
       type: Sequelize.ARRAY(Sequelize.STRING),
     },
@@ -28,7 +31,10 @@ Booking.init(
     roomLayout: {
       type: Sequelize.STRING,
     },
-    price: {
+    pricePoints: {
+      type: Sequelize.STRING,
+    },
+    priceCash: {
       type: Sequelize.STRING,
     },
     paymentMethod: {

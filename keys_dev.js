@@ -3,6 +3,7 @@ module.exports = {
     'postgres://tbh_read_write:tbh_read_write@odoo.cwkflpbzjgkp.eu-central-1.rds.amazonaws.com:5432/tbh-dev',
   secretOrKey: 'SECRET',
   salt: '10',
+<<<<<<< HEAD
   smsAccessKey:
     'U2FsdGVkX19jTU8iULYNra7x0VyjoXNs0rf40VHMxCcgvRpBXUGGNDK3UbBNrlQC',
   emailAccessKey:
@@ -20,4 +21,6 @@ module.exports = {
     loginURI: 'http://localhost:3000/login',
     signUpURI: 'http://localhost:3000/signup',
   },
+=======
+>>>>>>> 2a6dee892bf8fd23c45974ffe07b88aa88336867
 }
