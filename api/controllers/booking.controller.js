@@ -522,7 +522,8 @@ const bookExtremePackage = async (req, res) => {
         date.setDate(startDate.getDate() + d)
       }
     }
-    bookingdetails = {
+    console.log('LOOOOL')
+    bookingDetails = {
       startDate: startDate,
       endDate: endDate,
       roomType: roomType,
@@ -534,8 +535,8 @@ const bookExtremePackage = async (req, res) => {
       accountId: req.body.Account.id,
       roomId: roomId,
     }
-
     booked = await bookingExtreme.create(bookingDetails)
+    console.log('AHAHAHAHAHAHAHHAHAHA')
 
     for (let i = 0; i < pack.daysPerWeek; i++) {
       d = d + i
@@ -559,6 +560,7 @@ const bookExtremePackage = async (req, res) => {
 
     return res.json({ statusCode: errorCodes.success })
   } catch (e) {
+    console.log(e.message)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',

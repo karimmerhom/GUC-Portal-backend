@@ -141,7 +141,7 @@ const addPoints = async (accountId, type, packageId, points = 0) => {
     body.packageType = type
     body.accountId = accountId
     body.packageId = packageId
-    
+
     if (body.packageType === packageType.REGULAR) {
       const packageBody = await regularPackage.findByPk(packageId)
       if (!packageBody) {
@@ -160,18 +160,17 @@ const addPoints = async (accountId, type, packageId, points = 0) => {
       }
       body.usedPoints = 0
       body.purchaseDate = new Date().addHours(2)
-  
 
       body.expiryDate = body.purchaseDate.addDays(packageBody.expiryDuration)
       const package = await purchasedPackage.create(body)
       packageId = package.id
-      console.log((new Date()).addMins(1));
+      console.log(new Date().addMins(1))
       const scheduleJob = cron.job(body.expiryDate, async () => {
         await expirePackage(packageId)
       })
       scheduleJob.start()
       return {
-        packageId : packageId,
+        packageId: packageId,
         statusCode: errorCodes.success,
         error: 'success',
       }
@@ -194,7 +193,7 @@ const addPoints = async (accountId, type, packageId, points = 0) => {
       })
       scheduleJob.start()
       return {
-        packageId : packageId,
+        packageId: packageId,
         statusCode: errorCodes.success,
         error: 'success',
       }
@@ -205,16 +204,15 @@ const addPoints = async (accountId, type, packageId, points = 0) => {
       error: 'Package Type not found',
     }
   } catch (exception) {
-    console.log(exception);
+    console.log(exception)
     return { statusCode: errorCodes.unknown, error: 'failed to add points' }
   }
 }
 
 const expirePackage = async (packageId) => {
-   
-    const body = {}
-    body.status = packageStatus.EXPIRED
-    await purchasedPackage.update(body, { where: { id: packageId } })
+  const body = {}
+  body.status = packageStatus.EXPIRED
+  await purchasedPackage.update(body, { where: { id: packageId } })
 }
 
 module.exports = {
