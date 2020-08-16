@@ -18,6 +18,7 @@ const {
   tryBooking,
   adminConfirmBooking,
   viewAvailableRooms,
+  tryEditBooking,
 } = require('../controllers/booking.controller')
 
 const {
@@ -47,11 +48,19 @@ router.post(
 )
 router.post(
   '/editBooking',
-  verifyToken,
-  verifyUser,
-  verifiedPhone,
+  // verifyToken,
+  // verifyUser,
+  // verifiedPhone,
   validateEditMyBooking,
   editBooking
+)
+router.post(
+  '/tryEditBooking',
+  // verifyToken,
+  // verifyUser,
+  // verifiedPhone,
+  validateEditMyBooking,
+  tryEditBooking
 )
 router.post(
   '/viewCalendar',
