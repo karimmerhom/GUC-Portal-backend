@@ -211,7 +211,7 @@ const addPoints = async (accountId, type, packageId, points = 0) => {
 }
 
 const expirePackage = async (packageId) => {
-   
+
     const body = {}
     body.status = packageStatus.EXPIRED
     await purchasedPackage.update(body, { where: { id: packageId } })
