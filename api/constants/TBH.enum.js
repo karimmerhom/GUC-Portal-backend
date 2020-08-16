@@ -65,16 +65,13 @@ const invitationStatus = {
   PENDING: 'pending',
   REGISTERED: 'registered',
   INQUEUE: 'Inqueue',
+  ONLINE: 'Online',
+  OTHER: 'Other',
 }
-
-const eventStatus = {
-  POSTED: 'posted',
-  OPENFORREGISTERATION: 'open for registeration',
-  FULLYBOOKED: 'fully booked',
-  STARTED: 'started',
-  ENDED: 'ended',
-  CANCELED: 'canceled',
-  CONFIRMED: 'confirmed',
+const AvailableAudience = {
+  NOTNOW: 'Not at the moment',
+  SMALLGROUP: 'I have a small following group',
+  LARGEGROUP: 'I have a sizable following',
 }
 const roomSize = {
   LARGE: 'large group',
@@ -114,7 +111,69 @@ const bookingStatus = {
   CANCELED: 'canceled',
 }
 
+const eventStatus = {
+  POSTED: 'posted',
+  OPENFORREGISTERATION: 'open for registeration',
+  FULLYBOOKED: 'fully booked',
+  STARTED: 'started',
+  ENDED: 'ended',
+  CANCELED: 'canceled',
+  CONFIRMED: 'confirmed',
+}
+
+const packageType = {
+  REGULAR: 'regular',
+  EXTREME: 'extreme',
+}
+
+const englishLevel = {
+  NONE: 'None',
+  BEGINNER: 'Beginner',
+  FAIR: 'Fair',
+  GOOD: 'Good',
+  FLUENT: 'Fluent',
+  NATIVE: 'Native',
+}
+const previousOrganizingExperience = {
+  PROF: 'In person (Professionally)',
+  INFORMAL: 'In person (Informally)',
+  ONLINE: 'Online',
+  OTHER: 'Other',
+}
+const category = {
+  IT: 'IT & Software',
+  MARKETING: 'Marketing & Sales',
+  Entrepreneurship: 'Entrepreneurship',
+  Finance: 'Finance & Accounting',
+  STATEGY: 'Strategy & Operations',
+  DATA: 'Data Analytics',
+  Productivity: 'Office  Productivity',
+  PDevelopment: 'Personal Development',
+  ARTS: 'Arts & Design',
+  Photography: 'Photography',
+  MUSIC: 'Music',
+  WRITING: 'Writing & Authorship',
+}
+
+const packageStatus = {
+  PENDING: 'pending',
+  CANCELED: 'canceled',
+  ACTIVE: 'active',
+  EXPIRED: 'expired',
+}
+
+const otpStatus = {
+  AVAILABLE: 'available',
+  USED: 'used',
+}
+
+const ability = {
+  TRUE: 'true',
+  FALSE: 'false',
+}
+
 module.exports = {
+  packageStatus,
   accountStatus,
   paymentMethods,
   gender,
@@ -124,9 +183,16 @@ module.exports = {
   userTypes,
   invitationStatus,
   eventStatus,
+  englishLevel,
+  previousOrganizingExperience,
+  AvailableAudience,
   roomSize,
   roomType,
   calStatus,
   slots,
   bookingStatus,
+  ability,
+  packageType,
+  otpStatus,
+  category,
 }

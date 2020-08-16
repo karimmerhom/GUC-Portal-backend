@@ -5,6 +5,8 @@ const BookingModel = require('../../models/booking.model')
 const CalendarModel = require('../../models/calendar.model')
 const RoomModel = require('../../models/room.model')
 const pricingModel = require('../../models/pricing.model')
+const pendingModel = require('../../models/pending.model')
+const expiryModel = require('../../models/expiry.model')
 
 const validator = require('../helpers/validations/bookingValidations')
 const errorCodes = require('../constants/errorCodes')
@@ -16,11 +18,17 @@ const {
   contactAccessKey,
   emailAccessKey,
 } = require('../../config/keys')
-const { slots, calStatus, bookingStatus } = require('../constants/TBH.enum')
+const {
+  slots,
+  calStatus,
+  bookingStatus,
+  paymentMethods,
+} = require('../constants/TBH.enum')
 const {} = require('../helpers/helpers')
 const { object } = require('joi')
 const { calendar } = require('googleapis/build/src/apis/calendar')
 const Pricing = require('../../models/pricing.model')
+const { deductPoints, addPoints } = require('../helpers/helpers')
 
 const calculatePrice = async (type, slots) => {
   try {
@@ -44,7 +52,7 @@ const calculatePrice = async (type, slots) => {
 
     return pricing
   } catch (exception) {
-    return console.log('toot')
+    return console.log('calculation error')
   }
 }
 
@@ -104,6 +112,13 @@ const editBooking = async (req, res) => {
     })
     if (booked) {
       let bookingDetails = req.body
+      if (booked.accountId !== parseInt(req.body.Account.id)) {
+        res.json({
+          error: 'This is not the users booking',
+          statusCode: 7000,
+        })
+      }
+
       const status =
         bookingDetails.paymentMethod === 'points' ? 'confirmed' : 'pending'
       bookingDetails.status = status
@@ -113,6 +128,7 @@ const editBooking = async (req, res) => {
         let sl = bookingDetails.slots[i]
         const notAvSl = await CalendarModel.findAll({
           where: {
+            bookingId: { [Op.not]: req.body.bookingId },
             roomNumber: bookingDetails.roomNumber,
             date: bookingDetails.date,
             slot: sl,
@@ -177,23 +193,54 @@ const bookRoom = async (req, res) => {
       if (notAvSl.length !== 0) noAvailableSlots = true
     }
 
-    console.log(noAvailableSlots)
     if (noAvailableSlots) {
       res.json({
         error: 'one room or more is/are busy in that timeslot',
         statusCode: 7000,
       })
     } else {
+      const pricing = await calculatePrice(
+        bookingDetails.roomSize,
+        bookingDetails.slots.length
+      )
+      if (bookingDetails.paymentMethod === paymentMethods.POINTS) {
+        const e = await deductPoints(pricing.points, req.body.Account.id)
+        console.log(e)
+        if (e.error !== 'success') {
+          res.json({ error: e.error, statusCode: 7000 })
+        }
+      } else {
+        const p = await pendingModel.findOne({
+          where: { pendingType: 'Bookings' },
+        })
+
+        const oldbookings = await BookingModel.findAll({
+          where: {
+            accountId: req.body.Account.id,
+            status: bookingStatus.PENDING,
+          },
+        })
+        if (oldbookings.length === p.value) {
+          res.json({
+            error: 'You have exceeded the max number of pending orders',
+            statusCode: 7000,
+          })
+        }
+      }
+
+      const j = await expiryModel.findOne()
+      var expiryDate = new Date()
+      expiryDate.setDate(expiryDate.getDate() + j.duration)
+
+      // bookingDetails.expiryDate=expiryDate
+      // bookingDetails.pricePoints= pricing.points
+      // bookingDetails.priceCash = pricing.cash
+      //uncomment this three lines when the model is fixed
+
       const booked = await BookingModel.create(bookingDetails)
       for (let i = 0; i < bookingDetails.slots.length; i++) {
         let sl = bookingDetails.slots[i]
-        console.log(
-          bookingDetails.roomNumber,
-          bookingDetails.date,
-          bookingDetails.status,
-          sl,
-          booked.id
-        )
+
         await CalendarModel.create({
           roomNumber: bookingDetails.roomNumber,
           date: bookingDetails.date,
@@ -240,7 +287,6 @@ const tryBooking = async (req, res) => {
       if (notAvSl.length !== 0) noAvailableSlots = true
     }
 
-    console.log(noAvailableSlots)
     if (noAvailableSlots) {
       res.json({
         error: 'one room or more is/are busy in that timeslot',
@@ -321,6 +367,7 @@ const viewAllBookings = async (req, res) => {
 
     return res.json({ booking, code: errorCodes.success })
   } catch (exception) {
+    console.log(exception.message)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
@@ -344,6 +391,36 @@ const viewDateBookings = async (req, res) => {
   }
 }
 
+const adminConfirmBooking = async (req, res) => {
+  try {
+    const booked = await BookingModel.findOne({
+      where: { id: req.body.bookingId },
+    })
+
+    if (booked) {
+      if (booked.status === bookingStatus.CANCELED) {
+        return res.json({ statusCode: 7000, error: 'booking was canceled' })
+      }
+      if (booked.status === bookingStatus.CONFIRMED) {
+        return res.json({
+          statusCode: 7000,
+          error: 'booking is already confirmed',
+        })
+      }
+
+      await BookingModel.update(
+        { status: bookingStatus.CONFIRMED },
+        { where: { id: req.body.bookingId } }
+      )
+      return res.json({ code: errorCodes.success })
+    } else {
+      return res.json({ code: errorCodes.unknown, error: 'Booking not found' })
+    }
+  } catch (e) {
+    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
+
 module.exports = {
   viewCalendar,
   cancelBooking,
@@ -354,4 +431,5 @@ module.exports = {
   bookRoom,
   editBooking,
   tryBooking,
+  adminConfirmBooking,
 }
