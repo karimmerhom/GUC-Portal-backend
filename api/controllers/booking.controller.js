@@ -7,6 +7,8 @@ const RoomModel = require('../../models/room.model')
 const pricingModel = require('../../models/pricing.model')
 const pendingModel = require('../../models/pending.model')
 const expiryModel = require('../../models/expiry.model')
+const extremePackageModel = require('../../models/extremePackage.model')
+const bookingExtreme = require('../../models/bookingExtreme.model')
 
 const validator = require('../helpers/validations/bookingValidations')
 const errorCodes = require('../constants/errorCodes')
@@ -23,6 +25,7 @@ const {
   calStatus,
   bookingStatus,
   paymentMethods,
+  packageType,
 } = require('../constants/TBH.enum')
 const {} = require('../helpers/helpers')
 const { object } = require('joi')
@@ -97,9 +100,12 @@ const viewCalendar = async (req, res) => {
       }
     }
 
-    return res.json({ calendar, code: errorCodes.success })
+    return res.json({ calendar, statusCode: errorCodes.success })
   } catch (exception) {
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 const editBooking = async (req, res) => {
@@ -150,13 +156,19 @@ const editBooking = async (req, res) => {
 
         booked.destroy()
         bookRoom(req, res)
-        return res.json({ code: errorCodes.success })
+        return res.json({ statusCode: errorCodes.success })
       }
     } else {
-      return res.json({ code: errorCodes.unknown, error: 'Booking not found' })
+      return res.json({
+        statusCode: errorCodes.unknown,
+        error: 'Booking not found',
+      })
     }
   } catch (e) {
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 const bookRoom = async (req, res) => {
@@ -250,7 +262,10 @@ const bookRoom = async (req, res) => {
       return res.json({ statusCode: 0 })
     }
   } catch (e) {
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 const tryBooking = async (req, res) => {
@@ -297,7 +312,10 @@ const tryBooking = async (req, res) => {
       return res.json({ statusCode: 0, pricing, bookingDetails })
     }
   } catch (e) {
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 const cancelBooking = async (req, res) => {
@@ -327,12 +345,15 @@ const cancelBooking = async (req, res) => {
       })
       console.log('YYYY')
 
-      return res.json({ code: errorCodes.success })
+      return res.json({ statusCode: errorCodes.success })
     } else {
       return res.json({ statusCode: 7000, error: 'booking not found' })
     }
   } catch (exception) {
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 
@@ -351,10 +372,13 @@ const viewMyBookings = async (req, res) => {
     if (booking === []) {
       return res.json({ statusCode: 7000, error: 'No bookings not found' })
     } else {
-      return res.json({ booking, code: errorCodes.success })
+      return res.json({ booking, statusCode: errorCodes.success })
     }
   } catch (exception) {
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 
@@ -362,10 +386,13 @@ const viewAllBookings = async (req, res) => {
   try {
     const booking = await BookingModel.findAll()
 
-    return res.json({ booking, code: errorCodes.success })
+    return res.json({ booking, statusCode: errorCodes.success })
   } catch (exception) {
     console.log(exception.message)
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 
@@ -381,10 +408,13 @@ const viewDateBookings = async (req, res) => {
     if (booking === []) {
       return res.json({ statusCode: 7000, error: 'No bookings not found' })
     } else {
-      return res.json({ booking, code: errorCodes.success })
+      return res.json({ booking, statusCode: errorCodes.success })
     }
   } catch (exception) {
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 
@@ -409,12 +439,104 @@ const adminConfirmBooking = async (req, res) => {
         { status: bookingStatus.CONFIRMED },
         { where: { id: req.body.bookingId } }
       )
-      return res.json({ code: errorCodes.success })
+      return res.json({ statusCode: errorCodes.success })
     } else {
-      return res.json({ code: errorCodes.unknown, error: 'Booking not found' })
+      return res.json({
+        statusCode: errorCodes.unknown,
+        error: 'Booking not found',
+      })
     }
   } catch (e) {
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
+  }
+}
+const bookExtremePackage = async (req, res) => {
+  const packageName = req.body.packageName
+  const startDate = new Date(req.body.startDate)
+  const roomNumber = req.body.roomNumber
+  const { roomId, roomType, roomSize, roomLayout } = req.body
+
+  var date = new Date()
+  const pack = await extremePackageModel.findOne({
+    where: { packageName: 'packageName' },
+  })
+
+  let slots = [
+    'NINE_TEN',
+    'TEN_ELEVEN',
+    'ELEVEN_TWELVE',
+    'TWELVE_THIRTEEN',
+    'THIRTEEN_FOURTEEN',
+    'FOURTEEN_FIFTEEN',
+    'FIFTEEN_SIXTEEN',
+    'SIXTEEN_SEVENTEEN',
+    'SEVENTEEN_EIGHTEEN',
+    'EIGHTEEN_NINETEEN',
+    'NINETEEN_TWENTY',
+    'TWENTY_TWENTYONE',
+  ]
+  const startSlot = pack.startPeriod - 9
+  const endSlot = pack.endPeriod - 9
+
+  var d = 0
+  const p = await addPoints(pack.id, packageType.EXTREME, req.body.Account.id)
+  if (p.statusCode === 0) {
+    purchaseId = p.purchaseId
+  } else {
+    return res.json({
+      error: 'This is not the users booking',
+      statusCode: 7000,
+    })
+  }
+
+  var endDate = new Date()
+
+  var d = 0
+  for (let i = 0; i < pack.daysPerWeek; i++) {
+    d = d + i
+    date.setDate(startDate.getDate() + d)
+    if (date.getDay() === 5) {
+      console.log('this is a friday')
+      d = d + 1
+      date.setDate(startDate.getDate() + d)
+    }
+  }
+  bookingdetails = {
+    startDate: startDate,
+    endDate: endDate,
+    roomType: roomType,
+    roomSize: roomSize,
+    roomLayout: roomLayout,
+    duration: pack.daysPerWeek,
+    status: bookingStatus.PENDING,
+    purchasedId: p.id,
+    accountId: req.body.Account.id,
+    roomId: roomId,
+  }
+
+  booked = await bookingExtreme.create(bookingDetails)
+
+  for (let i = 0; i < pack.daysPerWeek; i++) {
+    d = d + i
+    date.setDate(startDate.getDate() + d)
+    if (date.getDay() === 5) {
+      console.log('this is a friday')
+      d = d + 1
+      date.setDate(startDate.getDate() + d)
+    }
+
+    for (let i = startSlot; i < endSlot; i++) {
+      await CalendarModel.create({
+        roomNumber: roomNumber,
+        date: date,
+        status: bookingStatus.PENDING,
+        slot: slots[i],
+        bookingId: booked.id,
+      })
+    }
   }
 }
 
