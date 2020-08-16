@@ -29,6 +29,7 @@ const validateCreate = (req, res, next) => {
       pricePerPerson: Joi.number().required(),
       maxNumberOfAttendees: Joi.number().required(),
       minNumberOfAttendees: Joi.number().required(),
+      State: Joi.string(),
     }),
     Account: Joi.object({
       id: Joi.number().required(),
@@ -146,6 +147,26 @@ const validateDeleteCourse = (req, res, next) => {
   }
   return next()
 }
+const validateStateChange = (req, res, next) => {
+  const schema = {
+    Course: Joi.object({
+      id: Joi.number(),
+      State: Joi.string().valid('Approved', 'approved').required(),
+    }),
+
+    Account: Joi.object({
+      id: Joi.number(),
+    }),
+  }
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
 
 module.exports = {
   validateCreate,
@@ -154,4 +175,5 @@ module.exports = {
   validateEditCourse,
   validateDeleteCourse,
   validateViewAllCoursesAdmin,
+  validateStateChange,
 }

@@ -5,6 +5,8 @@ const CoursesModel = require('../../../models/courses.model')
 const errorCodes = require('../../constants/errorCodes')
 const FormModel = require('../../../models/form.model')
 const validator = require('../../helpers/validations/coursesValidations')
+const Courses = require('../../../models/courses.model')
+const coursesValidations = require('../../helpers/validations/coursesValidations')
 
 const createCourse = async (req, res) => {
   try {
@@ -33,12 +35,14 @@ const createCourse = async (req, res) => {
       maxNumberOfAttendees: Course.maxNumberOfAttendees,
       minNumberOfAttendees: Course.minNumberOfAttendees,
       accountId: Account.id,
+      State: Course.State,
     }
     CoursesModel.create(newCourse)
     return res.json({
       statusCode: errorCodes.success,
     })
   } catch (exception) {
+    console.log(exception)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -188,6 +192,40 @@ const deleteCourse = async (req, res) => {
     })
   }
 }
+const stateChange = async (req, res) => {
+  try {
+    const { Course, Account } = req.body
+    const courseID = Course.id
+    const accountId = Account.id
+
+
+    const courseid = await CoursesModel.findOne({
+      where: {
+        id: courseID,
+        accountId,
+      },
+    })
+    if (!courseid) {
+      return res.json({
+        msg: 'course doesnt exist for this account',
+        statusCode: errorCodes.cousrseDoesntExist,
+      })
+    }
+    CoursesModel.update(Course, {
+      where: { id: courseID, accountId},
+    })
+    return res.json({
+      msg: 'state is updated',
+      statusCode: errorCodes.success,
+    })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({
+      error: 'Something went wrong',
+      statusCode: errorCodes.unknown,
+    })
+  }
+}
 
 module.exports = {
   createCourse,
@@ -196,4 +234,5 @@ module.exports = {
   viewAllCoursesAdmin,
   editCourse,
   deleteCourse,
+  stateChange,
 }
