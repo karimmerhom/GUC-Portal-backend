@@ -222,6 +222,23 @@ const validateSendGift = (req, res, next) => {
   return next()
 }
 
+const validateEditStatus = (req, res, next) => {
+  const schema = Joi.object({
+    Account: Joi.object({ id: Joi.string().required() }).required(),
+    purchasedPackageId: Joi.string().required(),
+    status: Joi.string().valid([packageStatus.EXPIRED, packageStatus.CANCELED, packageStatus.PENDING , packageStatus.ACTIVE]).required(),
+  })
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: 7001,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
+
+
 module.exports = {
   validateRedeemGift,
   validateSendGift,
@@ -234,4 +251,5 @@ module.exports = {
   validateViewMyPackages,
   validateSendGift,
   validateRedeemGift,
+  validateEditStatus
 }

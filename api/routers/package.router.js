@@ -22,6 +22,7 @@ const {
   sendGift,
   viewAllExtremePackages,
   viewAllRegularPackages,
+  editStatus,
 } = packageController
 
 const {
@@ -34,6 +35,7 @@ const {
   validateViewMyPackages,
   validateRedeemGift,
   validateSendGift,
+  validateEditStatus
 } = packageValidations
 
 router.post("/createPackage", validateCreatePackage, verifyAdmin, createPackage)
@@ -101,6 +103,14 @@ router.post(
   verifyUser,
   verifiedPhone,
   sendGift
+)
+
+router.post(
+  '/editStatus',
+  validateEditStatus,
+  verifyToken,
+  verifyAdmin,
+  editStatus
 )
 
 module.exports = router
