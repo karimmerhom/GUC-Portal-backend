@@ -11,8 +11,8 @@ const {
 const UserModel = require('./account.model')
 const { Model } = Sequelize
 
-class Purchase extends Model {}
-Purchase.init(
+class PurchasePackage extends Model {}
+PurchasePackage.init(
   {
     packageId: {
       type: Sequelize.STRING,
@@ -41,6 +41,6 @@ Purchase.init(
     timestamps: false,
   }
 )
-Purchase.belongsTo(UserModel, { foreignKey: 'accountId' })
+PurchasePackage.belongsTo(UserModel, { foreignKey: 'accountId' })
 
-module.exports = Purchase
+module.exports = PurchasePackage

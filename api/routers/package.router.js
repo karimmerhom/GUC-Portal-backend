@@ -1,14 +1,14 @@
-const express = require('express')
+const express = require("express")
 
 const router = express.Router()
 
-const packageController = require('../controllers/package.controller')
+const packageController = require("../controllers/package.controller")
 
-const { verifiedPhone } = require('../../config/verifiedAuthentication')
-const { verifyToken } = require('../../config/AuthenticationMiddleWare')
-const { verifyAdmin } = require('../../config/AdminAuthentication')
-const { verifyUser } = require('../../config/authUser')
-const packageValidations = require('../helpers/validations/packageValidations')
+const { verifiedPhone } = require("../../config/verifiedAuthentication")
+const { verifyToken } = require("../../config/AuthenticationMiddleWare")
+const { verifyAdmin } = require("../../config/AdminAuthentication")
+const { verifyUser } = require("../../config/authUser")
+const packageValidations = require("../helpers/validations/packageValidations")
 
 const {
   createPackage,
@@ -36,26 +36,26 @@ const {
   validateSendGift,
 } = packageValidations
 
-router.post('/createPackage', validateCreatePackage, verifyAdmin, createPackage)
-router.post('/editPackage', validateEditPackage, verifyAdmin, editPackage)
+router.post("/createPackage", validateCreatePackage, verifyAdmin, createPackage)
+router.post("/editPackage", validateEditPackage, verifyAdmin, editPackage)
 router.post(
-  '/viewPackage',
+  "/viewPackage",
   validateViewPackage,
   verifyToken,
   verifyUser,
   viewPackage
 )
-router.post('/deletePackage', validateViewPackage, verifyAdmin, deletePackage)
+router.post("/deletePackage", validateViewPackage, verifyAdmin, deletePackage)
 
 router.post(
-  '/viewAllExtremePackages',
+  "/viewAllExtremePackages",
   validateViewAllPackages,
   verifyToken,
   verifyUser,
   viewAllExtremePackages
 )
 router.post(
-  '/viewAllRegularPackages',
+  "/viewAllRegularPackages",
   validateViewAllPackages,
   verifyToken,
   verifyUser,
@@ -63,7 +63,7 @@ router.post(
 )
 
 router.post(
-  '/purchasePackage',
+  "/purchasePackage",
   validatePurchasePackage,
   verifyToken,
   verifyUser,
@@ -71,7 +71,7 @@ router.post(
   purchasePackage
 )
 router.post(
-  '/cancelPackage',
+  "/cancelPackage",
   validateCancelPackage,
   verifyToken,
   verifyUser,
@@ -79,7 +79,7 @@ router.post(
   cancelPackage
 )
 router.post(
-  '/viewMyPackages',
+  "/viewMyPackages",
   validateViewMyPackages,
   verifyToken,
   verifyUser,
@@ -87,7 +87,7 @@ router.post(
   viewMyPackages
 )
 router.post(
-  '/redeemGift',
+  "/redeemGift",
   validateRedeemGift,
   verifyToken,
   verifyUser,
@@ -95,7 +95,7 @@ router.post(
   redeemGift
 )
 router.post(
-  '/sendGift',
+  "/sendGift",
   validateSendGift,
   verifyToken,
   verifyUser,
