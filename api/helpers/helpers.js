@@ -1,8 +1,27 @@
+const cron = require('cron')
 const purchasedPackage = require('../../models/purchasedPackages.model')
 const extremePackage = require('../../models/extremePackage.model')
 const regularPackage = require('../../models/regularPackage.model')
 const errorCodes = require('../constants/errorCodes')
 const { packageStatus, packageType } = require('../constants/TBH.enum')
+
+Date.prototype.addDays = function (days) {
+  var date = new Date(this.valueOf())
+  date.setDate(date.getDate() + days)
+  return date
+}
+
+Date.prototype.addHours = function (hours) {
+  var date = new Date(this.valueOf())
+  date.setHours(date.getHours() + hours)
+  return date
+}
+
+Date.prototype.addMins = function (mins) {
+  var date = new Date(this.valueOf())
+  date.setMinutes(date.getMinutes() + mins)
+  return date
+}
 
 const generateOTP = async () => {
   let text = ''
@@ -59,7 +78,7 @@ const deductPoints = async (accountId, points) => {
 
     points -= availablePoints
   }
-  return { code: errorCodes.success, error: 'success' }
+  return { statusCode: errorCodes.success, error: 'success' }
 }
 
 const refund = async (accountId, points) => {
@@ -80,7 +99,7 @@ const refund = async (accountId, points) => {
   }
 
   const gift = await regularPackage.findOne({
-    where: { packageName: 'gift1111' },
+    where: { packageName: 'gift' },
   })
 
   giftId = gift.id
@@ -113,7 +132,7 @@ const refund = async (accountId, points) => {
     // package.usedPoints = parseInt(package.totalPoints)
     points -= availablePoints
   }
-  return { code: errorCodes.success, error: 'success' }
+  return { statusCode: errorCodes.success, error: 'success' }
 }
 
 const addPoints = async (accountId, type, packageId, points = 0) => {
@@ -122,12 +141,13 @@ const addPoints = async (accountId, type, packageId, points = 0) => {
     body.packageType = type
     body.accountId = accountId
     body.packageId = packageId
+    
     if (body.packageType === packageType.REGULAR) {
       const packageBody = await regularPackage.findByPk(packageId)
       if (!packageBody) {
         return {
-          code: errorCodes.invalidPackage,
-          error: 'package does not exis',
+          statusCode: errorCodes.invalidPackage,
+          error: 'package does not exist',
         }
       }
 
@@ -139,13 +159,20 @@ const addPoints = async (accountId, type, packageId, points = 0) => {
         body.totalPoints = points
       }
       body.usedPoints = 0
-      body.purchaseDate = new Date()
+      body.purchaseDate = new Date().addHours(2)
+  
 
       body.expiryDate = body.purchaseDate.addDays(packageBody.expiryDuration)
-
-      await purchasedPackage.create(body)
+      const package = await purchasedPackage.create(body)
+      packageId = package.id
+      console.log((new Date()).addMins(1));
+      const scheduleJob = cron.job(body.expiryDate, async () => {
+        await expirePackage(packageId)
+      })
+      scheduleJob.start()
       return {
-        code: errorCodes.success,
+        packageId : packageId,
+        statusCode: errorCodes.success,
         error: 'success',
       }
     }
@@ -153,27 +180,41 @@ const addPoints = async (accountId, type, packageId, points = 0) => {
       const packageBody = await extremePackage.findByPk(packageId)
       if (!packageBody) {
         return {
-          code: errorCodes.invalidPackage,
+          statusCode: errorCodes.invalidPackage,
           error: 'package does not exis',
         }
       }
-      body.purchaseDate = new Date()
+      body.purchaseDate = new Date().addHours(2)
       body.expiryDate = body.purchaseDate.addDays(packageBody.expiryDuration)
       body.status = packageStatus.PENDING
-      await purchasedPackage.create(body)
+      const package = await purchasedPackage.create(body)
+      packageId = package.id
+      const scheduleJob = cron.job(body.expiryDate, async () => {
+        await expirePackage(packageId)
+      })
+      scheduleJob.start()
       return {
-        code: errorCodes.success,
+        packageId : packageId,
+        statusCode: errorCodes.success,
         error: 'success',
       }
     }
 
     return {
-      code: errorCodes.unknown,
+      statusCode: errorCodes.unknown,
       error: 'Package Type not found',
     }
   } catch (exception) {
-    return { code: errorCodes.unknown, error: 'failed to add points' }
+    console.log(exception);
+    return { statusCode: errorCodes.unknown, error: 'failed to add points' }
   }
+}
+
+const expirePackage = async (packageId) => {
+   
+    const body = {}
+    body.status = packageStatus.EXPIRED
+    await purchasedPackage.update(body, { where: { id: packageId } })
 }
 
 module.exports = {
