@@ -13,7 +13,7 @@ const app = express()
 const account = require('./api/routers/account.router')
 const package = require('./api/routers/package.router')
 const giftPackageAccess = require('./api/routers/giftPackageAccess.router')
-const bookingExpiration = require('./api/routers/bookingExpiration.router')
+const packageExpiration = require('./api/routers/packageExpiration.router')
 const courses = require('./api/routers/courses.router')
 const form = require('./api/routers/form.router')
 const booking = require('./api/routers/booking.router')
@@ -77,7 +77,7 @@ app.use('/tbhapp/expiry', expiry)
 app.use('/tbhapp/package', package)
 
 app.use('/tbhapp/giftPackageAccess', giftPackageAccess)
-app.use('/tbhapp/bookingExpiration', bookingExpiration)
+app.use('/tbhapp/packageExpiration', packageExpiration)
 
 app.use('/tbhapp/explore', explore)
 
