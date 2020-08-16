@@ -52,6 +52,7 @@ const validateViewCourse = (req, res, next) => {
     Course: Joi.object({
       id: Joi.number().required(),
     }),
+    accountId: Joi.number().required(),
   }
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
@@ -65,6 +66,23 @@ const validateViewCourse = (req, res, next) => {
 }
 
 const validateViewAllCourses = (req, res, next) => {
+  const schema = {
+    Account: Joi.object({
+      id: Joi.number().required(),
+    }),
+  }
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: isValid.error.details[0].message,
+    })
+  }
+
+  return next()
+}
+
+const validateViewAllCoursesAdmin = (req, res, next) => {
   const schema = {
     Account: Joi.object({
       id: Joi.number().required(),
@@ -135,4 +153,5 @@ module.exports = {
   validateViewAllCourses,
   validateEditCourse,
   validateDeleteCourse,
+  validateViewAllCoursesAdmin,
 }

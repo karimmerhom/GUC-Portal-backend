@@ -7,6 +7,7 @@ const {
   validateViewAllCourses,
   validateEditCourse,
   validateDeleteCourse,
+  validateViewAllCoursesAdmin,
 } = require('../helpers/validations/coursesValidations')
 const coursesController = require('../controllers/Organize/Courses.controller')
 
@@ -26,46 +27,55 @@ const { verifiedPhone } = require('../../config/verifiedAuthentication')
 
 router.post(
   '/createCourse',
+  validateCreate,
   verifyToken,
   verifyUser,
   verifiedPhone,
-  validateCreate,
   createCourse
 )
 router.post(
   '/viewCourse',
+  validateViewCourse,
   verifyToken,
   verifyUser,
   verifiedPhone,
-  validateViewCourse,
+
   viewCourse
 )
 router.post(
   '/viewAllCourses',
+  validateViewAllCourses,
   verifyToken,
   verifyUser,
   verifiedPhone,
-  validateViewAllCourses,
   viewAllCourses
 )
 router.post(
   '/editCourse',
+  validateEditCourse,
   verifyToken,
   verifyUser,
   verifiedPhone,
-  validateEditCourse,
+
   editCourse
 )
 router.post(
   '/deleteCourse',
+  validateDeleteCourse,
   verifyToken,
   verifyUser,
   verifiedPhone,
-  validateDeleteCourse,
+
   deleteCourse
 )
 
-router.post('/viewAllCoursesAdmin', verifyAdmin, viewAllCoursesAdmin)
+router.post(
+  '/viewAllCoursesAdmin',
+  validateViewAllCoursesAdmin,
+  verifyAdmin,
+
+  viewAllCoursesAdmin
+)
 
 // router.post('/verify', verifyToken, verify)
 

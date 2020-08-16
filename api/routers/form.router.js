@@ -7,6 +7,7 @@ const {
   validateCreateForm,
   validateEditForm,
   validateViewForm,
+  validateViewAllFormsAdmin,
 } = require('../helpers/validations/formValidations')
 
 const { createForm, editForm, viewForm, viewAllFormsAdmin } = formController
@@ -18,29 +19,36 @@ const { verifiedPhone } = require('../../config/verifiedAuthentication')
 
 router.post(
   '/createForm',
+  validateCreateForm,
   verifyToken,
   verifyUser,
   verifiedPhone,
-  validateCreateForm,
+
   createForm
 )
 router.post(
   '/editForm',
+  validateEditForm,
   verifyToken,
   verifyUser,
   verifiedPhone,
-  validateEditForm,
+
   editForm
 )
 router.post(
   '/viewForm',
+  validateViewForm,
   verifyToken,
   verifyUser,
   verifiedPhone,
-  validateViewForm,
   viewForm
 )
-router.post('/viewAllFormsAdmin', verifyAdmin, viewAllFormsAdmin)
+router.post(
+  '/viewAllFormsAdmin',
+  validateViewAllFormsAdmin,
+  verifyAdmin,
+  viewAllFormsAdmin
+)
 
 //router.post('/verify', verifyToken, verify)
 

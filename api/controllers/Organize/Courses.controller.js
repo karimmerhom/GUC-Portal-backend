@@ -50,11 +50,12 @@ const viewCourse = async (req, res) => {
   try {
     const { Account, Course } = req.body
     const { id } = Course
-    const accountId = Account.id
+    const accountId = req.body.accountId
+    const type = req.data.type
+
     const checkCourse = await CoursesModel.findOne({
       where: {
         id,
-        accountId,
       },
     })
     if (!checkCourse) {
@@ -63,6 +64,13 @@ const viewCourse = async (req, res) => {
         statusCode: errorCodes.cousrseDoesntExist,
       })
     }
+    if (type !== 'admin' && accountId !== Account.id) {
+      return res.json({
+        error: 'Unauthorized',
+        statusCode: errorCodes.unauthorized,
+      })
+    }
+
     return res.json({ Course: checkCourse, statusCode: errorCodes.success })
   } catch (exception) {
     return res.json({
@@ -74,7 +82,10 @@ const viewCourse = async (req, res) => {
 
 const viewAllCourses = async (req, res) => {
   try {
-    const accountId = req.body.Account.id
+    const { Account, Course } = req.body
+
+    const accountId = req.body.accountId
+    const type = req.data.type
 
     const checkCourse = await CoursesModel.findOne({
       where: {
@@ -87,8 +98,12 @@ const viewAllCourses = async (req, res) => {
         statusCode: errorCodes.validation,
       })
     }
-
-    const result = await CoursesModel.findAll()
+    if (type !== 'admin' && accountId !== Account.id) {
+      return res.json({
+        error: 'Unauthorized',
+        statusCode: errorCodes.unauthorized,
+      })
+    }
 
     return res.json({ AllCourses: result, statusCode: errorCodes.success })
   } catch (exception) {
@@ -178,7 +193,7 @@ module.exports = {
   createCourse,
   viewCourse,
   viewAllCourses,
-viewAllCoursesAdmin,
+  viewAllCoursesAdmin,
   editCourse,
   deleteCourse,
 }

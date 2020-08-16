@@ -353,6 +353,7 @@ const login = async (req, res) => {
       emailVerified: account.emailVerified,
     })
   } catch (exception) {
+    console.log(exception)
     return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }

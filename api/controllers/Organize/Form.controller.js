@@ -72,11 +72,13 @@ const editForm = async (req, res) => {
 
 const viewForm = async (req, res) => {
   try {
-    const formId = req.body.Form.id
+    const accountId = req.body.accountId
+    const type = req.data.type
+    const { Account } = req.body
 
     const checkForm = await FormModel.findOne({
       where: {
-        id: formId,
+        accountId,
       },
     })
     if (!checkForm) {
@@ -85,6 +87,13 @@ const viewForm = async (req, res) => {
         statusCode: errorCodes.formNotFound,
       })
     }
+    if (type !== 'admin' && accountId !== Account.id) {
+      return res.json({
+        error: 'Unauthorized',
+        statusCode: errorCodes.unauthorized,
+      })
+    }
+
     return res.json({ Form: checkForm, statusCode: errorCodes.success })
   } catch (exception) {
     console.log(exception)
@@ -97,11 +106,11 @@ const viewForm = async (req, res) => {
 const viewAllFormsAdmin = async (req, res) => {
   try {
     const result = await FormModel.findAll()
-    return res.json({ Form: result, statusCode: errorCodes.success })
+
+    return res.json({ AllForms: result, statusCode: errorCodes.success })
   } catch (exception) {
-    console.log(exception)
     return res.json({
-      error: 'Something went wrong',
+      error: 'no courses found',
       statusCode: errorCodes.unknown,
     })
   }
