@@ -80,7 +80,7 @@ const refund = async (accountId, points) => {
   }
 
   const gift = await regularPackage.findOne({
-    where: { packageName: 'gift1111' },
+    where: { packageName: 'gift' },
   })
 
   giftId = gift.id

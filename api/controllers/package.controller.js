@@ -305,7 +305,7 @@ const sendGift = async (req, res) => {
     })
     if (reciever) {
       const gift = await regularPackage.findOne({
-        where: { packageName: 'gift1111' },
+        where: { packageName: 'gift' },
       })
 
       giftId = gift.id
@@ -356,7 +356,7 @@ const redeemGift = async (req, res) => {
   code = req.body.otpCode
   accountId = req.body.Account.id
   const gift = await regularPackage.findOne({
-    where: { packageName: 'gift1111' },
+    where: { packageName: 'gift' },
   })
   otpCode = await giftOtp.findOne({ where: { otpCode: code } })
   if (!otpCode) {
@@ -364,7 +364,7 @@ const redeemGift = async (req, res) => {
   }
 
   giftOtp.update({ status: otpStatus.USED }, { where: { otpCode: code } })
-
+  
   giftId = gift.id
 
   const addMessage = await addPoints(
@@ -381,6 +381,23 @@ const redeemGift = async (req, res) => {
   })
 }
 
+const editStatus = async (req, res) => {
+  try{
+  const body = req.body
+  const newStatus = req.body.status
+  const bodyId = req.body.purchasedPackageId
+  const package = await purchasedPackage.findByPk(bodyId)
+  body.status = newStatus
+  await purchasedPackage.update(body, { where: { id: bodyId } })
+  return res.json({
+    statusCode: errorCodes.success,
+  })
+  }
+  catch (exception) {
+    console.log(exception)
+    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
+  }
+}
 module.exports = {
   createPackage,
   purchasePackage,
@@ -394,4 +411,5 @@ module.exports = {
   sendGift,
   viewAllExtremePackages,
   viewAllRegularPackages,
+  editStatus,
 }
