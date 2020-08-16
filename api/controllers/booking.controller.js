@@ -24,21 +24,23 @@ const Pricing = require('../../models/pricing.model')
 
 const calculatePrice = async (type, slots) => {
   try {
-    var pricing
+    var pricing = {}
     pricing.points = 0
     pricing.cash = 0
+    // console.log(type)
+    // console.log(slots)
 
     const pricingfound = await pricingModel.findOne({
       where: { pricingType: 'flat_rate', roomType: type },
     })
-
     pricing.cash = pricingfound.value * slots
+    console.log(pricing.cash)
 
     const pricingfound1 = await pricingModel.findOne({
       where: { pricingType: 'points', roomType: type },
     })
-
     pricing.points = pricingfound1.value * slots
+    console.log(pricing.points)
 
     return pricing
   } catch (exception) {
@@ -245,7 +247,7 @@ const tryBooking = async (req, res) => {
         statusCode: 7000,
       })
     } else {
-      const pricing = calculatePrice(
+      const pricing = await calculatePrice(
         bookingDetails.roomSize,
         bookingDetails.slots.length
       )
