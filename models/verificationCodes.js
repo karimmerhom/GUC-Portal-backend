@@ -2,19 +2,32 @@ const Sequelize = require('sequelize')
 
 const sequelize = require('../config/DBConfig')
 
+const userModel = require('./account.model')
+
 const { Model } = Sequelize
 
-class verificationCode extends Model {}
-verificationCode.init(
+class verifcationCodes extends Model {}
+verifcationCodes.init(
   {
-    code: {
-      type: Sequelize.STRING
-    }
+    emailCode: {
+      type: Sequelize.STRING,
+    },
+    smsCode: {
+      type: Sequelize.STRING,
+    },
+    emailDate: {
+      type: Sequelize.DATE,
+    },
+    smsDate: {
+      type: Sequelize.DATE,
+    },
   },
   {
     sequelize,
-    timestamps: false
+    timestamps: false,
   }
 )
 
-module.exports = verificationCode
+verifcationCodes.belongsTo(userModel, { foreignKey: 'accountId' })
+
+module.exports = verifcationCodes
