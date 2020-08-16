@@ -41,7 +41,7 @@ const createPackage = async (req, res) => {
       if (!found) {
         await regularPackage.create(body)
         return res.json({
-          code: errorCodes.success,
+          statusCode: errorCodes.success,
         })
       }
     }
@@ -55,16 +55,16 @@ const createPackage = async (req, res) => {
       if (!found) {
         await extremePackage.create(body)
         return res.json({
-          code: errorCodes.success,
+          statusCode: errorCodes.success,
         })
       }
     }
     return res.json({
-      code: errorCodes.nameExists,
+      statusCode: errorCodes.nameExists,
       error: 'name already exists',
     })
   } catch (exception) {
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 
@@ -83,7 +83,7 @@ const editPackage = async (req, res) => {
       })
 
       return res.json({
-        code: errorCodes.success,
+        stausCode: errorCodes.success,
       })
     }
     if (Type === packageType.EXTREME) {
@@ -95,12 +95,12 @@ const editPackage = async (req, res) => {
       })
 
       return res.json({
-        code: errorCodes.success,
+        statusCode: errorCodes.success,
       })
     }
-    return res.json({ code: errorCodes.invalidId, error: 'id does not exist' })
+    return res.json({ statusCode: errorCodes.invalidId, error: 'id does not exist' })
   } catch (exception) {
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 
@@ -113,14 +113,14 @@ const purchasePackage = async (req, res) => {
     return res.json(r)
   } catch (exception) {
     console.log(exception)
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 
 const cancelPackage = async (req, res) => {
   try {
     if (!purchasedPackage.findOne({ where: { id: req.body.Account.id } })) {
-      return res.json({ code: errorCodes.unknown, error: 'wrong account' })
+      return res.json({ statusCode: errorCodes.unknown, error: 'wrong account' })
     }
 
     const body = req.body
@@ -128,24 +128,24 @@ const cancelPackage = async (req, res) => {
     const package = await purchasedPackage.findByPk(bodyId)
     if (package.status === packageStatus.CANCELED) {
       return res.json({
-        code: errorCodes.packageCanceled,
+        statusCode: errorCodes.packageCanceled,
         error: 'package already canceled',
       })
     }
     if (parseInt(package.accountId) !== parseInt(req.body.Account.id)) {
       return res.json({
-        code: errorCodes.unknown,
+        statusCode: errorCodes.unknown,
         error: 'package does not belong to user',
       })
     }
     body.status = packageStatus.CANCELED
     await purchasedPackage.update(body, { where: { id: bodyId } })
     return res.json({
-      code: errorCodes.success,
+      statusCode: errorCodes.success,
     })
   } catch (exception) {
     console.log(exception)
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 
@@ -163,7 +163,7 @@ const viewPackage = async (req, res) => {
         },
       })
       if (packageFound)
-        return res.json({ package: packageFound, code: errorCodes.success })
+        return res.json({ package: packageFound, statusCode: errorCodes.success })
     }
     if (Type === packageType.EXTREME) {
       const packageFound = await extremePackage.findOne({
@@ -172,32 +172,32 @@ const viewPackage = async (req, res) => {
         },
       })
       if (packageFound)
-        return res.json({ package: packageFound, code: errorCodes.success })
+        return res.json({ package: packageFound, statusCode: errorCodes.success })
     }
     return res.json({
       statusCode: errorCodes.invalidPackage,
       error: 'package not found',
     })
   } catch (exception) {
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 
 const viewAllRegularPackages = async (req, res) => {
   try {
     const packagesFound1 = await regularPackage.findAll({})
-    return res.json({ package: packagesFound1, code: errorCodes.success })
+    return res.json({ package: packagesFound1, statusCode: errorCodes.success })
   } catch (exception) {
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 
 const viewAllExtremePackages = async (req, res) => {
   try {
     const packagesFound2 = await extremePackage.findAll({})
-    return res.json({ package: packagesFound2, code: errorCodes.success })
+    return res.json({ package: packagesFound2, statusCode: errorCodes.success })
   } catch (exception) {
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 
@@ -222,11 +222,11 @@ const viewMyPackages = async (req, res) => {
     }
     return res.json({
       purchasedPackages: { purchases, total: total },
-      code: 7000,
+      statusCode: 7000,
     })
   } catch (exception) {
     console.log(exception)
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 
@@ -248,7 +248,7 @@ const deletePackage = async (req, res) => {
         packageFound.destroy()
         if (packageFound)
           return res.json({
-            code: errorCodes.success,
+            statusCode: errorCodes.success,
           })
       }
     }
@@ -262,7 +262,7 @@ const deletePackage = async (req, res) => {
         packageFound.destroy()
 
         return res.json({
-          code: errorCodes.success,
+          statusCode: errorCodes.success,
         })
       }
     }
@@ -271,7 +271,7 @@ const deletePackage = async (req, res) => {
       error: 'package not found',
     })
   } catch (exception) {
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 
@@ -296,7 +296,7 @@ const sendGift = async (req, res) => {
     }
     if (total < req.points) {
       return {
-        code: errorCodes.insufficientPoints,
+        statusCode: errorCodes.insufficientPoints,
         error: 'insufficient points',
       }
     }
@@ -316,7 +316,7 @@ const sendGift = async (req, res) => {
       console.log(deductMessage)
       if (deductMessage.code !== errorCodes.success) {
         return res.json({
-          code: errorCodes.unknown,
+          statusCode: errorCodes.unknown,
           error: 'problem in deduction',
         })
       }
@@ -329,12 +329,12 @@ const sendGift = async (req, res) => {
       )
       if (addMessage.code !== errorCodes.success) {
         return res.json({
-          code: errorCodes.unknown,
+          statusCode: errorCodes.unknown,
           error: 'problem in addition',
         })
       }
       return res.json({
-        code: errorCodes.success,
+        statusCode: errorCodes.success,
       })
     }
     const code = await generateOTP()
@@ -344,11 +344,11 @@ const sendGift = async (req, res) => {
     body.points = req.body.points
     await giftOtp.create(body)
     return res.json({
-      code: errorCodes.success,
+      statusCode: errorCodes.success,
     })
   } catch (exception) {
     console.log(exception)
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 
@@ -360,7 +360,7 @@ const redeemGift = async (req, res) => {
   })
   otpCode = await giftOtp.findOne({ where: { otpCode: code } })
   if (!otpCode) {
-    return { code: errorCodes.invalidOtp, error: 'invalid otp' }
+    return { statusCode: errorCodes.invalidOtp, error: 'invalid otp' }
   }
 
   giftOtp.update({ status: otpStatus.USED }, { where: { otpCode: code } })
@@ -374,10 +374,10 @@ const redeemGift = async (req, res) => {
     giftOtp.points
   )
   if (addMessage.code !== errorCodes.success) {
-    return res.json({ code: errorCodes.unknown, error: 'problem in addition' })
+    return res.json({ statusCode: errorCodes.unknown, error: 'problem in addition' })
   }
   return res.json({
-    code: errorCodes.success,
+    statusCode: errorCodes.success,
   })
 }
 
