@@ -18,29 +18,32 @@ const { verifiedPhone } = require('../../config/verifiedAuthentication')
 
 router.post(
   '/createForm',
+  validateCreateForm,
   verifyToken,
   verifyUser,
   verifiedPhone,
-  validateCreateForm,
+
   createForm
 )
 router.post(
   '/editForm',
+  validateEditForm,
   verifyToken,
   verifyUser,
   verifiedPhone,
-  validateEditForm,
+
   editForm
 )
 router.post(
   '/viewForm',
+  validateViewForm,
   verifyToken,
   verifyUser,
   verifiedPhone,
-  validateViewForm,
+
   viewForm
 )
-router.post('/viewAllFormsAdmin', verifyAdmin, viewAllFormsAdmin)
+router.post('/viewAllFormsAdmin', viewAllFormsAdmin, verifyAdmin)
 
 //router.post('/verify', verifyToken, verify)
 
