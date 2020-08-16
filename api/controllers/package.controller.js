@@ -1,4 +1,8 @@
+const {
+  emailAccessKey,
+} = require('../../config/keys')
 const extremePackage = require('../../models/extremePackage.model')
+const axios = require('axios')
 const regularPackage = require('../../models/regularPackage.model')
 const purchasedPackage = require('../../models/purchasedPackages.model')
 const accountsModel = require('../../models/account.model')
@@ -300,26 +304,32 @@ const sendGift = async (req, res) => {
         error: 'insufficient points',
       }
     }
+    const code = await generateOTP()
+    const body = {}
+    body.otpCode = code
+    body.status = otpStatus.AVAILABLE
+    body.points = req.body.points
     const reciever = await accountsModel.findOne({
       where: { email: req.body.email },
     })
-    if (reciever) {
-      const gift = await regularPackage.findOne({
-        where: { packageName: 'gift' },
-      })
+    const gift = await regularPackage.findOne({
+      where: { packageName: 'gift' },
+    })
 
-      giftId = gift.id
-      const deductMessage = await deductPoints(
-        req.body.Account.id,
-        req.body.points
-      )
-      console.log(deductMessage)
-      if (deductMessage.code !== errorCodes.success) {
-        return res.json({
-          statusCode: errorCodes.unknown,
-          error: 'problem in deduction',
-        })
-      }
+    giftId = gift.id
+    const deductMessage = await deductPoints(
+      req.body.Account.id,
+      req.body.points
+    )
+    console.log(deductMessage)
+    if (deductMessage.code !== errorCodes.success) {
+      return res.json({
+        statusCode: errorCodes.unknown,
+        error: 'problem in deduction',
+      })
+    }
+    if (reciever) {
+ 
 
       const addMessage = await addPoints(
         reciever.id,
@@ -333,15 +343,25 @@ const sendGift = async (req, res) => {
           error: 'problem in addition',
         })
       }
-      return res.json({
-        statusCode: errorCodes.success,
+
+    }
+    else {
+      axios({
+        method: 'post',
+        url: 'https://dev.power-support.lirten.com/email/email/_send_email', //TODO
+        data: {
+          header: {
+            accessKey: emailAccessKey,
+          },
+          body: {
+            receiverMail: req.body.email,
+            body: code,
+            subject: 'Redeem Your Points',
+          },
+        },
       })
     }
-    const code = await generateOTP()
-    const body = {}
-    body.otpCode = code
-    body.status = otpStatus.AVAILABLE
-    body.points = req.body.points
+    
     await giftOtp.create(body)
     return res.json({
       statusCode: errorCodes.success,
