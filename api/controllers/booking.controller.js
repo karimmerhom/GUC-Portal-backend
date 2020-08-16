@@ -58,7 +58,6 @@ const calculatePrice = async (type, slots) => {
     return console.log('calculation error')
   }
 }
-
 const viewCalendar = async (req, res) => {
   try {
     var calendar = []
@@ -175,7 +174,6 @@ const editBooking = async (req, res) => {
     })
   }
 }
-
 const bookRoom = async (req, res) => {
   try {
     let bookingDetails = req.body
@@ -362,7 +360,6 @@ const cancelBooking = async (req, res) => {
     })
   }
 }
-
 const viewMyBookings = async (req, res) => {
   try {
     const { Account } = req.body
@@ -387,7 +384,6 @@ const viewMyBookings = async (req, res) => {
     })
   }
 }
-
 const viewAllBookings = async (req, res) => {
   try {
     const booking = await BookingModel.findAll()
@@ -401,7 +397,6 @@ const viewAllBookings = async (req, res) => {
     })
   }
 }
-
 const viewDateBookings = async (req, res) => {
   try {
     const { date } = req.body
@@ -423,7 +418,6 @@ const viewDateBookings = async (req, res) => {
     })
   }
 }
-
 const adminConfirmBooking = async (req, res) => {
   try {
     const booked = await BookingModel.findOne({
@@ -460,91 +454,118 @@ const adminConfirmBooking = async (req, res) => {
   }
 }
 const bookExtremePackage = async (req, res) => {
-  const packageName = req.body.packageName
-  const startDate = new Date(req.body.startDate)
-  const roomNumber = req.body.roomNumber
-  const { roomId, roomType, roomSize, roomLayout } = req.body
+  try {
+    const packageName = req.body.packageName
+    const startDate = new Date(req.body.startDate)
+    const roomNumber = req.body.roomNumber
 
-  var date = new Date()
-  const pack = await extremePackageModel.findOne({
-    where: { packageName: 'packageName' },
-  })
-
-  let slots = [
-    'NINE_TEN',
-    'TEN_ELEVEN',
-    'ELEVEN_TWELVE',
-    'TWELVE_THIRTEEN',
-    'THIRTEEN_FOURTEEN',
-    'FOURTEEN_FIFTEEN',
-    'FIFTEEN_SIXTEEN',
-    'SIXTEEN_SEVENTEEN',
-    'SEVENTEEN_EIGHTEEN',
-    'EIGHTEEN_NINETEEN',
-    'NINETEEN_TWENTY',
-    'TWENTY_TWENTYONE',
-  ]
-  const startSlot = pack.startPeriod - 9
-  const endSlot = pack.endPeriod - 9
-
-  var d = 0
-  const p = await addPoints(pack.id, packageType.EXTREME, req.body.Account.id)
-  if (p.statusCode === 0) {
-    purchaseId = p.purchaseId
-  } else {
-    return res.json({
-      error: 'This is not the users booking',
-      statusCode: 7000,
-    })
-  }
-
-  var endDate = new Date()
-
-  var d = 0
-  for (let i = 0; i < pack.daysPerWeek; i++) {
-    d = d + i
-    date.setDate(startDate.getDate() + d)
-    if (date.getDay() === 5) {
-      console.log('this is a friday')
-      d = d + 1
-      date.setDate(startDate.getDate() + d)
-    }
-  }
-  bookingdetails = {
-    startDate: startDate,
-    endDate: endDate,
-    roomType: roomType,
-    roomSize: roomSize,
-    roomLayout: roomLayout,
-    duration: pack.daysPerWeek,
-    status: bookingStatus.PENDING,
-    purchasedId: p.id,
-    accountId: req.body.Account.id,
-    roomId: roomId,
-  }
-
-  booked = await bookingExtreme.create(bookingDetails)
-
-  for (let i = 0; i < pack.daysPerWeek; i++) {
-    d = d + i
-    date.setDate(startDate.getDate() + d)
-    if (date.getDay() === 5) {
-      console.log('this is a friday')
-      d = d + 1
-      date.setDate(startDate.getDate() + d)
-    }
-
-    for (let i = startSlot; i < endSlot; i++) {
-      await CalendarModel.create({
-        roomNumber: roomNumber,
-        date: date,
-        status: bookingStatus.PENDING,
-        slot: slots[i],
-        bookingId: booked.id,
+    const aa = await viewAvailableRoomsHelper(startDate, packageName)
+    console.log(aa)
+    if (aa.indexOf(roomNumber) === -1) {
+      return res.json({
+        error: 'This room is not available',
+        statusCode: 7000,
       })
     }
+    const room = await RoomModel.findOne({ where: { roomNumber: roomNumber } })
+    const { roomId, roomType, roomSize } = room
+    const roomLayout = req.body.roomLayout
+    var date = new Date()
+    const pack = await extremePackageModel.findOne({
+      where: { packageName: packageName },
+    })
+    console.log(pack)
+
+    let slots = [
+      'NINE_TEN',
+      'TEN_ELEVEN',
+      'ELEVEN_TWELVE',
+      'TWELVE_THIRTEEN',
+      'THIRTEEN_FOURTEEN',
+      'FOURTEEN_FIFTEEN',
+      'FIFTEEN_SIXTEEN',
+      'SIXTEEN_SEVENTEEN',
+      'SEVENTEEN_EIGHTEEN',
+      'EIGHTEEN_NINETEEN',
+      'NINETEEN_TWENTY',
+      'TWENTY_TWENTYONE',
+    ]
+    const startSlot = pack.startPeriod - 9
+    const endSlot = pack.endPeriod - 9
+
+    var d = 0
+
+    const p = await addPoints(req.body.Account.id, packageType.EXTREME, pack.id)
+
+    console.log('HEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
+    console.log(p)
+
+    if (p.statusCode === 0) {
+      console.log('HEHEHEHEHEHEHEHEH')
+      purchaseId = p.purchaseId
+    } else {
+      return res.json({
+        error: 'Cannot purchase new package',
+        statusCode: 7000,
+      })
+    }
+    console.log('A7eeehehehehehehe')
+    var endDate = new Date()
+
+    var d = 0
+    for (let i = 0; i < pack.daysPerWeek; i++) {
+      d = d + i
+      date.setDate(startDate.getDate() + d)
+      if (date.getDay() === 5) {
+        console.log('this is a friday')
+        d = d + 1
+        date.setDate(startDate.getDate() + d)
+      }
+    }
+    bookingdetails = {
+      startDate: startDate,
+      endDate: endDate,
+      roomType: roomType,
+      roomSize: roomSize,
+      roomLayout: roomLayout,
+      duration: pack.daysPerWeek,
+      status: bookingStatus.PENDING,
+      purchasedId: p.id,
+      accountId: req.body.Account.id,
+      roomId: roomId,
+    }
+
+    booked = await bookingExtreme.create(bookingDetails)
+
+    for (let i = 0; i < pack.daysPerWeek; i++) {
+      d = d + i
+      date.setDate(startDate.getDate() + d)
+      if (date.getDay() === 5) {
+        console.log('this is a friday')
+        d = d + 1
+        date.setDate(startDate.getDate() + d)
+      }
+
+      for (let i = startSlot; i < endSlot; i++) {
+        await CalendarModel.create({
+          roomNumber: roomNumber,
+          date: date,
+          status: bookingStatus.PENDING,
+          slot: slots[i],
+          bookingId: booked.id,
+        })
+      }
+    }
+
+    return res.json({ statusCode: errorCodes.success })
+  } catch (e) {
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
+
 const viewAvailableRooms = async (req, res) => {
   try {
     const startDate = req.body.startDate
@@ -642,6 +663,80 @@ const viewAvailableRooms = async (req, res) => {
       error: 'Something went wrong',
     })
   }
+}
+const viewAvailableRoomsHelper = async (startDate, extremeType) => {
+  const weekDays = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ]
+  const periodsNumber = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+
+  const extreme = await extremePackageModel.findOne({
+    where: {
+      packageName: extremeType,
+    },
+  })
+  const rooms = await RoomModel.findAll()
+
+  const periodsString = [
+    slots.NINE_TEN,
+    slots.TEN_ELEVEN,
+    slots.ELEVEN_TWELVE,
+    slots.TWELVE_THIRTEEN,
+    slots.THIRTEEN_FOURTEEN,
+    slots.FOURTEEN_FIFTEEN,
+    slots.FIFTEEN_SIXTEEN,
+    slots.SIXTEEN_SEVENTEEN,
+    slots.SEVENTEEN_EIGHTEEN,
+    slots.EIGHTEEN_NINETEEN,
+    slots.NINETEEN_TWENTY,
+    slots.TWENTY_TWENTYONE,
+  ]
+
+  let slotsNeeded = []
+
+  for (let j = extreme.startPeriod - 9; j < extreme.endPeriod - 9; j++) {
+    slotsNeeded.push(periodsString[j])
+  }
+
+  let availableRooms = []
+  for (let j = 0; j < rooms.length; j++) {
+    availableRooms.push(rooms[j].roomNumber)
+  }
+
+  let i = 0
+  var date = new Date(startDate)
+
+  while (i < extreme.daysPerWeek) {
+    let dayNumber = date.getDay()
+
+    for (let j = 0; j < slotsNeeded.length; j++) {
+      const calendar = await CalendarModel.findAll({
+        where: {
+          date: date,
+          slot: slotsNeeded[j],
+        },
+      })
+
+      console.log(calendar)
+
+      let flag = false
+      for (let k = 0; k < calendar.length; k++) {
+        availableRooms = availableRooms.filter(
+          (room) => calendar[k].roomNumber !== room
+        )
+      }
+    }
+
+    if (dayNumber !== 5) i++
+    date.setDate(date.getDate() + 1)
+  }
+  return availableRooms
 }
 
 module.exports = {

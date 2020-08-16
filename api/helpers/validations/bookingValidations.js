@@ -150,6 +150,32 @@ const validateBookRoom = (req, res, next) => {
   }
   return next()
 }
+
+const validateBookExtremePackage = (req, res, next) => {
+  const schema = Joi.object({
+    Account: Joi.object({
+      id: Joi.number().required(),
+    }).required(),
+    packageName: Joi.string().required(),
+    startDate: Joi.date().required(),
+    roomNumber: Joi.number().valid([1, 2, 3, 4]).required(),
+    // roomId: Joi.string(),
+    // roomType: Joi.string()
+    //   .valid([roomType.MEETING, roomType.TRAINING])
+    //   .required(),
+    roomLayout: Joi.string().required(),
+    // roomSize: Joi.string().valid([roomSize.LARGE, roomSize.SMALL]).required(),
+  })
+
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: statusCodes.validation,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
 const validateEditMyBooking = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
@@ -198,6 +224,7 @@ const validateEditMyBooking = (req, res, next) => {
   return next()
 }
 module.exports = {
+  validateBookExtremePackage,
   validateViewMyBooking,
   validateCancelBooking,
   validateViewCalendar,

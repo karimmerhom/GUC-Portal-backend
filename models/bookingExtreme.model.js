@@ -19,6 +19,7 @@ bookingExtreme.init(
     endDate: {
       type: Sequelize.DATE,
     },
+    roomNumber: { type: Sequelize.STRING },
     roomType: {
       type: Sequelize.STRING,
     },
@@ -40,7 +41,7 @@ bookingExtreme.init(
     timestamps: true,
   }
 )
-bookingExtreme.belongsTo(purchasedPackagesModel, { foreignKey: 'packageId' })
+bookingExtreme.belongsTo(purchasedPackagesModel, { foreignKey: 'purchasedId' })
 bookingExtreme.belongsTo(UserModel, { foreignKey: 'accountId' })
 bookingExtreme.belongsTo(RoomModel, { foreignKey: 'roomId' })
 
