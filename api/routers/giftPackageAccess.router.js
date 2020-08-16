@@ -18,20 +18,20 @@ const {
 
 router.post(
   '/createGiftPackageAccess',
-  verifyAdmin,
   validateCreateGiftPackageAccess,
+  verifyAdmin,
   createGiftPackageAccess
 )
 router.post(
   '/editGiftPackageAccess',
-  verifyAdmin,
   validateEditGiftPackageAccess,
+  verifyAdmin,
   editGiftPackageAccess
 )
 router.post(
   '/deleteGiftPackageAccess',
-  verifyAdmin,
   validateDeleteGiftPackageAccess,
+  verifyAdmin,
   deleteGiftPackageAccess
 )
 

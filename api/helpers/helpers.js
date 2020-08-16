@@ -2,6 +2,7 @@ const cron = require('cron')
 const purchasedPackage = require('../../models/purchasedPackages.model')
 const extremePackage = require('../../models/extremePackage.model')
 const regularPackage = require('../../models/regularPackage.model')
+const purchases = require('../../models/purchases.model')
 const errorCodes = require('../constants/errorCodes')
 const { packageStatus, packageType } = require('../constants/TBH.enum')
 
@@ -209,6 +210,21 @@ const addPoints = async (accountId, type, packageId, points = 0) => {
     return { statusCode: errorCodes.unknown, error: 'failed to add points' }
   }
 }
+const createPurchase = async (accountId,textArray, price) => {
+  try {
+    const body = {}
+    body.accountId = accountId
+    var narrativeValue = ""
+    for (i = 0; i < textArray.length; i++) {
+      narrativeValue += textArray[i] + " ";
+    }
+    body.narrative = narrativeValue
+    body.price = price
+     await purchases.create(body)
+  } catch (exception) {
+    return { code: errorCodes.unknown, error: 'failed to add purchase' }
+  }
+}
 
 const expirePackage = async (packageId) => {
 
@@ -222,4 +238,5 @@ module.exports = {
   deductPoints,
   addPoints,
   refund,
+  createPurchase
 }
