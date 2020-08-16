@@ -3,8 +3,9 @@ const purchasedPackage = require('../../models/purchasedPackages.model')
 const extremePackage = require('../../models/extremePackage.model')
 const regularPackage = require('../../models/regularPackage.model')
 const purchases = require('../../models/purchases.model')
+const boolExpirePackage = require('../../models/packageExpiration.model')
 const errorCodes = require('../constants/errorCodes')
-const { packageStatus, packageType } = require('../constants/TBH.enum')
+const { packageStatus, packageType, ability } = require('../constants/TBH.enum')
 
 Date.prototype.addDays = function (days) {
   var date = new Date(this.valueOf())
@@ -166,7 +167,7 @@ const addPoints = async (accountId, type, packageId, points = 0) => {
       body.expiryDate = body.purchaseDate.addDays(packageBody.expiryDuration)
       const package = await purchasedPackage.create(body)
       packageId = package.id
-      console.log((new Date()).addMins(1));
+  
       const scheduleJob = cron.job(body.expiryDate, async () => {
         await expirePackage(packageId)
       })
@@ -182,7 +183,7 @@ const addPoints = async (accountId, type, packageId, points = 0) => {
       if (!packageBody) {
         return {
           statusCode: errorCodes.invalidPackage,
-          error: 'package does not exis',
+          error: 'package does not exist',
         }
       }
       body.purchaseDate = new Date().addHours(2)
@@ -227,11 +228,16 @@ const createPurchase = async (accountId,textArray, price) => {
 }
 
 const expirePackage = async (packageId) => {
-
+    const bool = await boolExpirePackage.findOne({})
+    if(bool.expiry === ability.TRUE){
     const body = {}
     body.status = packageStatus.EXPIRED
     await purchasedPackage.update(body, { where: { id: packageId } })
+    
+  }
+
 }
+
 
 module.exports = {
   generateOTP,
@@ -240,3 +246,4 @@ module.exports = {
   refund,
   createPurchase
 }
+
