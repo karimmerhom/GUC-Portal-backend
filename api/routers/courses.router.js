@@ -7,6 +7,7 @@ const {
   validateViewAllCourses,
   validateEditCourse,
   validateDeleteCourse,
+  validateViewAllCoursesAdmin,
 } = require('../helpers/validations/coursesValidations')
 const coursesController = require('../controllers/Organize/Courses.controller')
 
@@ -68,7 +69,13 @@ router.post(
   deleteCourse
 )
 
-router.post('/viewAllCoursesAdmin', viewAllCoursesAdmin, verifyAdmin)
+router.post(
+  '/viewAllCoursesAdmin',
+  validateViewAllCoursesAdmin,
+  verifyAdmin,
+
+  viewAllCoursesAdmin
+)
 
 // router.post('/verify', verifyToken, verify)
 
