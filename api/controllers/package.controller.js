@@ -322,7 +322,7 @@ const sendGift = async (req, res) => {
       req.body.points
     )
     console.log(deductMessage)
-    if (deductMessage.code !== errorCodes.success) {
+    if (deductMessage.statusCode !== errorCodes.success) {
       return res.json({
         statusCode: errorCodes.unknown,
         error: 'problem in deduction',
@@ -337,7 +337,7 @@ const sendGift = async (req, res) => {
         giftId,
         req.body.points
       )
-      if (addMessage.code !== errorCodes.success) {
+      if (addMessage.statusCode !== errorCodes.success) {
         return res.json({
           statusCode: errorCodes.unknown,
           error: 'problem in addition',
@@ -393,7 +393,7 @@ const redeemGift = async (req, res) => {
     giftId,
     giftOtp.points
   )
-  if (addMessage.code !== errorCodes.success) {
+  if (addMessage.statusCode !== errorCodes.success) {
     return res.json({ statusCode: errorCodes.unknown, error: 'problem in addition' })
   }
   return res.json({
