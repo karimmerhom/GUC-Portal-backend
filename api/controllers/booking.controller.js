@@ -9,6 +9,8 @@ const pendingModel = require('../../models/pending.model')
 const expiryModel = require('../../models/expiry.model')
 const extremePackageModel = require('../../models/extremePackage.model')
 const bookingExtreme = require('../../models/bookingExtreme.model')
+const purchasedPackagesModel = require('../../models/purchasedPackages.model')
+
 const moment = require('moment')
 const { createPurchase } = require('../helpers/helpers')
 const validator = require('../helpers/validations/bookingValidations')
@@ -28,6 +30,7 @@ const {
   paymentMethods,
   packageType,
   bookingType,
+  roomSize,
 } = require('../constants/TBH.enum')
 const {} = require('../helpers/helpers')
 const { object } = require('joi')
@@ -115,6 +118,14 @@ const viewCalendar = async (req, res) => {
 }
 const editBooking = async (req, res) => {
   try {
+    if (req.body.date) {
+      if (new Date(req.body.date) < new Date()) {
+        return res.json({
+          error: 'you cannot book in past date',
+          statusCode: 7000,
+        })
+      }
+    }
     const booked = await BookingModel.findOne({
       where: { id: req.body.bookingId },
     })
@@ -182,6 +193,14 @@ const editBooking = async (req, res) => {
 }
 const tryEditBooking = async (req, res) => {
   try {
+    if (req.body.date) {
+      if (new Date(req.body.date) < new Date()) {
+        return res.json({
+          error: 'you cannot book in past date',
+          statusCode: 7000,
+        })
+      }
+    }
     const booked = await BookingModel.findOne({
       where: { id: req.body.bookingId },
     })
@@ -265,6 +284,12 @@ const viewAvailableRooms = async (req, res) => {
       21,
       22,
     ]
+    if (new Date(startDate) < new Date()) {
+      return res.json({
+        error: 'you cannot book in past date',
+        statusCode: 7000,
+      })
+    }
 
     const extreme = await extremePackageModel.findOne({
       where: {
@@ -339,7 +364,12 @@ const bookRoom = async (req, res) => {
     const status =
       bookingDetails.paymentMethod === 'points' ? 'confirmed' : 'pending'
     bookingDetails.status = status
-
+    if (new Date(bookingDetails.date) < new Date()) {
+      return res.json({
+        error: 'you cannot book in past date',
+        statusCode: 7000,
+      })
+    }
     const roomFound = await RoomModel.findOne({
       where: { roomNumber: bookingDetails.roomNumber },
     })
@@ -459,7 +489,12 @@ const tryBooking = async (req, res) => {
     const status =
       bookingDetails.paymentMethod === 'points' ? 'confirmed' : 'pending'
     bookingDetails.status = status
-
+    if (new Date(bookingDetails.date) < new Date()) {
+      return res.json({
+        error: 'you cannot book in past date',
+        statusCode: 7000,
+      })
+    }
     const roomFound = await RoomModel.findOne({
       where: { roomNumber: bookingDetails.roomNumber },
     })
@@ -677,6 +712,15 @@ const adminConfirmBooking = async (req, res) => {
         { status: bookingStatus.CONFIRMED },
         { where: { id: req.body.bookingId } }
       )
+      CalendarModel.update(
+        { status: bookingStatus.CONFIRMED },
+        {
+          where: {
+            bookingId: req.body.bookingId,
+            bookingType: bookingType.REGULAR,
+          },
+        }
+      )
       return res.json({ statusCode: errorCodes.success })
     } else {
       return res.json({
@@ -698,6 +742,9 @@ const adminConfirmExtremeBooking = async (req, res) => {
       where: { id: req.body.bookingId },
     })
 
+    console.log('A70oooo')
+
+    console.log(booked)
     if (booked) {
       if (booked.status === bookingStatus.CANCELED) {
         return res.json({ statusCode: 7000, error: 'booking was canceled' })
@@ -708,30 +755,36 @@ const adminConfirmExtremeBooking = async (req, res) => {
           error: 'booking is already confirmed',
         })
       }
-      const booked = await bookingExt.findOne({
-        where: { id: req.body.bookingId },
-      })
 
       let text = [
         booked.roomType,
         booked.roomSize,
         moment(booked.date).format('ll'),
-        booked.slots.length + ' hours',
       ]
 
       const c = await createPurchase(
         booked.accountId,
         text,
-        parseInt(booked.priceCash)
+        parseInt(booked.price)
       )
       console.log(c)
-      BookingModel.update(
+      bookingExtreme.update(
         { status: bookingStatus.CONFIRMED },
         { where: { id: req.body.bookingId } }
       )
+
+      purchasedPackagesModel.update(
+        { status: packageStatus.ACTIVE },
+        { where: { id: booked.purchasedId } }
+      )
       CalendarModel.update(
         { status: bookingStatus.CONFIRMED },
-        { where: { bookingId: req.body.bookingId } }
+        {
+          where: {
+            bookingId: req.body.bookingId,
+            bookingType: bookingType.EXTREME,
+          },
+        }
       )
 
       return res.json({ statusCode: errorCodes.success })
@@ -742,6 +795,7 @@ const adminConfirmExtremeBooking = async (req, res) => {
       })
     }
   } catch (e) {
+    console.log(e)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -753,6 +807,13 @@ const bookExtremePackage = async (req, res) => {
     const packageName = req.body.packageName
     const startDate = new Date(req.body.startDate)
     const roomNumber = req.body.roomNumber
+
+    if (new Date(startDate) < new Date()) {
+      return res.json({
+        error: 'you cannot book in past date',
+        statusCode: 7000,
+      })
+    }
 
     const aa = await viewAvailableRoomsHelper(startDate, packageName)
     console.log(aa)
@@ -819,23 +880,25 @@ const bookExtremePackage = async (req, res) => {
       }
     }
     console.log('LOOOOL')
-    if (roomSize1 === roomSize.LARGE) {
-      bookingDetails.price = pack.largePrice
-    } else {
-      bookingDetails.price = pack.smallPrice
-    }
+
     bookingDetails = {
       startDate: startDate,
       endDate: endDate,
       roomType: roomType,
+      roomNumber: roomNumber,
       roomSize: roomSize1,
       roomLayout: roomLayout,
       duration: pack.daysPerWeek,
       status: bookingStatus.PENDING,
-      purchasedId: p.id,
+      purchasedId: p.packageId,
       accountId: req.body.Account.id,
-      roomId: roomId,
+      roomId: room.id,
       price: pack.price,
+    }
+    if (roomSize1 === roomSize.LARGE) {
+      bookingDetails.price = pack.largePrice
+    } else {
+      bookingDetails.price = pack.smallPrice
     }
     booked = await bookingExtreme.create(bookingDetails)
     console.log('AHAHAHAHAHAHAHHAHAHA')
