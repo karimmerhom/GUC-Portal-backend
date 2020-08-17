@@ -9,10 +9,7 @@ const pendingModel = require('../../models/pending.model')
 const expiryModel = require('../../models/expiry.model')
 const extremePackageModel = require('../../models/extremePackage.model')
 const bookingExtreme = require('../../models/bookingExtreme.model')
-<<<<<<< HEAD
-=======
 const moment = require('moment')
->>>>>>> 4a48d6b5f7ae803576c72a5dfd27f43d51bc82c4
 const { createPurchase } = require('../helpers/helpers')
 const validator = require('../helpers/validations/bookingValidations')
 const errorCodes = require('../constants/errorCodes')
@@ -666,14 +663,6 @@ const adminConfirmBooking = async (req, res) => {
       let text = [
         booked.roomType,
         booked.roomSize,
-<<<<<<< HEAD
-        booked.roomLayout,
-        booked.date,
-        booked.slots,
-      ]
-
-      createPurchase(accountId, text, booked.priceCash)
-=======
         moment(booked.date).format('ll'),
         booked.slots.length + ' hours',
       ]
@@ -684,7 +673,6 @@ const adminConfirmBooking = async (req, res) => {
         parseInt(booked.priceCash)
       )
       console.log(c)
->>>>>>> 4a48d6b5f7ae803576c72a5dfd27f43d51bc82c4
       await BookingModel.update(
         { status: bookingStatus.CONFIRMED },
         { where: { id: req.body.bookingId } }
@@ -727,16 +715,6 @@ const adminConfirmExtremeBooking = async (req, res) => {
       let text = [
         booked.roomType,
         booked.roomSize,
-<<<<<<< HEAD
-        booked.roomLayout,
-        booked.startDate,
-        booked.endDate,
-        booked.duration,
-        booked.slots,
-      ]
-      createPurchase(accountId, text, booked.price)
-      await BookingModel.update(
-=======
         moment(booked.date).format('ll'),
         booked.slots.length + ' hours',
       ]
@@ -748,7 +726,6 @@ const adminConfirmExtremeBooking = async (req, res) => {
       )
       console.log(c)
       BookingModel.update(
->>>>>>> 4a48d6b5f7ae803576c72a5dfd27f43d51bc82c4
         { status: bookingStatus.CONFIRMED },
         { where: { id: req.body.bookingId } }
       )
