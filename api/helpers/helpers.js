@@ -80,7 +80,7 @@ const deductPoints = async (accountId, points) => {
 
     points -= availablePoints
   }
-  return { statusCode: errorCodes.success, error: 'success' }
+  return { statusCode: errorCodes.success }
 }
 
 const refund = async (accountId, points) => {
@@ -134,7 +134,7 @@ const refund = async (accountId, points) => {
     // package.usedPoints = parseInt(package.totalPoints)
     points -= availablePoints
   }
-  return { statusCode: errorCodes.success, error: 'success' }
+  return { statusCode: errorCodes.success}
 }
 
 const addPoints = async (accountId, type, packageId, points = 0) => {
@@ -154,6 +154,7 @@ const addPoints = async (accountId, type, packageId, points = 0) => {
       }
 
       if (points === 0) {
+
         body.status = packageStatus.PENDING
         body.totalPoints = packageBody.points
       } else {
@@ -172,9 +173,9 @@ const addPoints = async (accountId, type, packageId, points = 0) => {
       })
       scheduleJob.start()
       return {
-        packageId: packageId,
+        packageId : packageId,
         statusCode: errorCodes.success,
-        error: 'success',
+
       }
     }
     if (type === packageType.EXTREME) {
