@@ -12,6 +12,7 @@ Courses.init(
     title: {
       type: Sequelize.STRING,
     },
+
     description: {
       type: Sequelize.STRING,
     },
@@ -38,6 +39,10 @@ Courses.init(
     },
     minNumberOfAttendees: {
       type: Sequelize.INTEGER,
+    },
+    State: {
+      type: Sequelize.STRING,
+      defaultValue: 'pending'
     },
   },
   { sequelize, timestamps: false }

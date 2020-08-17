@@ -5,6 +5,8 @@ const CoursesModel = require('../../../models/courses.model')
 const errorCodes = require('../../constants/errorCodes')
 const FormModel = require('../../../models/form.model')
 const validator = require('../../helpers/validations/coursesValidations')
+const Courses = require('../../../models/courses.model')
+const coursesValidations = require('../../helpers/validations/coursesValidations')
 
 const createCourse = async (req, res) => {
   try {
@@ -33,12 +35,14 @@ const createCourse = async (req, res) => {
       maxNumberOfAttendees: Course.maxNumberOfAttendees,
       minNumberOfAttendees: Course.minNumberOfAttendees,
       accountId: Account.id,
+      State: Course.State,
     }
     CoursesModel.create(newCourse)
     return res.json({
       statusCode: errorCodes.success,
     })
   } catch (exception) {
+    console.log(exception)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -50,11 +54,11 @@ const viewCourse = async (req, res) => {
   try {
     const { Account, Course } = req.body
     const { id } = Course
-    const accountId = Account.id
+    const type = req.data.type
+
     const checkCourse = await CoursesModel.findOne({
       where: {
         id,
-        accountId,
       },
     })
     if (!checkCourse) {
@@ -63,6 +67,13 @@ const viewCourse = async (req, res) => {
         statusCode: errorCodes.cousrseDoesntExist,
       })
     }
+    if (type !== 'admin' && checkCourse.accountId !== Account.id) {
+      return res.json({
+        error: 'Unauthorized',
+        statusCode: errorCodes.unauthorized,
+      })
+    }
+
     return res.json({ Course: checkCourse, statusCode: errorCodes.success })
   } catch (exception) {
     return res.json({
@@ -74,7 +85,10 @@ const viewCourse = async (req, res) => {
 
 const viewAllCourses = async (req, res) => {
   try {
-    const accountId = req.body.Account.id
+    const { Account, Course } = req.body
+
+    const accountId = req.body.accountId
+    const type = req.data.type
 
     const checkCourse = await CoursesModel.findOne({
       where: {
@@ -87,8 +101,12 @@ const viewAllCourses = async (req, res) => {
         statusCode: errorCodes.validation,
       })
     }
-
-    const result = await CoursesModel.findAll()
+    if (type !== 'admin' && accountId !== Account.id) {
+      return res.json({
+        error: 'Unauthorized',
+        statusCode: errorCodes.unauthorized,
+      })
+    }
 
     return res.json({ AllCourses: result, statusCode: errorCodes.success })
   } catch (exception) {
@@ -173,12 +191,46 @@ const deleteCourse = async (req, res) => {
     })
   }
 }
+const stateChange = async (req, res) => {
+  try {
+    const { Course, Account } = req.body
+    const courseID = Course.id
+    const accountId = Account.id
+
+    const courseid = await CoursesModel.findOne({
+      where: {
+        id: courseID,
+        accountId,
+      },
+    })
+    if (!courseid) {
+      return res.json({
+        msg: 'course doesnt exist for this account',
+        statusCode: errorCodes.cousrseDoesntExist,
+      })
+    }
+    CoursesModel.update(Course, {
+      where: { id: courseID, accountId },
+    })
+    return res.json({
+      msg: 'state is updated',
+      statusCode: errorCodes.success,
+    })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({
+      error: 'Something went wrong',
+      statusCode: errorCodes.unknown,
+    })
+  }
+}
 
 module.exports = {
   createCourse,
   viewCourse,
   viewAllCourses,
-viewAllCoursesAdmin,
+  viewAllCoursesAdmin,
   editCourse,
   deleteCourse,
+  stateChange,
 }

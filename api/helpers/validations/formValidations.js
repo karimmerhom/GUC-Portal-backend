@@ -64,9 +64,7 @@ const validateViewForm = (req, res, next) => {
     Account: Joi.object({
       id: Joi.number().required(),
     }),
-    Form: Joi.object({
-      id: Joi.number().required(),
-    }),
+    accountId: Joi.number().required(),
   }
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
@@ -124,8 +122,26 @@ const validateEditForm = (req, res, next) => {
   }
   return next()
 }
+
+const validateViewAllFormsAdmin = (req, res, next) => {
+  const schema = {
+    Account: Joi.object({
+      id: Joi.number().required(),
+    }),
+  }
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: isValid.error.details[0].message,
+    })
+  }
+
+  return next()
+}
 module.exports = {
   validateCreateForm,
   validateEditForm,
   validateViewForm,
+  validateViewAllFormsAdmin,
 }

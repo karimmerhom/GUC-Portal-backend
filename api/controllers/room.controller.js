@@ -72,6 +72,27 @@ const editRoom = async (req, res) => {
     res.json({ statusCode: 7000, error: 'Something went wrong' })
   }
 }
+const viewAllRooms = async (req, res) => {
+  try {
+    const account = req.body
+
+    const isValid = validator.validateViewAllRooms(account)
+
+    if (isValid.error) {
+      return res.json({
+        code: errorCodes.validation,
+        error: isValid.error.details[0].message,
+      })
+    }
+    const getRooms = await roomModel.findAll()
+    return res.json({ code: errorCodes.success, rooms: getRooms })
+  } catch (e) {
+    return res.json({
+      code: errorCodes.unknown,
+      error: 'Something went wrong!',
+    })
+  }
+}
 const viewRoom = async (req, res) => {
   try {
     const room = req.body
@@ -83,7 +104,7 @@ const viewRoom = async (req, res) => {
         error: isValid.error.details[0].message,
       })
     }
-    if (req.body.roomId !== null) {
+    if (req.body.hasOwnProperty('roomId')) {
       const roomFound = await roomModel.findOne({
         where: { id: req.body.roomId },
       })
@@ -117,8 +138,7 @@ const deleteRoom = async (req, res) => {
         error: isValid.error.details[0].message,
       })
     }
-
-    if (req.body.roomId !== null) {
+    if (req.body.hasOwnProperty('roomId')) {
       const roomFound = await roomModel.findOne({
         where: { id: req.body.roomId },
       })
@@ -132,6 +152,7 @@ const deleteRoom = async (req, res) => {
       const roomFound = await roomModel.findOne({
         where: { roomNumber: req.body.roomNumber },
       })
+      console.log(roomFound)
       if (roomFound) {
         await roomFound.destroy()
 
@@ -144,4 +165,4 @@ const deleteRoom = async (req, res) => {
     res.json({ statusCode: 7000, error: 'Something went wrong' })
   }
 }
-module.exports = { createRoom, deleteRoom, editRoom, viewRoom }
+module.exports = { createRoom, deleteRoom, editRoom, viewRoom, viewAllRooms }
