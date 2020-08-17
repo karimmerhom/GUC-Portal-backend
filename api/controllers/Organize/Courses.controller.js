@@ -147,6 +147,12 @@ const editCourse = async (req, res) => {
         statusCode: errorCodes.cousrseDoesntExist,
       })
     }
+    if (courseid.State !== 'pending') {
+      return res.json({
+        msg: 'Your course is approved, you can not edit it',
+        statusCode: errorCodes.approvedCourse,
+      })
+    }
     CoursesModel.update(Course, { where: { id: courseID, accountId } })
 
     return res.json({
@@ -176,6 +182,12 @@ const deleteCourse = async (req, res) => {
       return res.json({
         msg: 'course doesnt exist',
         statusCode: errorCodes.cousrseDoesntExist,
+      })
+    }
+    if (courseid.State !== 'pending') {
+      return res.json({
+        msg: 'Your course is approved, you can not delete it',
+        statusCode: errorCodes.approvedCourse,
       })
     }
     CoursesModel.destroy({ where: { id: courseID, accountId } })
@@ -209,6 +221,7 @@ const stateChange = async (req, res) => {
         statusCode: errorCodes.cousrseDoesntExist,
       })
     }
+
     CoursesModel.update(Course, {
       where: { id: courseID, accountId },
     })

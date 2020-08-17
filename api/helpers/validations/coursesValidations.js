@@ -1,6 +1,6 @@
 const Joi = require('joi')
 const errorCodes = require('../../constants/errorCodes')
-const { category } = require('../../constants/TBH.enum')
+const { category, State } = require('../../constants/TBH.enum')
 const validateCreate = (req, res, next) => {
   const schema = {
     Course: Joi.object({
@@ -150,7 +150,7 @@ const validateStateChange = (req, res, next) => {
   const schema = {
     Course: Joi.object({
       id: Joi.number(),
-      State: Joi.string().valid('Approved', 'approved').required(),
+      State: Joi.string().valid(State.APPROVED).required(),
     }),
 
     Account: Joi.object({
