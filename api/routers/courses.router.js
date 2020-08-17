@@ -7,6 +7,8 @@ const {
   validateViewAllCourses,
   validateEditCourse,
   validateDeleteCourse,
+  validateViewAllCoursesAdmin,
+  validateStateChange,
 } = require('../helpers/validations/coursesValidations')
 const coursesController = require('../controllers/Organize/Courses.controller')
 
@@ -17,6 +19,7 @@ const {
   editCourse,
   deleteCourse,
   viewAllCoursesAdmin,
+  stateChange,
 } = coursesController
 
 const { verifyToken } = require('../../config/AuthenticationMiddleWare')
@@ -26,47 +29,57 @@ const { verifiedPhone } = require('../../config/verifiedAuthentication')
 
 router.post(
   '/createCourse',
+  validateCreate,
   verifyToken,
   verifyUser,
   verifiedPhone,
-  validateCreate,
   createCourse
 )
 router.post(
   '/viewCourse',
+  validateViewCourse,
   verifyToken,
   verifyUser,
   verifiedPhone,
-  validateViewCourse,
+
   viewCourse
 )
 router.post(
   '/viewAllCourses',
+  validateViewAllCourses,
   verifyToken,
   verifyUser,
   verifiedPhone,
-  validateViewAllCourses,
   viewAllCourses
 )
 router.post(
   '/editCourse',
+  validateEditCourse,
   verifyToken,
   verifyUser,
   verifiedPhone,
-  validateEditCourse,
+
   editCourse
 )
 router.post(
   '/deleteCourse',
+  validateDeleteCourse,
   verifyToken,
   verifyUser,
   verifiedPhone,
-  validateDeleteCourse,
+
   deleteCourse
 )
 
-router.post('/viewAllCoursesAdmin', verifyAdmin, viewAllCoursesAdmin)
+router.post(
+  '/viewAllCoursesAdmin',
+  validateViewAllCoursesAdmin,
+  verifyAdmin,
 
+  viewAllCoursesAdmin
+)
+
+router.post('/StateChange', validateStateChange, verifyAdmin, stateChange)
 // router.post('/verify', verifyToken, verify)
 
 module.exports = router

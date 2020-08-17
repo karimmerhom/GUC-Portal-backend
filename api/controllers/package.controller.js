@@ -11,15 +11,17 @@ const {
   packageStatus,
   packageType,
   otpStatus,
-} = require('../constants/TBH.enum')
-const errorCodes = require('../constants/errorCodes')
+} = require("../constants/TBH.enum")
+const errorCodes = require("../constants/errorCodes")
 const {
   addPoints,
   generateOTP,
   refund,
   deductPoints,
-} = require('../helpers/helpers')
-const giftOtp = require('../../models/giftOtp.model')
+  createPurchase,
+} = require("../helpers/helpers")
+const giftOtp = require("../../models/giftOtp.model")
+const { Op } = require("sequelize")
 
 Date.prototype.addDays = function (days) {
   var date = new Date(this.valueOf())
@@ -180,7 +182,7 @@ const viewPackage = async (req, res) => {
     }
     return res.json({
       statusCode: errorCodes.invalidPackage,
-      error: 'package not found',
+      error: "package not found",
     })
   } catch (exception) {
     return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
@@ -189,10 +191,18 @@ const viewPackage = async (req, res) => {
 
 const viewAllRegularPackages = async (req, res) => {
   try {
-    const packagesFound1 = await regularPackage.findAll({})
+    const gift ="gift"
+    const packagesFound1 = await regularPackage.findAll({
+      where: {
+       
+        packageName: { [Op.not]: gift },
+        
+      },
+    })
     return res.json({ package: packagesFound1, statusCode: errorCodes.success })
   } catch (exception) {
-    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
+    console.log(exception)
+    return res.json({ statusCode: errorCodes.unknown, error: "Something went wrong" })
   }
 }
 
@@ -211,7 +221,7 @@ const viewMyPackages = async (req, res) => {
       where: { accountId: req.body.Account.id },
     })
     if (!purchases) {
-      return { error: 'account did not purchase any packages' }
+      return { error: "account did not purchase any packages" }
     }
     const activePackages = purchases.filter((account) => {
       return (
@@ -272,7 +282,7 @@ const deletePackage = async (req, res) => {
     }
     return res.json({
       statusCode: errorCodes.invalidPackage,
-      error: 'package not found',
+      error: "package not found",
     })
   } catch (exception) {
     return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
@@ -285,7 +295,7 @@ const sendGift = async (req, res) => {
       where: { accountId: req.body.Account.id },
     })
     if (!purchases) {
-      return { error: 'account did not purchase any packages' }
+      return { error: "account did not purchase any packages" }
     }
     const activePackages = purchases.filter((account) => {
       return (

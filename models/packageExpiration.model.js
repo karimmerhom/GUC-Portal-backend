@@ -5,12 +5,10 @@ const { ability } = require('../api/constants/TBH.enum')
 
 const { Model } = Sequelize
 
-class bookingExpiration extends Model {}
-bookingExpiration.init(
+class packageExpiration extends Model {}
+packageExpiration.init(
   {
-    expiryPeriod: {
-      type: Sequelize.INTEGER,
-    },
+    
     expiry : {
       type: Sequelize.ENUM,
       values: [
@@ -26,4 +24,4 @@ bookingExpiration.init(
   }
 )
 
-module.exports = bookingExpiration
+module.exports = packageExpiration
