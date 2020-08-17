@@ -413,11 +413,14 @@ const redeemGift = async (req, res) => {
 
 const editStatus = async (req, res) => {
   try{
+  const accountId = body.Account.id
+  let text = []
   const body = req.body
   const newStatus = req.body.status
   const bodyId = req.body.purchasedPackageId
   const package = await purchasedPackage.findByPk(bodyId)
   body.status = newStatus
+  
   await purchasedPackage.update(body, { where: { id: bodyId } })
   return res.json({
     statusCode: errorCodes.success,
