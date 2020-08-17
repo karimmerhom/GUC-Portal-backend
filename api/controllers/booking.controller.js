@@ -794,7 +794,6 @@ const bookExtremePackage = async (req, res) => {
     const packageName = req.body.packageName
     const startDate = new Date(req.body.startDate)
     const roomNumber = req.body.roomNumber
-    console.log(startDate)
     if (new Date(startDate) < new Date()) {
       return res.json({
         error: 'you cannot book in past date',
@@ -886,7 +885,6 @@ const bookExtremePackage = async (req, res) => {
       if (date.getDay() === 5) {
         date.setDate(date.getDate() + 1)
       }
-      console.log(moment(date).format('dddd'))
 
       for (let i = startSlot; i < endSlot; i++) {
         await CalendarModel.create({
