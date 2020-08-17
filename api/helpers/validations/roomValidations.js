@@ -36,7 +36,7 @@ const validateViewRoom = (request) => {
       id: Joi.number().required(),
     }).required(),
     roomNumber: Joi.number().valid([1, 2, 3, 4]),
-    roomId: Joi.number().required(),
+    roomId: Joi.number(),
   }).xor('roomNumber', 'roomId')
   return Joi.validate(request, schema)
 }
@@ -46,8 +46,16 @@ const validateDeleteRoom = (request) => {
       id: Joi.number().required(),
     }).required(),
     roomNumber: Joi.number().valid([1, 2, 3, 4]),
-    roomId: Joi.number().required(),
+    roomId: Joi.number(),
   }).xor('roomNumber', 'roomId')
+  return Joi.validate(request, schema)
+}
+const validateViewAllRooms = (request) => {
+  const schema = Joi.object({
+    Account: Joi.object({
+      id: Joi.number().required(),
+    }).required(),
+  })
   return Joi.validate(request, schema)
 }
 
@@ -56,4 +64,5 @@ module.exports = {
   validateDeleteRoom,
   validateViewRoom,
   validateEditRoom,
+  validateViewAllRooms,
 }
