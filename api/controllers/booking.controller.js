@@ -26,6 +26,7 @@ const {
   bookingStatus,
   paymentMethods,
   packageType,
+  roomSize,
 } = require('../constants/TBH.enum')
 const {} = require('../helpers/helpers')
 const { object } = require('joi')
@@ -722,7 +723,7 @@ const bookExtremePackage = async (req, res) => {
       })
     }
     const room = await RoomModel.findOne({ where: { roomNumber: roomNumber } })
-    const { roomId, roomType, roomSize } = room
+    const { roomId, roomType, roomSize1 } = room
     const roomLayout = req.body.roomLayout
     var date = new Date()
     const pack = await extremePackageModel.findOne({
@@ -777,17 +778,23 @@ const bookExtremePackage = async (req, res) => {
       }
     }
     console.log('LOOOOL')
+    if (roomSize1 === roomSize.LARGE) {
+      bookingDetails.price = pack.largePrice
+    } else {
+      bookingDetails.price = pack.smallPrice
+    }
     bookingDetails = {
       startDate: startDate,
       endDate: endDate,
       roomType: roomType,
-      roomSize: roomSize,
+      roomSize: roomSize1,
       roomLayout: roomLayout,
       duration: pack.daysPerWeek,
       status: bookingStatus.PENDING,
       purchasedId: p.id,
       accountId: req.body.Account.id,
       roomId: roomId,
+      price: pack.price,
     }
     booked = await bookingExtreme.create(bookingDetails)
     console.log('AHAHAHAHAHAHAHHAHAHA')

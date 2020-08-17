@@ -20,6 +20,7 @@ bookingExtreme.init(
       type: Sequelize.DATE,
     },
     roomNumber: { type: Sequelize.STRING },
+
     roomType: {
       type: Sequelize.STRING,
     },
@@ -34,6 +35,9 @@ bookingExtreme.init(
     },
     status: {
       type: Sequelize.STRING,
+    },
+    price: {
+      type: Sequelize.INTEGER,
     },
   },
   {
