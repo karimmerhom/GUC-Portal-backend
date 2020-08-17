@@ -161,6 +161,10 @@ const packageStatus = {
   ACTIVE: 'active',
   EXPIRED: 'expired',
 }
+const State = {
+  APPROVED: 'approved',
+
+}
 
 const otpStatus = {
   AVAILABLE: 'available',
@@ -195,4 +199,5 @@ module.exports = {
   packageType,
   otpStatus,
   category,
+  State
 }

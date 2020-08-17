@@ -148,6 +148,12 @@ const editCourse = async (req, res) => {
         statusCode: errorCodes.cousrseDoesntExist,
       })
     }
+    if (courseid.State !== 'pending') {
+      return res.json({
+        msg: 'Your course is approved, you can not edit it',
+        statusCode: '1',
+      })
+    }
     CoursesModel.update(Course, { where: { id: courseID, accountId } })
 
     return res.json({
@@ -198,7 +204,6 @@ const stateChange = async (req, res) => {
     const courseID = Course.id
     const accountId = Account.id
 
-
     const courseid = await CoursesModel.findOne({
       where: {
         id: courseID,
@@ -211,8 +216,9 @@ const stateChange = async (req, res) => {
         statusCode: errorCodes.cousrseDoesntExist,
       })
     }
+
     CoursesModel.update(Course, {
-      where: { id: courseID, accountId},
+      where: { id: courseID, accountId },
     })
     return res.json({
       msg: 'state is updated',
