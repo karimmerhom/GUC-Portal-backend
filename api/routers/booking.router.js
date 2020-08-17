@@ -99,15 +99,15 @@ router.post('/viewAllBookings', verifyAdmin, viewAllBookings)
 router.post('/viewAvailableRooms', viewAvailableRooms)
 
 router.post(
-  '/adminConfirmBooking',
-  // verifyAdmin,
+  '/adminConfirmBookingExtreme',
+  verifyAdmin,
   validateAdminConfirmExtremeBooking,
   adminConfirmExtremeBooking
 )
 
 router.post(
   '/adminConfirmBooking',
-  // verifyAdmin,
+  verifyAdmin,
   validateAdminConfirmBooking,
   adminConfirmBooking
 )
