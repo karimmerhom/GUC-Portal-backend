@@ -67,6 +67,23 @@ const validateAdminConfirmBooking = (req, res, next) => {
   }
   return next()
 }
+const validateAdminConfirmExtremeBooking = (req, res, next) => {
+  const schema = {
+    Account: Joi.object({
+      id: Joi.number().required(),
+    }).required(),
+    bookingId: Joi.number().required(),
+  }
+
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: statusCodes.validation,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
 
 const validateViewDateBookings = (req, res, next) => {
   const schema = {
@@ -130,7 +147,6 @@ const validateBookRoom = (req, res, next) => {
         slots.EIGHTEEN_NINETEEN,
         slots.NINETEEN_TWENTY,
         slots.TWENTY_TWENTYONE,
-        slots.TWENTYONE_TWENTYTWO,
       ])
       .required(),
     roomNumber: Joi.number().valid([1, 2, 3, 4]).required(),
@@ -139,6 +155,32 @@ const validateBookRoom = (req, res, next) => {
       .required(),
     roomLayout: Joi.string().required(),
     roomSize: Joi.string().valid([roomSize.LARGE, roomSize.SMALL]).required(),
+  })
+
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: statusCodes.validation,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
+
+const validateBookExtremePackage = (req, res, next) => {
+  const schema = Joi.object({
+    Account: Joi.object({
+      id: Joi.number().required(),
+    }).required(),
+    packageName: Joi.string().required(),
+    startDate: Joi.date().required(),
+    roomNumber: Joi.number().valid([1, 2, 3, 4]).required(),
+    // roomId: Joi.string(),
+    // roomType: Joi.string()
+    //   .valid([roomType.MEETING, roomType.TRAINING])
+    //   .required(),
+    roomLayout: Joi.string().required(),
+    // roomSize: Joi.string().valid([roomSize.LARGE, roomSize.SMALL]).required(),
   })
 
   const isValid = Joi.validate(req.body, schema)
@@ -198,6 +240,7 @@ const validateEditMyBooking = (req, res, next) => {
   return next()
 }
 module.exports = {
+  validateBookExtremePackage,
   validateViewMyBooking,
   validateCancelBooking,
   validateViewCalendar,
@@ -205,4 +248,5 @@ module.exports = {
   validateEditMyBooking,
   validateBookRoom,
   validateAdminConfirmBooking,
+  validateAdminConfirmExtremeBooking,
 }

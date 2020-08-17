@@ -95,7 +95,6 @@ const slots = {
   EIGHTEEN_NINETEEN: 'EIGHTEEN_NINETEEN',
   NINETEEN_TWENTY: 'NINETEEN_TWENTY',
   TWENTY_TWENTYONE: 'TWENTY_TWENTYONE',
-  TWENTYONE_TWENTYTWO: 'TWENTYONE_TWENTYTWO',
 }
 
 const calStatus = {
@@ -163,7 +162,6 @@ const packageStatus = {
 }
 const State = {
   APPROVED: 'approved',
-
 }
 
 const otpStatus = {
@@ -174,6 +172,15 @@ const otpStatus = {
 const ability = {
   TRUE: 'true',
   FALSE: 'false',
+}
+const bookingType = {
+  REGULAR: 'regular',
+  EXTREME: 'extreme',
+}
+
+const pendingType = {
+  PACKAGES: 'Packages',
+  BOOKINGS: 'Bookings',
 }
 
 module.exports = {
@@ -199,5 +206,8 @@ module.exports = {
   packageType,
   otpStatus,
   category,
-  State
+
+  State,
+  bookingType,
+  pendingType,
 }

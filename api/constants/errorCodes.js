@@ -77,6 +77,8 @@ const nameExists = 138
 const invalidId = 139
 const approvedCourse = 140
 
+const pendingLimitExceeded = 140
+
 module.exports = {
   insufficientPoints,
   invalidOtp,
@@ -121,4 +123,5 @@ module.exports = {
   nameExists,
   invalidId,
   approvedCourse,
+  pendingLimitExceeded
 }
