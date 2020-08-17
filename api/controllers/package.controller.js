@@ -2,6 +2,7 @@ const {
   emailAccessKey,
 } = require('../../config/keys')
 const extremePackage = require('../../models/extremePackage.model')
+const pendings = require('../../models/pending.model')
 const axios = require('axios')
 const regularPackage = require('../../models/regularPackage.model')
 const purchasedPackage = require('../../models/purchasedPackages.model')
@@ -11,6 +12,7 @@ const {
   packageStatus,
   packageType,
   otpStatus,
+  pendingType
 } = require("../constants/TBH.enum")
 const errorCodes = require("../constants/errorCodes")
 const {
@@ -112,9 +114,28 @@ const editPackage = async (req, res) => {
 
 const purchasePackage = async (req, res) => {
   try {
+
     const Type = req.body.packageType
     const Id = req.body.packageId
     const accountId = req.body.Account.id
+    const x = await Promise.all([ purchasedPackage.findAll({
+      where: { accountId: accountId },
+    }) , pendings.findOne({where:{pendingType : pendingType.PACKAGES}})
+    ])
+ 
+    if (x[0]) {
+      
+      const pendingPackages = x[0].filter(
+        (account) =>
+          account.status === packageStatus.PENDING 
+      )
+      if((pendingPackages.length+1)>x[1].value){
+      
+        return res.json({ statusCode: errorCodes.pendingLimitExceeded , error: 'Exceeded number of pending packages' })
+      }
+
+    }
+    
     const r = await addPoints(accountId, Type, Id)
     return res.json(r)
   } catch (exception) {
@@ -122,6 +143,7 @@ const purchasePackage = async (req, res) => {
     return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
+
 
 const cancelPackage = async (req, res) => {
   try {

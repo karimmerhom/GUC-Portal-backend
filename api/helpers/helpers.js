@@ -154,6 +154,7 @@ const addPoints = async (accountId, type, packageId, points = 0) => {
       }
 
       if (points === 0) {
+        
         body.status = packageStatus.PENDING
         body.totalPoints = packageBody.points
       } else {

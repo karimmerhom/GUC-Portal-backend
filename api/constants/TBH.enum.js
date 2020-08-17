@@ -172,6 +172,11 @@ const ability = {
   FALSE: 'false',
 }
 
+const pendingType = {
+  PACKAGES : 'Packages',
+  BOOKINGS : 'Bookings'
+}
+
 module.exports = {
   packageStatus,
   accountStatus,
@@ -195,4 +200,5 @@ module.exports = {
   packageType,
   otpStatus,
   category,
+  pendingType,
 }
