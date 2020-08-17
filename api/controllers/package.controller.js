@@ -2,6 +2,7 @@ const {
   emailAccessKey,
 } = require('../../config/keys')
 const extremePackage = require('../../models/extremePackage.model')
+const bookingExtreme = require('../../models/bookingExtreme.model')
 const pendings = require('../../models/pending.model')
 const axios = require('axios')
 const regularPackage = require('../../models/regularPackage.model')
@@ -439,10 +440,49 @@ const editStatus = async (req, res) => {
   const newStatus = req.body.status
   const bodyId = req.body.purchasedPackageId
   const package = await purchasedPackage.findByPk(bodyId)
+  
   if (!package) {
     return { error: 'no such package' }
   }
   body.status = newStatus
+  
+  if(newStatus === packageStatus.ACTIVE)
+  {
+    const accountId = package.accountId
+    if (package.packageType === packageType.REGULAR)
+    {
+      const regPackage = await regularPackage.findByPk(package.packageId)
+      const price = regPackage.price
+      let text = [package.packageType,regPackage.points]
+      createPurchase(accountId,text,price)
+    }
+    if (package.packageType === packageType.extremePackage)
+    {
+      const bookingrecord = await bookingExtreme.findOne({
+        where: {
+          purchasedId: bodyId
+        }
+      })
+      if (bookingrecord)
+      {
+      const extPackage = await extremePackage.findByPk(package.packageId)
+      const price = bookingrecord.price
+      const size =""
+
+      if(extPackage.largePrice === price )
+      {
+         size = "large group"
+      }
+      if(extPackage.smallPrice === price )
+      {
+          size = "small group"
+      }
+      
+      let text = [package.packageType,extPackage.packageName,size]
+      createPurchase(accountId,text,price)
+      }
+    }
+  }
   await purchasedPackage.update(body, { where: { id: bodyId } })
   return res.json({
     statusCode: errorCodes.success,
