@@ -76,6 +76,8 @@ const insufficientPoints = 139
 const nameExists = 138
 const invalidId = 139
 
+const pendingLimitExceeded = 140
+
 module.exports = {
   insufficientPoints,
   invalidOtp,
@@ -119,4 +121,5 @@ module.exports = {
   cousrseDoesntExist,
   nameExists,
   invalidId,
+  pendingLimitExceeded
 }
