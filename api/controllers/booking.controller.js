@@ -44,20 +44,16 @@ const calculatePrice = async (type, slots) => {
     var pricing = {}
     pricing.points = 0
     pricing.cash = 0
-    // console.log(type)
-    // console.log(slots)
 
     const pricingfound = await pricingModel.findOne({
       where: { pricingType: 'flat_rate', roomType: type },
     })
     pricing.cash = pricingfound.value * slots
-    console.log(pricing.cash)
 
     const pricingfound1 = await pricingModel.findOne({
       where: { pricingType: 'points', roomType: type },
     })
     pricing.points = pricingfound1.value * slots
-    console.log(pricing.points)
 
     return pricing
   } catch (exception) {
@@ -70,10 +66,8 @@ const viewCalendar = async (req, res) => {
     const { startDate, filterRoomType, filterRoomSize } = req.body
 
     const rooms = await RoomModel.findAll()
-    console.log(rooms.length)
 
     for (i = 0; i < rooms.length; i++) {
-      console.log(rooms[i])
       var room = rooms[i]
       var r = {}
       r.roomNumber = room.roomNumber
@@ -337,8 +331,6 @@ const viewAvailableRooms = async (req, res) => {
         },
       })
 
-      console.log(calendar)
-
       let flag = false
       for (let k = 0; k < calendar.length; k++) {
         availableRooms = availableRooms.filter(
@@ -351,7 +343,6 @@ const viewAvailableRooms = async (req, res) => {
     }
     return res.json({ statusCode: 0, availableRooms })
   } catch (e) {
-    console.log(e.message)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -418,9 +409,7 @@ const bookRoom = async (req, res) => {
         bookingDetails.slots.length
       )
       if (bookingDetails.paymentMethod === paymentMethods.POINTS) {
-        console.log(pricing.points)
         const e = await deductPoints(req.body.Account.id, pricing.points)
-        console.log(e)
         if (e.error !== 'success') {
           return res.json({ error: e.error, statusCode: 7000 })
         }
@@ -476,7 +465,6 @@ const bookRoom = async (req, res) => {
       return res.json({ statusCode: 0 })
     }
   } catch (e) {
-    console.log(e.message)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -543,7 +531,6 @@ const tryBooking = async (req, res) => {
       )
       if (bookingDetails.paymentMethod === paymentMethods.POINTS) {
         const e = await deductPoints(pricing.points, req.body.Account.id)
-        console.log(e)
         if (e.error !== 'success') {
           res.json({ error: e.error, statusCode: 7000 })
         }
@@ -604,11 +591,9 @@ const cancelBooking = async (req, res) => {
         { status: bookingStatus.CANCELED },
         { where: { id: bookingId } }
       )
-      console.log('YYYY')
       await CalendarModel.destroy({
         where: { bookingId: bookingId },
       })
-      console.log('YYYY')
 
       return res.json({ statusCode: errorCodes.success })
     } else {
@@ -651,7 +636,6 @@ const viewAllBookings = async (req, res) => {
 
     return res.json({ booking, statusCode: errorCodes.success })
   } catch (exception) {
-    console.log(exception.message)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -707,7 +691,6 @@ const adminConfirmBooking = async (req, res) => {
         text,
         parseInt(booked.priceCash)
       )
-      console.log(c)
       await BookingModel.update(
         { status: bookingStatus.CONFIRMED },
         { where: { id: req.body.bookingId } }
@@ -729,7 +712,6 @@ const adminConfirmBooking = async (req, res) => {
       })
     }
   } catch (e) {
-    console.log(e)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -742,9 +724,6 @@ const adminConfirmExtremeBooking = async (req, res) => {
       where: { id: req.body.bookingId },
     })
 
-    console.log('A70oooo')
-
-    console.log(booked)
     if (booked) {
       if (booked.status === bookingStatus.CANCELED) {
         return res.json({ statusCode: 7000, error: 'booking was canceled' })
@@ -767,7 +746,6 @@ const adminConfirmExtremeBooking = async (req, res) => {
         text,
         parseInt(booked.price)
       )
-      console.log(c)
       bookingExtreme.update(
         { status: bookingStatus.CONFIRMED },
         { where: { id: req.body.bookingId } }
@@ -795,7 +773,6 @@ const adminConfirmExtremeBooking = async (req, res) => {
       })
     }
   } catch (e) {
-    console.log(e)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -816,7 +793,6 @@ const bookExtremePackage = async (req, res) => {
     }
 
     const aa = await viewAvailableRoomsHelper(startDate, packageName)
-    console.log(aa)
     if (aa.indexOf(roomNumber) === -1) {
       return res.json({
         error: 'This room is not available',
@@ -831,7 +807,6 @@ const bookExtremePackage = async (req, res) => {
     const pack = await extremePackageModel.findOne({
       where: { packageName: packageName },
     })
-    console.log(pack)
 
     let slots = [
       'NINE_TEN',
@@ -854,11 +829,7 @@ const bookExtremePackage = async (req, res) => {
 
     const p = await addPoints(req.body.Account.id, packageType.EXTREME, pack.id)
 
-    console.log('HEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
-    console.log(p)
-
     if (p.statusCode === 0) {
-      console.log('HEHEHEHEHEHEHEHEH')
       purchaseId = p.purchaseId
     } else {
       return res.json({
@@ -866,7 +837,6 @@ const bookExtremePackage = async (req, res) => {
         statusCode: 7000,
       })
     }
-    console.log('A7eeehehehehehehe')
     var endDate = new Date()
 
     var d = 0
@@ -874,12 +844,10 @@ const bookExtremePackage = async (req, res) => {
       d = d + i
       date.setDate(startDate.getDate() + d)
       if (date.getDay() === 5) {
-        console.log('this is a friday')
         d = d + 1
         date.setDate(startDate.getDate() + d)
       }
     }
-    console.log('LOOOOL')
 
     bookingDetails = {
       startDate: startDate,
@@ -901,13 +869,11 @@ const bookExtremePackage = async (req, res) => {
       bookingDetails.price = pack.smallPrice
     }
     booked = await bookingExtreme.create(bookingDetails)
-    console.log('AHAHAHAHAHAHAHHAHAHA')
 
     for (let i = 0; i < pack.daysPerWeek; i++) {
       d = d + i
       date.setDate(startDate.getDate() + d)
       if (date.getDay() === 5) {
-        console.log('this is a friday')
         d = d + 1
         date.setDate(startDate.getDate() + d)
       }
@@ -926,7 +892,6 @@ const bookExtremePackage = async (req, res) => {
 
     return res.json({ statusCode: errorCodes.success })
   } catch (e) {
-    console.log(e.message)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -990,8 +955,6 @@ const viewAvailableRoomsHelper = async (startDate, extremeType) => {
         slot: { [Op.or]: slotsNeeded },
       },
     })
-
-    console.log(calendar)
 
     let flag = false
     for (let k = 0; k < calendar.length; k++) {
