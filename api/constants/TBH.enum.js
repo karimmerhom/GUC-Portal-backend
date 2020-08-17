@@ -170,7 +170,10 @@ const ability = {
   TRUE: 'true',
   FALSE: 'false',
 }
-
+const bookingType = {
+  REGULAR: 'regular',
+  EXTREME: 'extreme',
+}
 module.exports = {
   packageStatus,
   accountStatus,

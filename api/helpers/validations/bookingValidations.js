@@ -147,7 +147,6 @@ const validateBookRoom = (req, res, next) => {
         slots.EIGHTEEN_NINETEEN,
         slots.NINETEEN_TWENTY,
         slots.TWENTY_TWENTYONE,
-        slots.TWENTYONE_TWENTYTWO,
       ])
       .required(),
     roomNumber: Joi.number().valid([1, 2, 3, 4]).required(),

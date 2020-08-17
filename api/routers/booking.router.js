@@ -52,17 +52,17 @@ router.post(
 )
 router.post(
   '/editBooking',
-  // verifyToken,
-  // verifyUser,
-  // verifiedPhone,
+  verifyToken,
+  verifyUser,
+  verifiedPhone,
   validateEditMyBooking,
   editBooking
 )
 router.post(
   '/tryEditBooking',
-  // verifyToken,
-  // verifyUser,
-  // verifiedPhone,
+  verifyToken,
+  verifyUser,
+  verifiedPhone,
   validateEditMyBooking,
   tryEditBooking
 )
@@ -100,14 +100,14 @@ router.post('/viewAvailableRooms', viewAvailableRooms)
 
 router.post(
   '/adminConfirmBooking',
-  // verifyAdmin,
+  verifyAdmin,
   validateAdminConfirmExtremeBooking,
   adminConfirmExtremeBooking
 )
 
 router.post(
   '/adminConfirmBooking',
-  // verifyAdmin,
+  verifyAdmin,
   validateAdminConfirmBooking,
   adminConfirmBooking
 )

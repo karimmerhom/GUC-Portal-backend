@@ -26,6 +26,7 @@ const {
   bookingStatus,
   paymentMethods,
   packageType,
+  bookingType,
 } = require('../constants/TBH.enum')
 const {} = require('../helpers/helpers')
 const { object } = require('joi')
@@ -343,7 +344,7 @@ const bookRoom = async (req, res) => {
       where: { pendingType: 'Bookings' },
     })
     const mybookings = await BookingModel.findAll({
-      where: { accountId: res.body.Account.id, status: bookingStatus.PENDING },
+      where: { accountId: req.body.Account.id, status: bookingStatus.PENDING },
     })
     if (mybookings.length >= pend.value) {
       res.json({
@@ -386,7 +387,7 @@ const bookRoom = async (req, res) => {
         const e = await deductPoints(pricing.points, req.body.Account.id)
         console.log(e)
         if (e.error !== 'success') {
-          res.json({ error: e.error, statusCode: 7000 })
+          return res.json({ error: e.error, statusCode: 7000 })
         }
       } else {
         const p = await pendingModel.findOne({
@@ -440,6 +441,7 @@ const bookRoom = async (req, res) => {
       return res.json({ statusCode: 0 })
     }
   } catch (e) {
+    console.log(e.message)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -808,6 +810,7 @@ const bookExtremePackage = async (req, res) => {
           status: bookingStatus.PENDING,
           slot: slots[i],
           bookingId: booked.id,
+          bookingType: bookingType.EXTREME,
         })
       }
     }
