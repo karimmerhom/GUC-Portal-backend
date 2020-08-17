@@ -180,7 +180,7 @@ const validateBookExtremePackage = (req, res, next) => {
     //   .valid([roomType.MEETING, roomType.TRAINING])
     //   .required(),
     roomLayout: Joi.string().required(),
-    // roomSize: Joi.string().valid([roomSize.LARGE, roomSize.SMALL]).required(),
+    roomSize: Joi.string().valid([roomSize.LARGE, roomSize.SMALL]).required(),
   })
 
   const isValid = Joi.validate(req.body, schema)

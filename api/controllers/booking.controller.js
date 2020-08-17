@@ -740,6 +740,16 @@ const adminConfirmExtremeBooking = async (req, res) => {
         booked.roomSize,
         moment(booked.date).format('ll'),
       ]
+      const package = await purchasedPackagesModel.findOne({
+        where: { id: booked.purchasedId },
+      })
+
+      if (package.status === packageStatus.ACTIVE) {
+        return res.json({
+          statusCode: errorCodes.unknown,
+          error: 'package already active',
+        })
+      }
 
       const c = await createPurchase(
         booked.accountId,
@@ -784,7 +794,7 @@ const bookExtremePackage = async (req, res) => {
     const packageName = req.body.packageName
     const startDate = new Date(req.body.startDate)
     const roomNumber = req.body.roomNumber
-
+    console.log(startDate)
     if (new Date(startDate) < new Date()) {
       return res.json({
         error: 'you cannot book in past date',
@@ -842,10 +852,10 @@ const bookExtremePackage = async (req, res) => {
     var d = 0
     for (let i = 0; i < pack.daysPerWeek; i++) {
       d = d + i
-      date.setDate(startDate.getDate() + d)
-      if (date.getDay() === 5) {
+      endDate.setDate(startDate.getDate() + d)
+      if (endDate.getDay() === 5) {
         d = d + 1
-        date.setDate(startDate.getDate() + d)
+        endDate.setDate(startDate.getDate() + d)
       }
     }
 
@@ -869,14 +879,14 @@ const bookExtremePackage = async (req, res) => {
       bookingDetails.price = pack.smallPrice
     }
     booked = await bookingExtreme.create(bookingDetails)
+    d = 0
+    date = startDate
 
     for (let i = 0; i < pack.daysPerWeek; i++) {
-      d = d + i
-      date.setDate(startDate.getDate() + d)
       if (date.getDay() === 5) {
-        d = d + 1
-        date.setDate(startDate.getDate() + d)
+        date.setDate(date.getDate() + 1)
       }
+      console.log(moment(date).format('dddd'))
 
       for (let i = startSlot; i < endSlot; i++) {
         await CalendarModel.create({
@@ -888,6 +898,7 @@ const bookExtremePackage = async (req, res) => {
           bookingType: bookingType.EXTREME,
         })
       }
+      date.setDate(date.getDate() + 1)
     }
 
     return res.json({ statusCode: errorCodes.success })
