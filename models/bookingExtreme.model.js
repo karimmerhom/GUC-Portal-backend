@@ -6,38 +6,30 @@ const { roomSize, roomType } = require('../api/constants/TBH.enum')
 
 const UserModel = require('./account.model')
 const RoomModel = require('./room.model')
+const purchasedPackagesModel = require('./purchasedPackages.model')
 
 const { Model } = Sequelize
 
-class Booking extends Model {}
-Booking.init(
+class bookingExtreme extends Model {}
+bookingExtreme.init(
   {
-    date: {
+    startDate: {
       type: Sequelize.DATE,
     },
-    expiryDate: {
+    endDate: {
       type: Sequelize.DATE,
     },
-    slots: {
-      type: Sequelize.ARRAY(Sequelize.STRING),
-    },
+    roomNumber: { type: Sequelize.STRING },
     roomType: {
       type: Sequelize.STRING,
     },
-
     roomSize: {
       type: Sequelize.STRING,
     },
     roomLayout: {
       type: Sequelize.STRING,
     },
-    pricePoints: {
-      type: Sequelize.STRING,
-    },
-    priceCash: {
-      type: Sequelize.STRING,
-    },
-    paymentMethod: {
+    duration: {
       type: Sequelize.STRING,
     },
     status: {
@@ -49,7 +41,8 @@ Booking.init(
     timestamps: true,
   }
 )
-Booking.belongsTo(UserModel, { foreignKey: 'accountId' })
-Booking.belongsTo(RoomModel, { foreignKey: 'roomId' })
+bookingExtreme.belongsTo(purchasedPackagesModel, { foreignKey: 'purchasedId' })
+bookingExtreme.belongsTo(UserModel, { foreignKey: 'accountId' })
+bookingExtreme.belongsTo(RoomModel, { foreignKey: 'roomId' })
 
-module.exports = Booking
+module.exports = bookingExtreme
