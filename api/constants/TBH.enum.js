@@ -197,4 +197,5 @@ module.exports = {
   packageType,
   otpStatus,
   category,
+  bookingType,
 }
