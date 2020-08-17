@@ -54,7 +54,6 @@ const viewCourse = async (req, res) => {
   try {
     const { Account, Course } = req.body
     const { id } = Course
-    const accountId = req.body.accountId
     const type = req.data.type
 
     const checkCourse = await CoursesModel.findOne({
@@ -68,7 +67,7 @@ const viewCourse = async (req, res) => {
         statusCode: errorCodes.cousrseDoesntExist,
       })
     }
-    if (type !== 'admin' && accountId !== Account.id) {
+    if (type !== 'admin' && checkCourse.accountId !== Account.id) {
       return res.json({
         error: 'Unauthorized',
         statusCode: errorCodes.unauthorized,
@@ -198,7 +197,6 @@ const stateChange = async (req, res) => {
     const courseID = Course.id
     const accountId = Account.id
 
-
     const courseid = await CoursesModel.findOne({
       where: {
         id: courseID,
@@ -212,7 +210,7 @@ const stateChange = async (req, res) => {
       })
     }
     CoursesModel.update(Course, {
-      where: { id: courseID, accountId},
+      where: { id: courseID, accountId },
     })
     return res.json({
       msg: 'state is updated',
