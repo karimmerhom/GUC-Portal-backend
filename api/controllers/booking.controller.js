@@ -9,6 +9,10 @@ const pendingModel = require('../../models/pending.model')
 const expiryModel = require('../../models/expiry.model')
 const extremePackageModel = require('../../models/extremePackage.model')
 const bookingExtreme = require('../../models/bookingExtreme.model')
+<<<<<<< HEAD
+=======
+const moment = require('moment')
+>>>>>>> 4a48d6b5f7ae803576c72a5dfd27f43d51bc82c4
 const { createPurchase } = require('../helpers/helpers')
 const validator = require('../helpers/validations/bookingValidations')
 const errorCodes = require('../constants/errorCodes')
@@ -33,6 +37,7 @@ const { object } = require('joi')
 const { calendar } = require('googleapis/build/src/apis/calendar')
 const Pricing = require('../../models/pricing.model')
 const { deductPoints, addPoints } = require('../helpers/helpers')
+const { forgotPassword } = require('../constants/errorCodes')
 
 const calculatePrice = async (type, slots) => {
   try {
@@ -644,7 +649,6 @@ const viewDateBookings = async (req, res) => {
 }
 const adminConfirmBooking = async (req, res) => {
   try {
-    const accountId = body.Account.id
     const booked = await BookingModel.findOne({
       where: { id: req.body.bookingId },
     })
@@ -662,12 +666,25 @@ const adminConfirmBooking = async (req, res) => {
       let text = [
         booked.roomType,
         booked.roomSize,
+<<<<<<< HEAD
         booked.roomLayout,
         booked.date,
         booked.slots,
       ]
 
       createPurchase(accountId, text, booked.priceCash)
+=======
+        moment(booked.date).format('ll'),
+        booked.slots.length + ' hours',
+      ]
+
+      const c = await createPurchase(
+        booked.accountId,
+        text,
+        parseInt(booked.priceCash)
+      )
+      console.log(c)
+>>>>>>> 4a48d6b5f7ae803576c72a5dfd27f43d51bc82c4
       await BookingModel.update(
         { status: bookingStatus.CONFIRMED },
         { where: { id: req.body.bookingId } }
@@ -680,6 +697,7 @@ const adminConfirmBooking = async (req, res) => {
       })
     }
   } catch (e) {
+    console.log(e)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -709,6 +727,7 @@ const adminConfirmExtremeBooking = async (req, res) => {
       let text = [
         booked.roomType,
         booked.roomSize,
+<<<<<<< HEAD
         booked.roomLayout,
         booked.startDate,
         booked.endDate,
@@ -717,9 +736,27 @@ const adminConfirmExtremeBooking = async (req, res) => {
       ]
       createPurchase(accountId, text, booked.price)
       await BookingModel.update(
+=======
+        moment(booked.date).format('ll'),
+        booked.slots.length + ' hours',
+      ]
+
+      const c = await createPurchase(
+        booked.accountId,
+        text,
+        parseInt(booked.priceCash)
+      )
+      console.log(c)
+      BookingModel.update(
+>>>>>>> 4a48d6b5f7ae803576c72a5dfd27f43d51bc82c4
         { status: bookingStatus.CONFIRMED },
         { where: { id: req.body.bookingId } }
       )
+      CalendarModel.update(
+        { status: bookingStatus.CONFIRMED },
+        { where: { bookingId: req.body.bookingId } }
+      )
+
       return res.json({ statusCode: errorCodes.success })
     } else {
       return res.json({

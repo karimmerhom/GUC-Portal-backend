@@ -7,7 +7,7 @@ class Purchases extends Model {}
 Purchases.init(
   {
     narrative: {
-      type: Sequelize.STRING,
+      type: Sequelize.TEXT,
     },
     price: {
       type: Sequelize.DOUBLE,
