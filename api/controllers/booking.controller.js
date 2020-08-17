@@ -163,8 +163,6 @@ const editBooking = async (req, res) => {
         booked.destroy()
         bookRoom(req, res)
         return res.json({ statusCode: errorCodes.success })
-<<<<<<< HEAD
-=======
       }
     } else {
       return res.json({
@@ -221,15 +219,12 @@ const tryEditBooking = async (req, res) => {
         })
       } else {
         return res.json({ statusCode: errorCodes.success, bookingDetails })
->>>>>>> f2800bd77fefa62a47380999da7c16681240d8c4
       }
     } else {
       return res.json({
         statusCode: errorCodes.unknown,
         error: 'Booking not found',
       })
-<<<<<<< HEAD
-=======
     }
   } catch (e) {
     return res.json({
@@ -288,7 +283,6 @@ const viewAvailableRooms = async (req, res) => {
       slots.EIGHTEEN_NINETEEN,
       slots.NINETEEN_TWENTY,
       slots.TWENTY_TWENTYONE,
-      slots.TWENTYONE_TWENTYTWO,
     ]
 
     let slotsNeeded = []
@@ -326,7 +320,6 @@ const viewAvailableRooms = async (req, res) => {
 
       if (dayNumber !== 5) i++
       date.setDate(date.getDate() + 1)
->>>>>>> f2800bd77fefa62a47380999da7c16681240d8c4
     }
   } catch (e) {
     return res.json({
@@ -345,6 +338,19 @@ const bookRoom = async (req, res) => {
     const roomFound = await RoomModel.findOne({
       where: { roomNumber: bookingDetails.roomNumber },
     })
+
+    const pend = await pendingModel.findOne({
+      where: { pendingType: 'Bookings' },
+    })
+    const mybookings = await BookingModel.findAll({
+      where: { accountId: res.body.Account.id, status: bookingStatus.PENDING },
+    })
+    if (mybookings.length >= pend.value) {
+      res.json({
+        error: 'you have exceeded the allowed number of pending orders',
+        statusCode: 7000,
+      })
+    }
 
     if (!roomFound) {
       res.json({ error: 'room doesnt exist', statusCode: 7000 })
@@ -403,13 +409,7 @@ const bookRoom = async (req, res) => {
 
       const j = await expiryModel.findOne()
       var expiryDate = new Date()
-      expiryDate.setDate(expiryDate.getDate() + j.duration)
-      if (j.on_off === 'on') {
-        const scheduleJob = cron.job(expiryDate, async () => {
-          await expireBooking(booking.id)
-        })
-        scheduleJob.start()
-      }
+
       bookingDetails.expiryDate = expiryDate
       bookingDetails.pricePoints = pricing.points
       bookingDetails.priceCash = pricing.cash
@@ -417,6 +417,14 @@ const bookRoom = async (req, res) => {
       //uncomment this three lines when the model is fixed
 
       const booked = await BookingModel.create(bookingDetails)
+
+      expiryDate.setDate(expiryDate.getDate() + j.duration)
+      if (j.on_off === 'on') {
+        const scheduleJob = cron.job(expiryDate, async () => {
+          await expireBooking(booked.id)
+        })
+        scheduleJob.start()
+      }
       for (let i = 0; i < bookingDetails.slots.length; i++) {
         let sl = bookingDetails.slots[i]
 
@@ -449,6 +457,18 @@ const tryBooking = async (req, res) => {
       where: { roomNumber: bookingDetails.roomNumber },
     })
 
+    const pend = await pendingModel.findOne({
+      where: { pendingType: 'Bookings' },
+    })
+    const mybookings = await BookingModel.findAll({
+      where: { accountId: res.body.Account.id, status: bookingStatus.PENDING },
+    })
+    if (mybookings.length >= pend.value) {
+      res.json({
+        error: 'you have exceeded the allowed number of pending orders',
+        statusCode: 7000,
+      })
+    }
     if (!roomFound) {
       res.json({ error: 'room doesnt exist', statusCode: 7000 })
     }
@@ -652,6 +672,41 @@ const adminConfirmBooking = async (req, res) => {
     })
   }
 }
+const adminConfirmExtremeBooking = async (req, res) => {
+  try {
+    const booked = await bookingExtreme.findOne({
+      where: { id: req.body.bookingId },
+    })
+
+    if (booked) {
+      if (booked.status === bookingStatus.CANCELED) {
+        return res.json({ statusCode: 7000, error: 'booking was canceled' })
+      }
+      if (booked.status === bookingStatus.CONFIRMED) {
+        return res.json({
+          statusCode: 7000,
+          error: 'booking is already confirmed',
+        })
+      }
+
+      await BookingModel.update(
+        { status: bookingStatus.CONFIRMED },
+        { where: { id: req.body.bookingId } }
+      )
+      return res.json({ statusCode: errorCodes.success })
+    } else {
+      return res.json({
+        statusCode: errorCodes.unknown,
+        error: 'Booking not found',
+      })
+    }
+  } catch (e) {
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
+  }
+}
 const bookExtremePackage = async (req, res) => {
   try {
     const packageName = req.body.packageName
@@ -766,8 +821,6 @@ const bookExtremePackage = async (req, res) => {
     })
   }
 }
-
-
 const viewAvailableRoomsHelper = async (startDate, extremeType) => {
   const weekDays = [
     'Sunday',
@@ -819,22 +872,20 @@ const viewAvailableRoomsHelper = async (startDate, extremeType) => {
   while (i < extreme.daysPerWeek) {
     let dayNumber = date.getDay()
 
-    for (let j = 0; j < slotsNeeded.length; j++) {
-      const calendar = await CalendarModel.findAll({
-        where: {
-          date: date,
-          slot: slotsNeeded[j],
-        },
-      })
+    const calendar = await CalendarModel.findAll({
+      where: {
+        date: date,
+        slot: { [Op.or]: slotsNeeded },
+      },
+    })
 
-      console.log(calendar)
+    console.log(calendar)
 
-      let flag = false
-      for (let k = 0; k < calendar.length; k++) {
-        availableRooms = availableRooms.filter(
-          (room) => calendar[k].roomNumber !== room
-        )
-      }
+    let flag = false
+    for (let k = 0; k < calendar.length; k++) {
+      availableRooms = availableRooms.filter(
+        (room) => calendar[k].roomNumber !== room
+      )
     }
 
     if (dayNumber !== 5) i++
@@ -844,6 +895,7 @@ const viewAvailableRoomsHelper = async (startDate, extremeType) => {
 }
 
 module.exports = {
+  adminConfirmExtremeBooking,
   bookExtremePackage,
   viewCalendar,
   cancelBooking,
