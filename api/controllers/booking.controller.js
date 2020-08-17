@@ -9,7 +9,7 @@ const pendingModel = require('../../models/pending.model')
 const expiryModel = require('../../models/expiry.model')
 const extremePackageModel = require('../../models/extremePackage.model')
 const bookingExtreme = require('../../models/bookingExtreme.model')
-
+const {createPurchase} = require("../helpers/helpers")
 const validator = require('../helpers/validations/bookingValidations')
 const errorCodes = require('../constants/errorCodes')
 const { Op, where, INTEGER } = require('sequelize')
@@ -641,6 +641,7 @@ const viewDateBookings = async (req, res) => {
 }
 const adminConfirmBooking = async (req, res) => {
   try {
+    const accountId = body.Account.id
     const booked = await BookingModel.findOne({
       where: { id: req.body.bookingId },
     })
@@ -655,7 +656,9 @@ const adminConfirmBooking = async (req, res) => {
           error: 'booking is already confirmed',
         })
       }
-
+      let text = [booked.roomType,booked.roomSize,booked.roomLayout,booked.date,booked.slots]
+     
+      createPurchase(accountId,text,booked.priceCash)
       await BookingModel.update(
         { status: bookingStatus.CONFIRMED },
         { where: { id: req.body.bookingId } }
@@ -690,7 +693,13 @@ const adminConfirmExtremeBooking = async (req, res) => {
           error: 'booking is already confirmed',
         })
       }
-
+      const booked = await bookingExt.findOne({
+        where: { id: req.body.bookingId },
+      })
+  
+     
+      let text = [booked.roomType,booked.roomSize,booked.roomLayout,booked.startDate,booked.endDate,booked.duration,booked.slots]
+      createPurchase(accountId,text,booked.price)
       await BookingModel.update(
         { status: bookingStatus.CONFIRMED },
         { where: { id: req.body.bookingId } }
