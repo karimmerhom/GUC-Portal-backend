@@ -439,6 +439,9 @@ const editStatus = async (req, res) => {
   const newStatus = req.body.status
   const bodyId = req.body.purchasedPackageId
   const package = await purchasedPackage.findByPk(bodyId)
+  if (!package) {
+    return { error: 'no such package' }
+  }
   body.status = newStatus
   await purchasedPackage.update(body, { where: { id: bodyId } })
   return res.json({
