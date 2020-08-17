@@ -710,17 +710,25 @@ const adminConfirmExtremeBooking = async (req, res) => {
       let text = [
         booked.roomType,
         booked.roomSize,
-        booked.roomLayout,
-        booked.startDate,
-        booked.endDate,
-        booked.duration,
-        booked.slots,
+        moment(booked.date).format('ll'),
+        booked.slots.length + ' hours',
       ]
-      createPurchase(accountId, text, booked.price)
-      await BookingModel.update(
+
+      const c = await createPurchase(
+        booked.accountId,
+        text,
+        parseInt(booked.priceCash)
+      )
+      console.log(c)
+      BookingModel.update(
         { status: bookingStatus.CONFIRMED },
         { where: { id: req.body.bookingId } }
       )
+      CalendarModel.update(
+        { status: bookingStatus.CONFIRMED },
+        { where: { bookingId: req.body.bookingId } }
+      )
+
       return res.json({ statusCode: errorCodes.success })
     } else {
       return res.json({
