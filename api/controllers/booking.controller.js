@@ -9,7 +9,10 @@ const pendingModel = require('../../models/pending.model')
 const expiryModel = require('../../models/expiry.model')
 const extremePackageModel = require('../../models/extremePackage.model')
 const bookingExtreme = require('../../models/bookingExtreme.model')
+<<<<<<< HEAD
+=======
 const moment = require('moment')
+>>>>>>> 4a48d6b5f7ae803576c72a5dfd27f43d51bc82c4
 const { createPurchase } = require('../helpers/helpers')
 const validator = require('../helpers/validations/bookingValidations')
 const errorCodes = require('../constants/errorCodes')
@@ -27,6 +30,7 @@ const {
   bookingStatus,
   paymentMethods,
   packageType,
+  bookingType,
 } = require('../constants/TBH.enum')
 const {} = require('../helpers/helpers')
 const { object } = require('joi')
@@ -265,7 +269,7 @@ const viewAvailableRooms = async (req, res) => {
       22,
     ]
 
-    const extreme = await extremeModel.findOne({
+    const extreme = await extremePackageModel.findOne({
       where: {
         packageName: extremeType,
       },
@@ -323,7 +327,9 @@ const viewAvailableRooms = async (req, res) => {
       if (dayNumber !== 5) i++
       date.setDate(date.getDate() + 1)
     }
+    return res.json({ statusCode: 0, availableRooms })
   } catch (e) {
+    console.log(e.message)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -345,7 +351,7 @@ const bookRoom = async (req, res) => {
       where: { pendingType: 'Bookings' },
     })
     const mybookings = await BookingModel.findAll({
-      where: { accountId: res.body.Account.id, status: bookingStatus.PENDING },
+      where: { accountId: req.body.Account.id, status: bookingStatus.PENDING },
     })
     if (mybookings.length >= pend.value) {
       res.json({
@@ -385,10 +391,11 @@ const bookRoom = async (req, res) => {
         bookingDetails.slots.length
       )
       if (bookingDetails.paymentMethod === paymentMethods.POINTS) {
-        const e = await deductPoints(pricing.points, req.body.Account.id)
+        console.log(pricing.points)
+        const e = await deductPoints(req.body.Account.id, pricing.points)
         console.log(e)
         if (e.error !== 'success') {
-          res.json({ error: e.error, statusCode: 7000 })
+          return res.json({ error: e.error, statusCode: 7000 })
         }
       } else {
         const p = await pendingModel.findOne({
@@ -442,6 +449,7 @@ const bookRoom = async (req, res) => {
       return res.json({ statusCode: 0 })
     }
   } catch (e) {
+    console.log(e.message)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -658,6 +666,14 @@ const adminConfirmBooking = async (req, res) => {
       let text = [
         booked.roomType,
         booked.roomSize,
+<<<<<<< HEAD
+        booked.roomLayout,
+        booked.date,
+        booked.slots,
+      ]
+
+      createPurchase(accountId, text, booked.priceCash)
+=======
         moment(booked.date).format('ll'),
         booked.slots.length + ' hours',
       ]
@@ -668,6 +684,7 @@ const adminConfirmBooking = async (req, res) => {
         parseInt(booked.priceCash)
       )
       console.log(c)
+>>>>>>> 4a48d6b5f7ae803576c72a5dfd27f43d51bc82c4
       await BookingModel.update(
         { status: bookingStatus.CONFIRMED },
         { where: { id: req.body.bookingId } }
@@ -710,6 +727,16 @@ const adminConfirmExtremeBooking = async (req, res) => {
       let text = [
         booked.roomType,
         booked.roomSize,
+<<<<<<< HEAD
+        booked.roomLayout,
+        booked.startDate,
+        booked.endDate,
+        booked.duration,
+        booked.slots,
+      ]
+      createPurchase(accountId, text, booked.price)
+      await BookingModel.update(
+=======
         moment(booked.date).format('ll'),
         booked.slots.length + ' hours',
       ]
@@ -721,6 +748,7 @@ const adminConfirmExtremeBooking = async (req, res) => {
       )
       console.log(c)
       BookingModel.update(
+>>>>>>> 4a48d6b5f7ae803576c72a5dfd27f43d51bc82c4
         { status: bookingStatus.CONFIRMED },
         { where: { id: req.body.bookingId } }
       )
@@ -844,6 +872,7 @@ const bookExtremePackage = async (req, res) => {
           status: bookingStatus.PENDING,
           slot: slots[i],
           bookingId: booked.id,
+          bookingType: bookingType.EXTREME,
         })
       }
     }
