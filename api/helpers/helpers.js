@@ -80,7 +80,7 @@ const deductPoints = async (accountId, points) => {
 
     points -= availablePoints
   }
-  return { statusCode: errorCodes.success, error: 'success' }
+  return { statusCode: errorCodes.success }
 }
 
 const refund = async (accountId, points) => {
@@ -134,7 +134,7 @@ const refund = async (accountId, points) => {
     // package.usedPoints = parseInt(package.totalPoints)
     points -= availablePoints
   }
-  return { statusCode: errorCodes.success, error: 'success' }
+  return { statusCode: errorCodes.success }
 }
 
 const addPoints = async (accountId, type, packageId, points = 0) => {
@@ -174,7 +174,6 @@ const addPoints = async (accountId, type, packageId, points = 0) => {
       return {
         packageId: packageId,
         statusCode: errorCodes.success,
-        error: 'success',
       }
     }
     if (type === packageType.EXTREME) {
@@ -212,16 +211,20 @@ const addPoints = async (accountId, type, packageId, points = 0) => {
 }
 const createPurchase = async (accountId, textArray, price) => {
   try {
+    console.log('here')
     const body = {}
     body.accountId = accountId
     var narrativeValue = ''
     for (i = 0; i < textArray.length; i++) {
-      narrativeValue += textArray[i] + ' '
+      narrativeValue += textArray[i] + ' ,'
     }
     body.narrative = narrativeValue
     body.price = price
-    await purchases.create(body)
+    console.log(body)
+    const x = await purchases.create(body)
+    console.log('here2')
   } catch (exception) {
+    console.log(exception)
     return { code: errorCodes.unknown, error: 'failed to add purchase' }
   }
 }
