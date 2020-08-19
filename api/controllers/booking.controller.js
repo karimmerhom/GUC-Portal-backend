@@ -27,6 +27,7 @@ const {
   slots,
   calStatus,
   bookingStatus,
+  packageStatus,
   paymentMethods,
   packageType,
   bookingType,
@@ -585,7 +586,10 @@ const cancelBooking = async (req, res) => {
       if (booking.status == bookingStatus.CANCELED) {
         return res.json({ statusCode: 7000, error: 'booking already canceled' })
       }
-      if (booking.accountId !== accountId) {
+      if (
+        booking.accountId !== accountId &&
+        req.data.type !== userTypes.ADMIN
+      ) {
         return res.json({ statusCode: 7000, error: 'Not the users booking' })
       }
 
@@ -594,7 +598,7 @@ const cancelBooking = async (req, res) => {
         { where: { id: bookingId } }
       )
       await CalendarModel.destroy({
-        where: { bookingId: bookingId },
+        where: { bookingId: bookingId, bookingType: bookingType.REGULAR },
       })
 
       return res.json({ statusCode: errorCodes.success })
@@ -786,6 +790,7 @@ const adminConfirmExtremeBooking = async (req, res) => {
       })
     }
   } catch (e) {
+    console.log(e)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
