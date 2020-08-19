@@ -481,9 +481,8 @@ const editStatus = async (req, res) => {
     const newStatus = req.body.status
     const bodyId = req.body.purchasedPackageId
     const package = await purchasedPackage.findByPk(bodyId)
-
     if (!package) {
-      return { error: 'no such package' }
+      return res.json({ error: 'no such package' })
     }
     body.status = newStatus
 
@@ -494,70 +493,76 @@ const editStatus = async (req, res) => {
           error: 'package already active',
         })
       }
+    }
 
-      const accountId = package.accountId
-      console.log(package.packageType)
-      if (package.packageType === packageType.REGULAR) {
-        const regPackage = await regularPackage.findByPk(package.packageId)
-        const price = regPackage.price
-        let text = [package.packageType, regPackage.points]
-        createPurchase(accountId, text, price)
-      }
-      if (package.packageType === packageType.EXTREME) {
-        const bookingrecord = await bookingExtreme.findOne({
-          where: {
-            purchasedId: bodyId,
-          },
-        })
-        console.log(bookingrecord)
-        if (bookingrecord) {
-          const extPackage = await extremePackage.findByPk(package.packageId)
-          const price = bookingrecord.price
-          console.log(price)
-          let size = ''
+    const accountId = package.accountId
+    console.log(package.packageType)
+    if (package.packageType === packageType.REGULAR) {
+      const regPackage = await regularPackage.findByPk(package.packageId)
+      const price = regPackage.price
+      let text = [package.packageType, regPackage.points]
+      console.log('in regular')
+      createPurchase(accountId, text, price)
+    }
+    console.log(package.packageType)
+    if (package.packageType === packageType.EXTREME) {
+      console.log('extreme')
+      const bookingrecord = await bookingExtreme.findOne({
+        where: {
+          purchasedId: bodyId,
+        },
+      })
+      console.log(bookingrecord)
+      if (bookingrecord) {
+        const extPackage = await extremePackage.findByPk(package.packageId)
+        const price = bookingrecord.price
+        console.log(price)
+        let size = ''
 
-          if (extPackage.largePrice === price) {
-            size = 'large group'
-          }
-          if (extPackage.smallPrice === price) {
-            size = 'small group'
-          }
-
-          let text = [
-            package.packageType,
-            extPackage.packageName,
-            size,
-            moment(bookingrecord.startDate).format('ll'),
-          ]
-          console.log('a7oooooooooo')
-          console.log(accountId, text, price)
-          await createPurchase(accountId, text, price)
-
-          await bookingExtreme.update(
-            { status: bookingStatus.CONFIRMED },
-            { where: { id: bookingrecord.id } }
-          )
-          console.log('here1')
-          await purchasedPackage.update(
-            { status: packageStatus.ACTIVE },
-            { where: { id: bookingrecord.purchasedId } }
-          )
-          console.log('here2')
-          await CalendarModel.update(
-            { status: bookingStatus.CONFIRMED },
-            {
-              where: {
-                bookingId: bookingrecord.id,
-                bookingType: bookingType.EXTREME,
-              },
-            }
-          )
-          console.log('here3')
+        if (extPackage.largePrice === price) {
+          size = 'large group'
         }
+        if (extPackage.smallPrice === price) {
+          size = 'small group'
+        }
+
+        let text = [
+          package.packageType,
+          extPackage.packageName,
+          size,
+          moment(bookingrecord.startDate).format('ll'),
+        ]
+        await createPurchase(accountId, text, price)
+
+        await bookingExtreme.update(
+          { status: bookingStatus.CONFIRMED },
+          { where: { id: bookingrecord.id } }
+        )
+        console.log('here1')
+        await purchasedPackage.update(
+          { status: packageStatus.ACTIVE },
+          { where: { id: bookingrecord.purchasedId } }
+        )
+        console.log('here2')
+        await CalendarModel.update(
+          { status: bookingStatus.CONFIRMED },
+          {
+            where: {
+              bookingId: bookingrecord.id,
+              bookingType: bookingType.EXTREME,
+            },
+          }
+        )
+        console.log('here3')
       }
     } else {
-      await purchasedPackage.update(body, { where: { id: bodyId } })
+      console.log('here updated')
+      await purchasedPackage.update(
+        { status: req.body.status },
+        { where: { id: bodyId } }
+      )
     }
+    console.log('here outsidde')
     return res.json({
       statusCode: errorCodes.success,
     })

@@ -108,8 +108,7 @@ router.post(
 router.post(
   '/editStatus',
   validateEditStatus,
-  // verifyToken,
-  // verifyAdmin,
+  verifyAdmin,
   editStatus
 )
 

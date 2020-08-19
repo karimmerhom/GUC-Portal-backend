@@ -2,7 +2,7 @@ const Sequelize = require('sequelize')
 
 const sequelize = require('../config/DBConfig')
 
-const { roomSize, roomType } = require('../api/constants/TBH.enum')
+const { bookingType } = require('../api/constants/TBH.enum')
 
 const { Model } = Sequelize
 
@@ -26,7 +26,7 @@ Calendar.init(
     },
     bookingType: {
       type: Sequelize.STRING,
-      defaultValue: 'REGULAR',
+      defaultValue: bookingType.REGULAR,
     },
   },
   {

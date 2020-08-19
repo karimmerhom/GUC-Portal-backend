@@ -37,10 +37,10 @@ const {
 
 router.post(
   '/bookRoom',
+  validateBookRoom,
   verifyToken,
   verifyUser,
   verifiedPhone,
-  validateBookRoom,
   bookRoom
 )
 router.post(
@@ -52,18 +52,18 @@ router.post(
 )
 router.post(
   '/editBooking',
-  // verifyToken,
-  // verifyUser,
-  // verifiedPhone,
   validateEditMyBooking,
+  verifyToken,
+  verifyUser,
+  verifiedPhone,
   editBooking
 )
 router.post(
   '/tryEditBooking',
-  // verifyToken,
-  // verifyUser,
-  // verifiedPhone,
   validateEditMyBooking,
+  verifyToken,
+  verifyUser,
+  verifiedPhone,
   tryEditBooking
 )
 router.post(
@@ -100,14 +100,14 @@ router.post('/viewAvailableRooms', viewAvailableRooms)
 
 router.post(
   '/adminConfirmExtremeBooking',
-  // verifyAdmin,
+  verifyAdmin,
   validateAdminConfirmExtremeBooking,
   adminConfirmExtremeBooking
 )
 
 router.post(
   '/adminConfirmBooking',
-  // verifyAdmin,
+  verifyAdmin,
   validateAdminConfirmBooking,
   adminConfirmBooking
 )

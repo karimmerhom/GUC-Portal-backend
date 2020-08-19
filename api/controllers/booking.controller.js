@@ -31,6 +31,8 @@ const {
   packageType,
   bookingType,
   roomSize,
+  roomType,
+  slotStatus,
 } = require('../constants/TBH.enum')
 const {} = require('../helpers/helpers')
 const { object } = require('joi')
@@ -73,21 +75,27 @@ const viewCalendar = async (req, res) => {
       r.roomNumber = room.roomNumber
       r.filtered = false
       r.notFreeSlots = {}
-
-      if (
-        room.roomType !== filterRoomType ||
-        room.roomSize !== filterRoomSize
-      ) {
-        r.filtered = true
-        calendar.push(r)
+      if (filterRoomSize || filterRoomType) {
+        if (filterRoomType) {
+          if (room.roomType !== filterRoomType) {
+            r.filtered = true
+            calendar.push(r)
+          }
+        }
+        if (filterRoomSize) {
+          if (room.roomSize !== filterRoomSize) {
+            r.filtered = true
+            calendar.push(r)
+          }
+        }
       } else {
         const slots = await CalendarModel.findAll({
           where: {
             roomNumber: r.roomNumber,
-            date: startDate,
+            date: new Date(startDate).setHours(2, 0, 0, 0),
           },
         })
-
+        console.log(slots)
         const notslots = slots.map((s) => {
           const sl = {
             slotName: s.slot,
@@ -147,7 +155,7 @@ const editBooking = async (req, res) => {
           where: {
             bookingId: { [Op.not]: req.body.bookingId },
             roomNumber: bookingDetails.roomNumber,
-            date: bookingDetails.date,
+            date: new Date(bookingDetails.date).setHours(2, 0, 0, 0),
             slot: sl,
           },
         })
@@ -222,7 +230,7 @@ const tryEditBooking = async (req, res) => {
           where: {
             bookingId: { [Op.not]: req.body.bookingId },
             roomNumber: bookingDetails.roomNumber,
-            date: bookingDetails.date,
+            date: new Date(bookingDetails.date).setHours(2, 0, 0, 0),
             slot: sl,
           },
         })
@@ -326,7 +334,7 @@ const viewAvailableRooms = async (req, res) => {
 
       const calendar = await CalendarModel.findAll({
         where: {
-          date: date,
+          date: new Date(date).setHours(2, 0, 0, 0),
           slot: { [Op.or]: slotsNeeded },
         },
       })
@@ -391,7 +399,7 @@ const bookRoom = async (req, res) => {
       const notAvSl = await CalendarModel.findAll({
         where: {
           roomNumber: bookingDetails.roomNumber,
-          date: bookingDetails.date,
+          date: new Date(bookingDetails.date).setHours(2, 0, 0, 0),
           slot: sl,
         },
       })
@@ -410,7 +418,8 @@ const bookRoom = async (req, res) => {
       )
       if (bookingDetails.paymentMethod === paymentMethods.POINTS) {
         const e = await deductPoints(req.body.Account.id, pricing.points)
-        if (e.error !== 'success') {
+        if (e.statusCode !== errorCodes.success) {
+          console.log(e)
           return res.json({ error: e.error, statusCode: 7000 })
         }
       } else {
@@ -455,7 +464,7 @@ const bookRoom = async (req, res) => {
 
         await CalendarModel.create({
           roomNumber: bookingDetails.roomNumber,
-          date: bookingDetails.date,
+          date: new Date(bookingDetails.date).setHours(2, 0, 0, 0),
           status: bookingDetails.status,
           slot: sl,
           bookingId: booked.id,
@@ -465,6 +474,7 @@ const bookRoom = async (req, res) => {
       return res.json({ statusCode: 0 })
     }
   } catch (e) {
+    console.log(e)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -512,7 +522,7 @@ const tryBooking = async (req, res) => {
       const notAvSl = await CalendarModel.findAll({
         where: {
           roomNumber: bookingDetails.roomNumber,
-          date: bookingDetails.date,
+          date: new Date(bookingDetails.date).setHours(2, 0, 0, 0),
           slot: sl,
         },
       })
@@ -712,6 +722,7 @@ const adminConfirmBooking = async (req, res) => {
       })
     }
   } catch (e) {
+    console.log(e)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -889,7 +900,7 @@ const bookExtremePackage = async (req, res) => {
       for (let i = startSlot; i < endSlot; i++) {
         await CalendarModel.create({
           roomNumber: roomNumber,
-          date: date,
+          date: new Date(date).setHours(2, 0, 0, 0),
           status: bookingStatus.PENDING,
           slot: slots[i],
           bookingId: booked.id,
@@ -960,7 +971,7 @@ const viewAvailableRoomsHelper = async (startDate, extremeType) => {
 
     const calendar = await CalendarModel.findAll({
       where: {
-        date: date,
+        date: new Date(date).setHours(2, 0, 0, 0),
         slot: { [Op.or]: slotsNeeded },
       },
     })

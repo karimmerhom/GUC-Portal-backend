@@ -33,6 +33,19 @@ const populate_admins = async () => {
     type: userTypes.ADMIN,
   })
 
+  password = 'Hoss1234'
+  hashed_pass = bcrypt.hashSync(password, saltKey)
+  accountCreated = await AccountModel.create({
+    username: 'hoss',
+    password: hashed_pass,
+    firstName: 'Mohamed',
+    lastName: 'Hossam',
+    phone: '01158280719',
+    email: 'mohamed.hossam@lirten.com',
+    status: accountStatus.VERIFIED,
+    type: userTypes.ADMIN,
+  })
+
   return { code: errorCodes.success }
 }
 
