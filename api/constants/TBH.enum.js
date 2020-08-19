@@ -108,6 +108,7 @@ const bookingStatus = {
   CONFIRMED: 'confirmed',
   PENDING: 'pending',
   CANCELED: 'canceled',
+  EXPIRED: 'expired',
 }
 
 const eventStatus = {
