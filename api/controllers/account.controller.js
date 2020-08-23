@@ -663,7 +663,7 @@ const unlink_facebook = async (req, res) => {
   try {
     const { Account } = req.body
     const account = await AccountModel.findOne({
-      where: { id: Account.id },
+      where: { id: parseInt(Account.id) },
     })
     if (!account) {
       return res.json({
@@ -684,6 +684,7 @@ const unlink_facebook = async (req, res) => {
       statusCode: errorCodes.success,
     })
   } catch (exception) {
+    console.log(exception)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -695,7 +696,7 @@ const unlink_google = async (req, res) => {
   try {
     const { Account } = req.body
     const account = await AccountModel.findOne({
-      where: { id: Account.id },
+      where: { id: parseInt(Account.id) },
     })
     if (!account) {
       return res.json({
