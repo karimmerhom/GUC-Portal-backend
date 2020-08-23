@@ -22,6 +22,8 @@ const {
   login_google,
   register_facebook,
   login_facebook,
+  unlink_google,
+  unlink_facebook,
 } = accountController
 
 const {
@@ -51,6 +53,7 @@ const {
   validateLoginGoogle,
   validateConfirmVerifyEmail,
   validateCallbackGoogle,
+  validateUnlink,
 } = require('../helpers/validations/accountValidations')
 
 router.post('/register', validateAccount, register)
@@ -109,6 +112,20 @@ router.post('/facebookcallback', validateCallbackGoogle, facebook_callback)
 router.post('/googlecallback', validateCallbackGoogle, callback)
 router.post('/registergoogle', validateAccountGoogle, register_google)
 router.post('/logingoogle', validateLoginGoogle, login_google)
+router.post(
+  '/unlinkGoogle',
+  validateUnlink,
+  verifyToken,
+  verifyUser,
+  unlink_google
+)
+router.post(
+  '/unlinkFacebook',
+  validateUnlink,
+  verifyToken,
+  verifyUser,
+  unlink_facebook
+)
 router.post('/registerfacebook', validateAccountGoogle, register_facebook)
 router.post('/loginfacebook', validateLoginGoogle, login_facebook)
 router.post(
