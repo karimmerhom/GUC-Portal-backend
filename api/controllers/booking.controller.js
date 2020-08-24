@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs')
 const axios = require('axios')
 const jwt = require('jsonwebtoken')
+const cron = require('cron')
 const BookingModel = require('../../models/booking.model')
 const CalendarModel = require('../../models/calendar.model')
 const RoomModel = require('../../models/room.model')
@@ -443,10 +444,16 @@ const bookRoom = async (req, res) => {
       expiryDate.setDate(expiryDate.getDate() + j.duration)
       if (j.on_off === 'on') {
         const scheduleJob = cron.job(expiryDate, async () => {
-          await BookingModel.update(
+          BookingModel.update(
             { status: bookingStatus.EXPIRED },
             { where: { id: booked.id } }
           )
+          CalendarModel.destroy({
+            where: {
+              bookingId: booked.id,
+              bookingType: bookingType.REGULAR,
+            },
+          })
         })
         scheduleJob.start()
       }
