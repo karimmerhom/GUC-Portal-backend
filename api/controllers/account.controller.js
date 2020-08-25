@@ -1028,6 +1028,7 @@ const get_profile = async (req, res) => {
       profile: account,
     })
   } catch (exception) {
+    console.log(exception)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
