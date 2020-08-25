@@ -34,7 +34,7 @@ const register = async (req, res) => {
     })
     if (findUsername) {
       return res.json({
-        statusCode: errorCodes.emailExists,
+        statusCode: errorCodes.usernameExists,
         error: 'Username already exists',
       })
     }
@@ -43,7 +43,7 @@ const register = async (req, res) => {
     })
     if (findPhone) {
       return res.json({
-        statusCode: errorCodes.emailExists,
+        statusCode: errorCodes.phoneExists,
         error: 'Phone number already exists',
       })
     }
@@ -1016,7 +1016,6 @@ const get_profile = async (req, res) => {
     return res.json({
       statusCode: errorCodes.success,
       profile: account,
-      state: account.status,
     })
   } catch (exception) {
     return res.json({
