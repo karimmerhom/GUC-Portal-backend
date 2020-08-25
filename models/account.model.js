@@ -43,6 +43,12 @@ Account.init(
       type: Sequelize.BOOLEAN,
       defaultValue: false,
     },
+    birthdate: {
+      type: Sequelize.STRING,
+    },
+    gender: {
+      type: Sequelize.STRING,
+    },
     facebookId: {
       type: Sequelize.STRING,
     },

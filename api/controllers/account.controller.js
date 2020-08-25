@@ -140,10 +140,21 @@ const update_profile = async (req, res) => {
         error: 'Account must be verified',
       })
     }
-    if (Account.birthdate) {
-      const check = new Date(Account.birthdate)
+    if (Account.hasOwnProperty('username')) {
+      const checkUsername = await AccountModel.findOne({
+        where: {
+          username: Account.username,
+        },
+      })
+      if (checkUsername) {
+        return res.json({
+          statusCode: errorCodes.usernameExists,
+          message: 'username already exists',
+        })
+      }
     }
-
+    delete Account.id
+    AccountModel.update(Account, { where: { id: Account.id } })
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
     return res.json({
@@ -913,7 +924,6 @@ const change_phone = async (req, res) => {
       {
         phone: Account.phoneNumber,
         status: accountStatus.PENDING,
-        verificationCode: statusCode,
       },
       {
         where: {

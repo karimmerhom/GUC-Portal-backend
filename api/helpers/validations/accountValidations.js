@@ -46,15 +46,10 @@ const validateUpdateProfile = (req, res, next) => {
       .object({
         firstName: joi.string().min(3),
         lastName: joi.string().min(3),
-        phoneNumber: joi
-          .string()
-          .trim()
-          .regex(/^[0-9]{11,11}$/),
-        email: joi.string().email(),
+        username: joi.string().min(3),
         id: joi.number().required(),
         gender: joi.string().valid('Male', 'Female'),
         birthdate: joi.date(),
-        profession: joi.string(),
       })
       .required(),
   }

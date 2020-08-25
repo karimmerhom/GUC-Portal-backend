@@ -436,6 +436,7 @@ const bookRoom = async (req, res) => {
       bookingDetails.expiryDate = expiryDate
       bookingDetails.pricePoints = pricing.points
       bookingDetails.priceCash = pricing.cash
+      bookingDetails.date = new Date(bookingDetails.date).setHours(2, 0, 0, 0)
 
       //uncomment this three lines when the model is fixed
 
