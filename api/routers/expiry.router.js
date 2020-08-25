@@ -16,18 +16,18 @@ const { verifyUser } = require('../../config/authUser')
 
 router.post(
   '/setExpiryDuration',
-  //verifyAdmin,
+  verifyAdmin,
   validateSetExpiryDuration,
   setExpiryDuration
 )
 router.post(
   '/turnOnExpiry',
-  //verifyAdmin,
+  verifyAdmin,
   turnOnExpiry
 )
 router.post(
   '/turnOffExpiry',
-  //verifyAdmin,
+  verifyAdmin,
   turnOffExpiry
 )
 

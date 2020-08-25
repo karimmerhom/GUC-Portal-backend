@@ -154,7 +154,7 @@ const update_profile = async (req, res) => {
       }
     }
     delete Account.id
-    AccountModel.update(Account, { where: { id: Account.id } })
+    AccountModel.update(Account, { where: { id } })
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
     return res.json({
