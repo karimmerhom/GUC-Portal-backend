@@ -431,18 +431,18 @@ const bookRoom = async (req, res) => {
       }
 
       const j = await expiryModel.findOne()
-      var expiryDate = new Date()
 
       bookingDetails.expiryDate = expiryDate
       bookingDetails.pricePoints = pricing.points
       bookingDetails.priceCash = pricing.cash
       bookingDetails.date = new Date(bookingDetails.date).setHours(2, 0, 0, 0)
-
+      console.log(new Date(bookingDetails.date))
       //uncomment this three lines when the model is fixed
-
+      var expiryDate = new Date()
+      expiryDate.setDate(expiryDate.getDate() + j.duration)
+      console.log(expiryDate)
       const booked = await BookingModel.create(bookingDetails)
 
-      expiryDate.setDate(expiryDate.getDate() + j.duration)
       if (j.on_off === 'on') {
         const scheduleJob = cron.job(expiryDate, async () => {
           BookingModel.update(
@@ -463,7 +463,7 @@ const bookRoom = async (req, res) => {
 
         await CalendarModel.create({
           roomNumber: bookingDetails.roomNumber,
-          date: new Date(bookingDetails.date).setHours(2, 0, 0, 0),
+          date: bookingDetails.date,
           status: bookingDetails.status,
           slot: sl,
           bookingId: booked.id,
