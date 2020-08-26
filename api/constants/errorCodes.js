@@ -95,7 +95,14 @@ const bookingAlreadyCanceled = 153
 const bookingAlreadyConfirmed = 154
 const roomNotAvailable = 155
 const packageCannotBePurchased = 156
+
+const setExpiryDurationOff = 157
+
+const pricingAlreadyExists = 158
+
 module.exports = {
+  setExpiryDurationOff,
+  pricingAlreadyExists,
   roomNotAvailable,
   packageCannotBePurchased,
   pastDateBooking,
