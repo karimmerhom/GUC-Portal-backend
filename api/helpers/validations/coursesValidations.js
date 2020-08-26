@@ -70,6 +70,7 @@ const validateViewAllCourses = (req, res, next) => {
     Account: Joi.object({
       id: Joi.number().required(),
     }),
+    accountId: Joi.number().required(),
   }
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {

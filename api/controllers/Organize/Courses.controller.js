@@ -90,7 +90,7 @@ const viewAllCourses = async (req, res) => {
     const accountId = req.body.accountId
     const type = req.data.type
 
-    const checkCourse = await CoursesModel.findOne({
+    const checkCourse = await CoursesModel.findAll({
       where: {
         accountId,
       },
@@ -108,10 +108,11 @@ const viewAllCourses = async (req, res) => {
       })
     }
 
-    return res.json({ AllCourses: result, statusCode: errorCodes.success })
+    return res.json({ AllCourses: checkCourse, statusCode: errorCodes.success })
   } catch (exception) {
+    console.log(exception)
     return res.json({
-      error: 'no courses found',
+      error: 'Something went wrong',
       statusCode: errorCodes.unknown,
     })
   }
@@ -147,12 +148,6 @@ const editCourse = async (req, res) => {
         statusCode: errorCodes.cousrseDoesntExist,
       })
     }
-    if (courseid.State !== 'pending') {
-      return res.json({
-        msg: 'Your course is approved, you can not edit it',
-        statusCode: errorCodes.approvedCourse,
-      })
-    }
     CoursesModel.update(Course, { where: { id: courseID, accountId } })
 
     return res.json({
@@ -182,12 +177,6 @@ const deleteCourse = async (req, res) => {
       return res.json({
         msg: 'course doesnt exist',
         statusCode: errorCodes.cousrseDoesntExist,
-      })
-    }
-    if (courseid.State !== 'pending') {
-      return res.json({
-        msg: 'Your course is approved, you can not delete it',
-        statusCode: errorCodes.approvedCourse,
       })
     }
     CoursesModel.destroy({ where: { id: courseID, accountId } })
@@ -221,7 +210,6 @@ const stateChange = async (req, res) => {
         statusCode: errorCodes.cousrseDoesntExist,
       })
     }
-
     CoursesModel.update(Course, {
       where: { id: courseID, accountId },
     })
