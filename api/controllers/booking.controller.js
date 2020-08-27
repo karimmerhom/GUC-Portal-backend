@@ -440,7 +440,6 @@ const bookRoom = async (req, res) => {
       bookingDetails.pricePoints = pricing.points
       bookingDetails.priceCash = pricing.cash
       bookingDetails.date = new Date(bookingDetails.date).toUTCString()
-      console.log(new Date(bookingDetails.date))
       //uncomment this three lines when the model is fixed
       var expiryDate = new Date()
       expiryDate.setDate(expiryDate.getDate() + j.duration)
@@ -474,7 +473,7 @@ const bookRoom = async (req, res) => {
         })
       }
 
-      return res.json({ statusCode: 0 })
+      return res.json({ statusCode: 0, booked })
     }
   } catch (e) {
     console.log(e)
