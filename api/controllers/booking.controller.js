@@ -396,7 +396,7 @@ const bookRoom = async (req, res) => {
       const notAvSl = await CalendarModel.findAll({
         where: {
           roomNumber: bookingDetails.roomNumber,
-          date: new Date(bookingDetails.date).toUTCString(),
+          date: new Date(bookingDetails.date).setHours(0, 0, 0, 0),
           slot: sl,
         },
       })
@@ -443,7 +443,7 @@ const bookRoom = async (req, res) => {
       bookingDetails.expiryDate = expiryDate
       bookingDetails.pricePoints = pricing.points
       bookingDetails.priceCash = pricing.cash
-      bookingDetails.date = new Date(bookingDetails.date).toUTCString()
+      bookingDetails.date = new Date(bookingDetails.date).setHours(0, 0, 0, 0)
       //uncomment this three lines when the model is fixed
       var expiryDate = new Date()
       expiryDate.setDate(expiryDate.getDate() + j.duration)
