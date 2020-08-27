@@ -490,9 +490,7 @@ const tryBooking = async (req, res) => {
     const status =
       bookingDetails.paymentMethod === 'points' ? 'confirmed' : 'pending'
     bookingDetails.status = status
-    if (
-      new Date(bookingDetails.date).toUTCString() < new Date().toUTCString()
-    ) {
+    if (new Date(bookingDetails.date) < new Date()) {
       return res.json({
         error: 'you cannot book in past date',
         statusCode: errorCodes.pastDateBooking,
