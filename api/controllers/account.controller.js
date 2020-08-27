@@ -146,7 +146,7 @@ const update_profile = async (req, res) => {
           username: Account.username,
         },
       })
-      if (checkUsername) {
+      if (checkUsername && checkUsername.id !== Account.id) {
         return res.json({
           statusCode: errorCodes.usernameExists,
           message: 'username already exists',

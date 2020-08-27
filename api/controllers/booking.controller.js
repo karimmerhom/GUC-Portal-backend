@@ -348,6 +348,7 @@ const viewAvailableRooms = async (req, res) => {
 }
 const bookRoom = async (req, res) => {
   try {
+    console.log('here')
     let bookingDetails = req.body
     const status =
       bookingDetails.paymentMethod === 'points' ? 'confirmed' : 'pending'
@@ -391,7 +392,7 @@ const bookRoom = async (req, res) => {
       const notAvSl = await CalendarModel.findAll({
         where: {
           roomNumber: bookingDetails.roomNumber,
-          date: new Date(bookingDetails.date).setHours(2, 0, 0, 0),
+          date: new Date(bookingDetails.date).toUTCString(),
           slot: sl,
         },
       })
@@ -438,7 +439,7 @@ const bookRoom = async (req, res) => {
       bookingDetails.expiryDate = expiryDate
       bookingDetails.pricePoints = pricing.points
       bookingDetails.priceCash = pricing.cash
-      bookingDetails.date = new Date(bookingDetails.date).setHours(2, 0, 0, 0)
+      bookingDetails.date = new Date(bookingDetails.date).toUTCString()
       console.log(new Date(bookingDetails.date))
       //uncomment this three lines when the model is fixed
       var expiryDate = new Date()
@@ -489,7 +490,9 @@ const tryBooking = async (req, res) => {
     const status =
       bookingDetails.paymentMethod === 'points' ? 'confirmed' : 'pending'
     bookingDetails.status = status
-    if (new Date(bookingDetails.date) < new Date()) {
+    if (
+      new Date(bookingDetails.date).toUTCString() < new Date().toUTCString()
+    ) {
       return res.json({
         error: 'you cannot book in past date',
         statusCode: errorCodes.pastDateBooking,
@@ -527,7 +530,7 @@ const tryBooking = async (req, res) => {
       const notAvSl = await CalendarModel.findAll({
         where: {
           roomNumber: bookingDetails.roomNumber,
-          date: new Date(bookingDetails.date).setHours(2, 0, 0, 0),
+          date: new Date(bookingDetails.date).toUTCString(),
           slot: sl,
         },
       })
@@ -677,7 +680,7 @@ const viewDateBookings = async (req, res) => {
 
     const booking = await BookingModel.findAll({
       where: {
-        date: date,
+        date: new Date(date).toUTCString(),
       },
     })
     if (booking === []) {
@@ -832,19 +835,16 @@ const adminConfirmExtremeBooking = async (req, res) => {
 const bookExtremePackage = async (req, res) => {
   try {
     const packageName = req.body.packageName
-    const startDate = new Date(req.body.startDate)
+    const startDate = new Date(req.body.startDate).toUTCString()
     const roomNumber = req.body.roomNumber
-    if (new Date(startDate) < new Date()) {
+    if (new Date(startDate) < new Date().toUTCString()) {
       return res.json({
         error: 'you cannot book in past date',
         statusCode: 7000,
       })
     }
 
-    const aa = await viewAvailableRoomsHelper(
-      new Date(startDate).setHours(2, 0, 0, 0),
-      packageName
-    )
+    const aa = await viewAvailableRoomsHelper(new Date(startDate), packageName)
     if (aa.indexOf(roomNumber) === -1) {
       return res.json({
         error: 'This room is not available',
@@ -855,7 +855,7 @@ const bookExtremePackage = async (req, res) => {
     const roomSize1 = req.body.roomSize
     const { roomType } = room
     const roomLayout = req.body.roomLayout
-    var date = new Date()
+    var date = new Date().toUTCString()
     const pack = await extremePackageModel.findOne({
       where: { packageName: packageName },
     })
@@ -890,7 +890,7 @@ const bookExtremePackage = async (req, res) => {
         statusCode: errorCodes.packageCannotBePurchased,
       })
     }
-    var endDate = new Date(startDate)
+    var endDate = new Date(startDate).toUTCString()
     console.log(endDate)
     for (let i = 0; i < pack.daysPerWeek; i++) {
       if (endDate.getDay() === 5) {
@@ -901,8 +901,8 @@ const bookExtremePackage = async (req, res) => {
     }
 
     bookingDetails = {
-      startDate: new Date(startDate).setHours(2, 0, 0, 0),
-      endDate: endDate,
+      startDate: new Date(startDate).toUTCString(),
+      endDate: new Date(endDate).toUTCString(),
       roomType: roomType,
       roomNumber: roomNumber,
       roomSize: roomSize1,
@@ -983,14 +983,14 @@ const viewAvailableRoomsHelper = async (startDate, extremeType) => {
   }
 
   let i = 0
-  var date = new Date(startDate)
+  var date = new Date(startDate).toUTCString()
 
   while (i < extreme.daysPerWeek) {
     let dayNumber = date.getDay()
 
     const calendar = await CalendarModel.findAll({
       where: {
-        date: new Date(date).setHours(2, 0, 0, 0),
+        date: new Date(date).toUTCString(),
         slot: { [Op.or]: slotsNeeded },
       },
     })
