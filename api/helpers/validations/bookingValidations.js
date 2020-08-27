@@ -13,7 +13,7 @@ const validateViewCalendar = (req, res, next) => {
     Account: Joi.object({
       id: Joi.number().required(),
     }).required(),
-    startDate: Joi.string().required(),
+    startDate: Joi.date().required(),
     filterRoomType: Joi.string().valid([
       roomType.MEETING,
       roomType.TRAINING,
