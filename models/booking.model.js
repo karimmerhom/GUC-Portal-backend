@@ -13,10 +13,10 @@ class Booking extends Model {}
 Booking.init(
   {
     date: {
-      type: Sequelize.DATE,
+      type: Sequelize.STRING,
     },
     expiryDate: {
-      type: Sequelize.DATE,
+      type: Sequelize.STRING,
     },
     slots: {
       type: Sequelize.ARRAY(Sequelize.STRING),

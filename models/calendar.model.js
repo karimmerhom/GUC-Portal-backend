@@ -13,7 +13,7 @@ Calendar.init(
       type: Sequelize.INTEGER,
     },
     date: {
-      type: Sequelize.DATE,
+      type: Sequelize.STRING,
     },
     status: {
       type: Sequelize.STRING,

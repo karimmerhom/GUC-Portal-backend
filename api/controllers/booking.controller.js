@@ -69,7 +69,6 @@ const viewCalendar = async (req, res) => {
   try {
     var calendar = []
     const { startDate, filterRoomType, filterRoomSize } = req.body
-    console.log(new Date(startDate).toUTCString())
     const rooms = await RoomModel.findAll()
 
     for (i = 0; i < rooms.length; i++) {
@@ -95,7 +94,7 @@ const viewCalendar = async (req, res) => {
         const slots = await CalendarModel.findAll({
           where: {
             roomNumber: r.roomNumber,
-            date: new Date(startDate).toUTCString(),
+            date: new Date(startDate).toDateString(),
           },
         })
         console.log(slots)
@@ -116,7 +115,7 @@ const viewCalendar = async (req, res) => {
     return res.json({
       calendar,
       statusCode: errorCodes.success,
-      date: new Date(startDate).toUTCString(),
+      date: new Date(startDate).toDateString(),
     })
   } catch (exception) {
     return res.json({
@@ -165,7 +164,7 @@ const editBooking = async (req, res) => {
           where: {
             bookingId: { [Op.not]: req.body.bookingId },
             roomNumber: bookingDetails.roomNumber,
-            date: new Date(bookingDetails.date).toUTCString(),
+            date: new Date(bookingDetails.date).toDateString(),
             slot: sl,
           },
         })
@@ -246,7 +245,7 @@ const tryEditBooking = async (req, res) => {
           where: {
             bookingId: { [Op.not]: req.body.bookingId },
             roomNumber: bookingDetails.roomNumber,
-            date: new Date(bookingDetails.date).toUTCString(),
+            date: new Date(bookingDetails.date).toDateString(),
             slot: sl,
           },
         })
@@ -396,7 +395,7 @@ const bookRoom = async (req, res) => {
       const notAvSl = await CalendarModel.findAll({
         where: {
           roomNumber: bookingDetails.roomNumber,
-          date: new Date(bookingDetails.date).setHours(0, 0, 0, 0),
+          date: new Date(bookingDetails.date).toDateString(),
           slot: sl,
         },
       })
@@ -443,9 +442,7 @@ const bookRoom = async (req, res) => {
       bookingDetails.expiryDate = expiryDate
       bookingDetails.pricePoints = pricing.points
       bookingDetails.priceCash = pricing.cash
-      console.log(bookingDetails.date)
-      bookingDetails.date = new Date(bookingDetails.date).setHours(0, 0, 0, 0)
-      console.log(bookingDetails.date)
+      bookingDetails.date = new Date(bookingDetails.date).toDateString()
 
       //uncomment this three lines when the model is fixed
       var expiryDate = new Date()
@@ -534,7 +531,7 @@ const tryBooking = async (req, res) => {
       const notAvSl = await CalendarModel.findAll({
         where: {
           roomNumber: bookingDetails.roomNumber,
-          date: new Date(bookingDetails.date).toUTCString(),
+          date: new Date(bookingDetails.date).toDateString(),
           slot: sl,
         },
       })
@@ -684,7 +681,7 @@ const viewDateBookings = async (req, res) => {
 
     const booking = await BookingModel.findAll({
       where: {
-        date: new Date(date).toUTCString(),
+        date: new Date(date).toDateString(),
       },
     })
     if (booking === []) {
@@ -839,9 +836,9 @@ const adminConfirmExtremeBooking = async (req, res) => {
 const bookExtremePackage = async (req, res) => {
   try {
     const packageName = req.body.packageName
-    const startDate = new Date(req.body.startDate).toUTCString()
+    const startDate = new Date(req.body.startDate).toDateString()
     const roomNumber = req.body.roomNumber
-    if (new Date(startDate) < new Date().toUTCString()) {
+    if (new Date(startDate) < new Date()) {
       return res.json({
         error: 'you cannot book in past date',
         statusCode: 7000,
