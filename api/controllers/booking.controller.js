@@ -69,7 +69,7 @@ const viewCalendar = async (req, res) => {
   try {
     var calendar = []
     const { startDate, filterRoomType, filterRoomSize } = req.body
-
+    console.log(new Date(startDate).toUTCString())
     const rooms = await RoomModel.findAll()
 
     for (i = 0; i < rooms.length; i++) {
@@ -113,7 +113,11 @@ const viewCalendar = async (req, res) => {
       }
     }
 
-    return res.json({ calendar, statusCode: errorCodes.success })
+    return res.json({
+      calendar,
+      statusCode: errorCodes.success,
+      date: new Date(startDate).toUTCString(),
+    })
   } catch (exception) {
     return res.json({
       statusCode: errorCodes.unknown,
