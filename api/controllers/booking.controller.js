@@ -95,7 +95,7 @@ const viewCalendar = async (req, res) => {
         const slots = await CalendarModel.findAll({
           where: {
             roomNumber: r.roomNumber,
-            date: new Date(startDate).setHours(2, 0, 0, 0),
+            date: new Date(startDate).toUTCString(),
           },
         })
         console.log(slots)
@@ -161,7 +161,7 @@ const editBooking = async (req, res) => {
           where: {
             bookingId: { [Op.not]: req.body.bookingId },
             roomNumber: bookingDetails.roomNumber,
-            date: new Date(bookingDetails.date).setHours(2, 0, 0, 0),
+            date: new Date(bookingDetails.date).toUTCString(),
             slot: sl,
           },
         })
@@ -242,7 +242,7 @@ const tryEditBooking = async (req, res) => {
           where: {
             bookingId: { [Op.not]: req.body.bookingId },
             roomNumber: bookingDetails.roomNumber,
-            date: new Date(bookingDetails.date).setHours(2, 0, 0, 0),
+            date: new Date(bookingDetails.date).toUTCString(),
             slot: sl,
           },
         })
@@ -322,7 +322,7 @@ const viewAvailableRooms = async (req, res) => {
 
       const calendar = await CalendarModel.findAll({
         where: {
-          date: new Date(date).setHours(2, 0, 0, 0),
+          date: new Date(date).toUTCString(),
           slot: { [Op.or]: slotsNeeded },
         },
       })
@@ -929,7 +929,7 @@ const bookExtremePackage = async (req, res) => {
       for (let j = startSlot; j < endSlot; j++) {
         const x = await CalendarModel.create({
           roomNumber: roomNumber,
-          date: new Date(date).setHours(2, 0, 0, 0),
+          date: new Date(date).toUTCString(),
           status: bookingStatus.PENDING,
           slot: slots[j],
           bookingId: booked.id,
