@@ -63,6 +63,7 @@ const editForm = async (req, res) => {
     FormModel.update(form, { where: { id: formID } })
     return res.json({ msg: 'form is updated', statusCode: errorCodes.success })
   } catch (exception) {
+    console.log(exception)
     return res.json({
       error: 'Something went wrong',
       statusCode: errorCodes.unknown,

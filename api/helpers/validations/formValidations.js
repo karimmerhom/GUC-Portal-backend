@@ -93,7 +93,7 @@ const validateEditForm = (req, res, next) => {
         previousOrganizingExperience.OTHER,
         previousOrganizingExperience.PROF
       ),
-      id: Joi.number(),
+      id: Joi.number().required(),
       placesOrganizedAtPreviously: Joi.string(),
       AvailableAudience: Joi.string().valid(
         AvailableAudience.NOTNOW,
