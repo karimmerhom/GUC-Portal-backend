@@ -127,6 +127,7 @@ const validateViewMyBooking = (req, res, next) => {
     Account: Joi.object({
       id: Joi.number().required(),
     }).required(),
+    type: Joi.string().valid('canceled', 'pending', 'confirmed'),
   })
 
   const isValid = Joi.validate(req.body, schema)

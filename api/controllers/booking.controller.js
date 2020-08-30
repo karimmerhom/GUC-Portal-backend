@@ -373,14 +373,14 @@ const bookRoom = async (req, res) => {
       where: { accountId: req.body.Account.id, status: bookingStatus.PENDING },
     })
     if (mybookings.length >= pend.value) {
-      res.json({
+      return res.json({
         error: 'you have exceeded the allowed number of pending orders',
         statusCode: errorCodes.pendingLimitExceeded,
       })
     }
 
     if (!roomFound) {
-      res.json({
+      return res.json({
         error: 'room doesnt exist',
         statusCode: errorCodes.roomNotFound,
       })
@@ -403,7 +403,7 @@ const bookRoom = async (req, res) => {
     }
 
     if (noAvailableSlots) {
-      res.json({
+      return res.json({
         error: 'one room or more is/are busy in that timeslot',
         statusCode: errorCodes.roomBusy,
       })
@@ -642,15 +642,22 @@ const cancelBooking = async (req, res) => {
 const viewMyBookings = async (req, res) => {
   try {
     const { Account } = req.body
-
     id = Account.id
-
-    const booking = await BookingModel.findAll({
-      where: {
-        accountId: id,
-        status: { [Op.not]: bookingStatus.CANCELED },
-      },
-    })
+    let booking
+    if (req.body.type) {
+      booking = await BookingModel.findAll({
+        where: {
+          accountId: id,
+          status: req.body.type,
+        },
+      })
+    } else {
+      booking = await BookingModel.findAll({
+        where: {
+          accountId: id,
+        },
+      })
+    }
     if (booking === []) {
       return res.json({ statusCode: 7000, error: 'No bookings not found' })
     } else {
@@ -666,7 +673,6 @@ const viewMyBookings = async (req, res) => {
 const viewAllBookings = async (req, res) => {
   try {
     const booking = await BookingModel.findAll()
-
     return res.json({ booking, statusCode: errorCodes.success })
   } catch (exception) {
     return res.json({
