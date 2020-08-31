@@ -301,7 +301,7 @@ const viewMyPurchases = async (req, res) => {
       where: { accountId: req.body.Account.id },
     })
     return res.json({
-      purchasedPackages: { purchases, total: total },
+      purchases,
       statusCode: errorCodes.success,
     })
   } catch (exception) {
