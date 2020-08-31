@@ -9,6 +9,7 @@ const axios = require('axios')
 const regularPackage = require('../../models/regularPackage.model')
 const purchasedPackage = require('../../models/purchasedPackages.model')
 const accountsModel = require('../../models/account.model')
+const purchasesModel = require('../../models/purchases.model')
 const giftModel = require('../../models/giftOtp.model')
 const {
   bookingStatus,
@@ -276,20 +277,29 @@ const viewMyPackages = async (req, res) => {
     const purchases = await purchasedPackage.findAll({
       where: { accountId: req.body.Account.id },
     })
-    if (!purchases) {
-      return { error: 'account did not purchase any packages' }
-    }
-    const activePackages = purchases.filter((account) => {
-      return (
-        account.status === packageStatus.ACTIVE &&
-        account.packageType === packageType.REGULAR
-      )
-    })
 
     let total = 0
     for (package of activePackages) {
       total += parseInt(package.totalPoints)
     }
+    return res.json({
+      purchasedPackages: { purchases, total: total },
+      statusCode: errorCodes.success,
+    })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
+  }
+}
+
+const viewMyPurchases = async (req, res) => {
+  try {
+    const purchases = await purchasesModel.findAll({
+      where: { accountId: req.body.Account.id },
+    })
     return res.json({
       purchasedPackages: { purchases, total: total },
       statusCode: errorCodes.success,
@@ -588,4 +598,5 @@ module.exports = {
   viewAllExtremePackages,
   viewAllRegularPackages,
   editStatus,
+  viewMyPurchases,
 }

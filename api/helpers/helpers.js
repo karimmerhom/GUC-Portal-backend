@@ -162,6 +162,7 @@ const addPoints = async (accountId, type, packageId, points = 0) => {
       }
       body.usedPoints = 0
       body.purchaseDate = new Date().addHours(2)
+      body.packageName = packageBody.packageName
 
       body.expiryDate = body.purchaseDate.addDays(packageBody.expiryDuration)
       const package = await purchasedPackage.create(body)
@@ -187,6 +188,7 @@ const addPoints = async (accountId, type, packageId, points = 0) => {
       body.purchaseDate = new Date().addHours(2)
       body.expiryDate = body.purchaseDate.addDays(packageBody.expiryDuration)
       body.status = packageStatus.PENDING
+      body.packageName = packageBody.packageName
       const package = await purchasedPackage.create(body)
       packageId = package.id
       const scheduleJob = cron.job(body.expiryDate, async () => {
