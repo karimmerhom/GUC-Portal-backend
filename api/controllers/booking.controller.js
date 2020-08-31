@@ -103,6 +103,7 @@ const viewCalendar = async (req, res) => {
             slotName: s.slot,
             status: s.status,
             accountId: s.accountId,
+            bookingId: s.bookingId,
           }
           return sl
         })
