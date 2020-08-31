@@ -292,7 +292,7 @@ const viewMyPackages = async (req, res) => {
     }
     return res.json({
       purchasedPackages: { purchases, total: total },
-      statusCode: 7000,
+      statusCode: errorCodes.success,
     })
   } catch (exception) {
     console.log(exception)
