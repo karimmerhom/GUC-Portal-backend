@@ -254,12 +254,20 @@ const tryEditBooking = async (req, res) => {
         if (notAvSl.length !== 0) noAvailableSlots = true
       }
       if (noAvailableSlots) {
-        res.json({
+        return res.json({
           error: 'one room or more is/are busy in that timeslot',
           statusCode: errorCodes.roomBusy,
         })
       } else {
-        return res.json({ statusCode: errorCodes.success, bookingDetails })
+        const pricing = await calculatePrice(
+          bookingDetails.roomSize,
+          bookingDetails.slots.length
+        )
+        return res.json({
+          statusCode: errorCodes.success,
+          bookingDetails,
+          pricing,
+        })
       }
     } else {
       return res.json({
@@ -513,13 +521,13 @@ const tryBooking = async (req, res) => {
       where: { accountId: req.body.Account.id, status: bookingStatus.PENDING },
     })
     if (mybookings.length >= pend.value) {
-      res.json({
+      return res.json({
         error: 'you have exceeded the allowed number of pending orders',
         statusCode: errorCodes.pendingLimitExceeded,
       })
     }
     if (!roomFound) {
-      res.json({
+      return res.json({
         error: 'room doesnt exist',
         statusCode: errorCodes.roomNotFound,
       })
@@ -569,7 +577,7 @@ const tryBooking = async (req, res) => {
           },
         })
         if (oldbookings.length === p.value) {
-          res.json({
+          return res.json({
             error: 'You have exceeded the max number of pending orders',
             statusCode: errorCodes.pendingLimitExceeded,
           })
