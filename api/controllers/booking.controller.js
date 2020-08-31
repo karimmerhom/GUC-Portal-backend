@@ -102,6 +102,7 @@ const viewCalendar = async (req, res) => {
           const sl = {
             slotName: s.slot,
             status: s.status,
+            accountId: s.accountId,
           }
           return sl
         })
