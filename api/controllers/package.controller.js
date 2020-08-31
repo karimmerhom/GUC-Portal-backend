@@ -279,7 +279,7 @@ const viewMyPackages = async (req, res) => {
     })
 
     let total = 0
-    for (package of activePackages) {
+    for (package of purchases) {
       total += parseInt(package.totalPoints)
     }
     return res.json({
