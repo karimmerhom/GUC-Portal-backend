@@ -474,6 +474,7 @@ const bookRoom = async (req, res) => {
           status: bookingDetails.status,
           slot: sl,
           bookingId: booked.id,
+          accountId: req.body.Account.id,
         })
       }
 
@@ -941,6 +942,7 @@ const bookExtremePackage = async (req, res) => {
           slot: slots[j],
           bookingId: booked.id,
           bookingType: bookingType.EXTREME,
+          accountId: req.body.Account.id,
         })
         console.log(x)
       }

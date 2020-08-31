@@ -28,6 +28,9 @@ Calendar.init(
       type: Sequelize.STRING,
       defaultValue: bookingType.REGULAR,
     },
+    accountId: {
+      type: Sequelize.INTEGER,
+    },
   },
   {
     sequelize,
