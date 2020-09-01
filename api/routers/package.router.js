@@ -87,7 +87,6 @@ router.post(
   validateViewMyPackages,
   verifyToken,
   verifyUser,
-  verifiedPhone,
   viewMyPackages
 )
 router.post(
