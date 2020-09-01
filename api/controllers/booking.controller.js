@@ -317,10 +317,11 @@ const viewAvailableRooms = async (req, res) => {
     ]
 
     let slotsNeeded = []
-
-    for (let j = extreme.startPeriod - 9; j < extreme.endPeriod - 9; j++) {
+    console.log(extreme.startPeriod, extreme.endPeriod)
+    for (let j = extreme.startPeriod - 9; j < extreme.endPeriod + 2; j++) {
       slotsNeeded.push(periodsString[j])
     }
+    console.log(slotsNeeded)
 
     let availableRooms = []
     for (let j = 0; j < rooms.length; j++) {
@@ -332,13 +333,13 @@ const viewAvailableRooms = async (req, res) => {
 
     while (i < extreme.daysPerWeek) {
       let dayNumber = date.getDay()
-
       const calendar = await CalendarModel.findAll({
         where: {
-          date: new Date(date).toUTCString(),
+          date: new Date(date).toDateString(),
           slot: { [Op.or]: slotsNeeded },
         },
       })
+      console.log(calendar)
 
       let flag = false
       for (let k = 0; k < calendar.length; k++) {
@@ -992,7 +993,8 @@ const viewAvailableRoomsHelper = async (startDate, extremeType) => {
 
   let slotsNeeded = []
 
-  for (let j = extreme.startPeriod - 9; j < extreme.endPeriod - 9; j++) {
+  for (let j = extreme.startPeriod - 9; j < extreme.endPeriod + 2; j++) {
+    console.log(periodsString)
     slotsNeeded.push(periodsString[j])
   }
 
@@ -1006,7 +1008,7 @@ const viewAvailableRoomsHelper = async (startDate, extremeType) => {
 
   while (i < extreme.daysPerWeek) {
     let dayNumber = date.getDay()
-
+    console.log(slotsNeeded, 'here')
     const calendar = await CalendarModel.findAll({
       where: {
         date: new Date(date).toUTCString(),
@@ -1014,7 +1016,6 @@ const viewAvailableRoomsHelper = async (startDate, extremeType) => {
       },
     })
 
-    let flag = false
     for (let k = 0; k < calendar.length; k++) {
       availableRooms = availableRooms.filter(
         (room) => calendar[k].roomNumber !== room
