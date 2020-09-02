@@ -282,13 +282,16 @@ const viewMyPackages = async (req, res) => {
     let gifted = 0
     let purchased = 0
     for (package of purchases) {
-      if (package.packageName === 'gift') {
-        gifted += parseInt(package.totalPoints)
-      } else {
-        purchased += parseInt(package.totalPoints)
+      if (package.packageType !== packageType.EXTREME) {
+        if (package.packageName === 'gift') {
+          gifted += parseInt(package.totalPoints)
+        } else {
+          purchased += parseInt(package.totalPoints)
+        }
+        total += parseInt(package.totalPoints)
       }
-      total += parseInt(package.totalPoints)
     }
+    console.log(total)
     return res.json({
       purchasedPackages: { purchases, total, gifted, purchased },
       statusCode: errorCodes.success,
