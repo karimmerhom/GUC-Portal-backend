@@ -207,6 +207,8 @@ const verify = async (req, res) => {
         },
       },
     })
+      .then((res) => console.log(res))
+      .catch((err) => console.log(err.response.data.body.err))
 
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
@@ -279,7 +281,7 @@ const verify_confirm_email = async (req, res) => {
       })
     }
     const checkCodeExpired = await VerificationCode.findOne({
-      where: { accountId: Account.id, emailCode: Account.statusCode },
+      where: { accountId: Account.id, emailCode: Account.code },
     })
     if (!checkCodeExpired) {
       return res.json({

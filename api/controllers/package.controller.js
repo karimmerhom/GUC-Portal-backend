@@ -279,7 +279,14 @@ const viewMyPackages = async (req, res) => {
     })
 
     let total = 0
+    let gifted = 0
+    let purchased = 0
     for (package of purchases) {
+      if (package.packageName === 'gift') {
+        gifted += parseInt(package.totalPoints)
+      } else {
+        purchased += parseInt(package.totalPoints)
+      }
       total += parseInt(package.totalPoints)
     }
     return res.json({
