@@ -33,6 +33,7 @@ const getConnectionUrl = (auth) => {
 
 const urlGoogle = async (req, res) => {
   let uri
+  console.log(googleAuth)
   const { state } = req.body
   if (state === 'signUp') {
     uri = googleAuth.signUpURI
