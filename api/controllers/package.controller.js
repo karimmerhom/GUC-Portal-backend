@@ -290,7 +290,7 @@ const viewMyPackages = async (req, res) => {
       total += parseInt(package.totalPoints)
     }
     return res.json({
-      purchasedPackages: { purchases, total: total },
+      purchasedPackages: { purchases, total, gifted, purchased },
       statusCode: errorCodes.success,
     })
   } catch (exception) {
