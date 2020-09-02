@@ -17,7 +17,7 @@ module.exports = {
     client_id:
       '790311029308-uok5sjd316a26f6mjhq6ff6rlg1t8dfi.apps.googleusercontent.com',
     client_secret: 'HnlkzK0HJpJUR1BXW1XC_67U',
-    loginURI: 'http://localhost:3000/login',
-    signUpURI: 'http://localhost:3000/signup',
+    loginURI: 'http://localhost:3000/home/SignIn',
+    signUpURI: 'http://localhost:3000/home/SignUp',
   },
 }
