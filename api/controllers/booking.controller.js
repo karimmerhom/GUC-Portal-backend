@@ -854,7 +854,7 @@ const adminConfirmExtremeBooking = async (req, res) => {
 const bookExtremePackage = async (req, res) => {
   try {
     const packageName = req.body.packageName
-    const startDate = new Date(req.body.startDate).toDateString()
+    const startDate = new Date(req.body.startDate)
     const roomNumber = req.body.roomNumber
     if (new Date(startDate) < new Date()) {
       return res.json({
@@ -874,7 +874,7 @@ const bookExtremePackage = async (req, res) => {
     const roomSize1 = req.body.roomSize
     const { roomType } = room
     const roomLayout = req.body.roomLayout
-    var date = new Date().toUTCString()
+    var date = new Date()
     const pack = await extremePackageModel.findOne({
       where: { packageName: packageName },
     })
@@ -909,7 +909,7 @@ const bookExtremePackage = async (req, res) => {
         statusCode: errorCodes.packageCannotBePurchased,
       })
     }
-    var endDate = new Date(startDate).toUTCString()
+    var endDate = new Date(startDate)
     console.log(endDate)
     for (let i = 0; i < pack.daysPerWeek; i++) {
       if (endDate.getDay() === 5) {
@@ -920,8 +920,8 @@ const bookExtremePackage = async (req, res) => {
     }
 
     bookingDetails = {
-      startDate: new Date(startDate).toUTCString(),
-      endDate: new Date(endDate).toUTCString(),
+      startDate: new Date(startDate).toDateString(),
+      endDate: new Date(endDate),
       roomType: roomType,
       roomNumber: roomNumber,
       roomSize: roomSize1,
@@ -948,7 +948,7 @@ const bookExtremePackage = async (req, res) => {
       for (let j = startSlot; j < endSlot; j++) {
         const x = await CalendarModel.create({
           roomNumber: roomNumber,
-          date: new Date(date).toUTCString(),
+          date: new Date(date).toDateString(),
           status: bookingStatus.PENDING,
           slot: slots[j],
           bookingId: booked.id,
@@ -962,6 +962,7 @@ const bookExtremePackage = async (req, res) => {
 
     return res.json({ statusCode: errorCodes.success })
   } catch (e) {
+    console.log(e)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -1004,14 +1005,14 @@ const viewAvailableRoomsHelper = async (startDate, extremeType) => {
   }
 
   let i = 0
-  var date = new Date(startDate).toUTCString()
+  var date = new Date(startDate)
 
   while (i < extreme.daysPerWeek) {
     let dayNumber = date.getDay()
-    console.log(slotsNeeded, 'here')
+
     const calendar = await CalendarModel.findAll({
       where: {
-        date: new Date(date).toUTCString(),
+        date: date,
         slot: { [Op.or]: slotsNeeded },
       },
     })
