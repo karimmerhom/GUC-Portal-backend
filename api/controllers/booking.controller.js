@@ -854,12 +854,12 @@ const adminConfirmExtremeBooking = async (req, res) => {
 const bookExtremePackage = async (req, res) => {
   try {
     const packageName = req.body.packageName
-    const startDate = new Date(req.body.startDate)
+    const startDate = req.body.startDate
     const roomNumber = req.body.roomNumber
     if (new Date(startDate) < new Date()) {
       return res.json({
         error: 'you cannot book in past date',
-        statusCode: 7000,
+        statusCode: errorCodes.pastDateBooking,
       })
     }
 
@@ -895,7 +895,7 @@ const bookExtremePackage = async (req, res) => {
       'TWENTY_TWENTYONE',
     ]
     const startSlot = pack.startPeriod - 9
-    const endSlot = pack.endPeriod - 9
+    const endSlot = pack.endPeriod + 2
 
     var d = 0
 
@@ -918,10 +918,10 @@ const bookExtremePackage = async (req, res) => {
 
       endDate.setDate(endDate.getDate() + 1)
     }
-
+    console.log(endDate)
     bookingDetails = {
       startDate: new Date(startDate).toDateString(),
-      endDate: new Date(endDate),
+      endDate: new Date(endDate).toDateString(),
       roomType: roomType,
       roomNumber: roomNumber,
       roomSize: roomSize1,
@@ -940,7 +940,7 @@ const bookExtremePackage = async (req, res) => {
     }
     booked = await bookingExtreme.create(bookingDetails)
     d = 0
-    date = startDate
+    date = new Date(startDate)
     for (let i = 0; i < pack.daysPerWeek; i++) {
       if (date.getDay() === 5) {
         date.setDate(date.getDate() + 1)
@@ -1012,7 +1012,7 @@ const viewAvailableRoomsHelper = async (startDate, extremeType) => {
 
     const calendar = await CalendarModel.findAll({
       where: {
-        date: date,
+        date: date.toDateString(),
         slot: { [Op.or]: slotsNeeded },
       },
     })
