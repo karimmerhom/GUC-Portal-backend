@@ -418,7 +418,7 @@ const register_google = async (req, res) => {
     })
     if (findUsername) {
       return res.json({
-        statusCode: errorCodes.emailExists,
+        statusCode: errorCodes.usernameExists,
         error: 'Username already exists',
       })
     }
@@ -427,7 +427,7 @@ const register_google = async (req, res) => {
     })
     if (findPhone) {
       return res.json({
-        code: errorCodes.emailExists,
+        code: errorCodes.phoneExists,
         error: 'Phone number already exists',
       })
     }
@@ -558,7 +558,7 @@ const register_facebook = async (req, res) => {
     })
     if (findUsername) {
       return res.json({
-        statusCode: errorCodes.emailExists,
+        statusCode: errorCodes.usernameExists,
         error: 'Username already exists',
       })
     }
@@ -567,7 +567,7 @@ const register_facebook = async (req, res) => {
     })
     if (findPhone) {
       return res.json({
-        code: errorCodes.emailExists,
+        code: errorCodes.phoneExists,
         error: 'Phone number already exists',
       })
     }
