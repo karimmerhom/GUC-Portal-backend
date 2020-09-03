@@ -14,12 +14,13 @@ class bookingExtreme extends Model {}
 bookingExtreme.init(
   {
     startDate: {
-      type: Sequelize.DATE,
+      type: Sequelize.STRING,
     },
     endDate: {
-      type: Sequelize.DATE,
+      type: Sequelize.STRING,
     },
     roomNumber: { type: Sequelize.STRING },
+
     roomType: {
       type: Sequelize.STRING,
     },
@@ -34,6 +35,9 @@ bookingExtreme.init(
     },
     status: {
       type: Sequelize.STRING,
+    },
+    price: {
+      type: Sequelize.INTEGER,
     },
   },
   {

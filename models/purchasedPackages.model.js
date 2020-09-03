@@ -35,6 +35,9 @@ PurchasePackage.init(
     packageType: {
       type: Sequelize.STRING,
     },
+    packageName: {
+      type: Sequelize.STRING,
+    },
   },
   {
     sequelize,

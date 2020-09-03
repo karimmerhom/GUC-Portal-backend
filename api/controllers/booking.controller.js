@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs')
 const axios = require('axios')
 const jwt = require('jsonwebtoken')
+const cron = require('cron')
 const BookingModel = require('../../models/booking.model')
 const CalendarModel = require('../../models/calendar.model')
 const RoomModel = require('../../models/room.model')
@@ -9,6 +10,9 @@ const pendingModel = require('../../models/pending.model')
 const expiryModel = require('../../models/expiry.model')
 const extremePackageModel = require('../../models/extremePackage.model')
 const bookingExtreme = require('../../models/bookingExtreme.model')
+const purchasedPackagesModel = require('../../models/purchasedPackages.model')
+
+const moment = require('moment')
 const { createPurchase } = require('../helpers/helpers')
 const validator = require('../helpers/validations/bookingValidations')
 const errorCodes = require('../constants/errorCodes')
@@ -24,35 +28,37 @@ const {
   slots,
   calStatus,
   bookingStatus,
+  packageStatus,
   paymentMethods,
   packageType,
   bookingType,
+  roomSize,
+  roomType,
+  slotStatus,
+  userTypes,
 } = require('../constants/TBH.enum')
 const {} = require('../helpers/helpers')
 const { object } = require('joi')
 const { calendar } = require('googleapis/build/src/apis/calendar')
 const Pricing = require('../../models/pricing.model')
 const { deductPoints, addPoints } = require('../helpers/helpers')
+const { forgotPassword } = require('../constants/errorCodes')
 
 const calculatePrice = async (type, slots) => {
   try {
     var pricing = {}
     pricing.points = 0
     pricing.cash = 0
-    // console.log(type)
-    // console.log(slots)
 
     const pricingfound = await pricingModel.findOne({
       where: { pricingType: 'flat_rate', roomType: type },
     })
     pricing.cash = pricingfound.value * slots
-    console.log(pricing.cash)
 
     const pricingfound1 = await pricingModel.findOne({
       where: { pricingType: 'points', roomType: type },
     })
     pricing.points = pricingfound1.value * slots
-    console.log(pricing.points)
 
     return pricing
   } catch (exception) {
@@ -63,36 +69,41 @@ const viewCalendar = async (req, res) => {
   try {
     var calendar = []
     const { startDate, filterRoomType, filterRoomSize } = req.body
-
     const rooms = await RoomModel.findAll()
-    console.log(rooms.length)
 
     for (i = 0; i < rooms.length; i++) {
-      console.log(rooms[i])
       var room = rooms[i]
       var r = {}
       r.roomNumber = room.roomNumber
       r.filtered = false
       r.notFreeSlots = {}
-
-      if (
-        room.roomType !== filterRoomType ||
-        room.roomSize !== filterRoomSize
-      ) {
-        r.filtered = true
-        calendar.push(r)
+      if (filterRoomSize || filterRoomType) {
+        if (filterRoomType) {
+          if (room.roomType !== filterRoomType) {
+            r.filtered = true
+            calendar.push(r)
+          }
+        }
+        if (filterRoomSize) {
+          if (room.roomSize !== filterRoomSize) {
+            r.filtered = true
+            calendar.push(r)
+          }
+        }
       } else {
         const slots = await CalendarModel.findAll({
           where: {
             roomNumber: r.roomNumber,
-            date: startDate,
+            date: new Date(startDate).toDateString(),
           },
         })
-
+        console.log(slots)
         const notslots = slots.map((s) => {
           const sl = {
             slotName: s.slot,
             status: s.status,
+            accountId: s.accountId,
+            bookingId: s.bookingId,
           }
           return sl
         })
@@ -103,7 +114,11 @@ const viewCalendar = async (req, res) => {
       }
     }
 
-    return res.json({ calendar, statusCode: errorCodes.success })
+    return res.json({
+      calendar,
+      statusCode: errorCodes.success,
+      date: new Date(startDate).toDateString(),
+    })
   } catch (exception) {
     return res.json({
       statusCode: errorCodes.unknown,
@@ -113,6 +128,14 @@ const viewCalendar = async (req, res) => {
 }
 const editBooking = async (req, res) => {
   try {
+    if (req.body.date) {
+      if (new Date(req.body.date) < new Date()) {
+        return res.json({
+          error: 'you cannot book in past date',
+          statusCode: errorCodes.pastDateBooking,
+        })
+      }
+    }
     const booked = await BookingModel.findOne({
       where: { id: req.body.bookingId },
     })
@@ -120,13 +143,16 @@ const editBooking = async (req, res) => {
       let bookingDetails = req.body
       bookingDetails.expiryDate = booked.expiryDate
       if (booked.accountId !== parseInt(req.body.Account.id)) {
-        res.json({
+        return res.json({
           error: 'This is not the users booking',
-          statusCode: 7000,
+          statusCode: errorCodes.notUserBooking,
         })
       }
-      if (new Date(booked.expiryDate) < Date.now()) {
-        res.json({ statusCode: 7000, error: 'The booking has already expired' })
+      if (booked.status === bookingStatus.EXPIRED) {
+        return res.json({
+          statusCode: errorCodes.bookingExpired,
+          error: 'The booking has already expired',
+        })
       }
 
       const status =
@@ -140,7 +166,7 @@ const editBooking = async (req, res) => {
           where: {
             bookingId: { [Op.not]: req.body.bookingId },
             roomNumber: bookingDetails.roomNumber,
-            date: bookingDetails.date,
+            date: new Date(bookingDetails.date).toDateString(),
             slot: sl,
           },
         })
@@ -149,7 +175,7 @@ const editBooking = async (req, res) => {
       if (noAvailableSlots) {
         res.json({
           error: 'one room or more is/are busy in that timeslot',
-          statusCode: 7000,
+          statusCode: errorCodes.roomBusy,
         })
       } else {
         let foundSlots = await CalendarModel.findAll({
@@ -167,7 +193,7 @@ const editBooking = async (req, res) => {
       }
     } else {
       return res.json({
-        statusCode: errorCodes.unknown,
+        statusCode: errorCodes.bookingNotFound,
         error: 'Booking not found',
       })
     }
@@ -180,20 +206,34 @@ const editBooking = async (req, res) => {
 }
 const tryEditBooking = async (req, res) => {
   try {
+    if (req.body.date) {
+      if (new Date(req.body.date) < new Date()) {
+        return res.json({
+          error: 'you cannot book in past date',
+          statusCode: 7000,
+        })
+      }
+    }
     const booked = await BookingModel.findOne({
       where: { id: req.body.bookingId },
     })
     if (booked) {
       let bookingDetails = req.body
       bookingDetails.expiryDate = booked.expiryDate
-      if (booked.accountId !== parseInt(req.body.Account.id)) {
-        res.json({
+      if (
+        booked.accountId !== parseInt(req.body.Account.id) &&
+        req.data.type !== userTypes.ADMIN
+      ) {
+        return res.json({
           error: 'This is not the users booking',
-          statusCode: 7000,
+          statusCode: errorCodes.notUserBooking,
         })
       }
-      if (new Date(booked.expiryDate) < Date.now()) {
-        res.json({ statusCode: 7000, error: 'The booking has already expired' })
+      if (booked.status === bookingStatus.EXPIRED) {
+        return res.json({
+          statusCode: errorCodes.bookingExpired,
+          error: 'The booking has already expired',
+        })
       }
 
       const status =
@@ -207,23 +247,31 @@ const tryEditBooking = async (req, res) => {
           where: {
             bookingId: { [Op.not]: req.body.bookingId },
             roomNumber: bookingDetails.roomNumber,
-            date: bookingDetails.date,
+            date: new Date(bookingDetails.date).toDateString(),
             slot: sl,
           },
         })
         if (notAvSl.length !== 0) noAvailableSlots = true
       }
       if (noAvailableSlots) {
-        res.json({
+        return res.json({
           error: 'one room or more is/are busy in that timeslot',
-          statusCode: 7000,
+          statusCode: errorCodes.roomBusy,
         })
       } else {
-        return res.json({ statusCode: errorCodes.success, bookingDetails })
+        const pricing = await calculatePrice(
+          bookingDetails.roomSize,
+          bookingDetails.slots.length
+        )
+        return res.json({
+          statusCode: errorCodes.success,
+          bookingDetails,
+          pricing,
+        })
       }
     } else {
       return res.json({
-        statusCode: errorCodes.unknown,
+        statusCode: errorCodes.bookingNotFound,
         error: 'Booking not found',
       })
     }
@@ -238,31 +286,13 @@ const viewAvailableRooms = async (req, res) => {
   try {
     const startDate = req.body.startDate
     const extremeType = req.body.extremeType
-    const weekDays = [
-      'Sunday',
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-    ]
-    const periodsNumber = [
-      9,
-      10,
-      11,
-      12,
-      13,
-      14,
-      15,
-      16,
-      17,
-      18,
-      19,
-      20,
-      21,
-      22,
-    ]
+
+    if (new Date(startDate) < new Date()) {
+      return res.json({
+        error: 'you cannot book in past date',
+        statusCode: errorCodes.pastDateBooking,
+      })
+    }
 
     const extreme = await extremePackageModel.findOne({
       where: {
@@ -287,10 +317,11 @@ const viewAvailableRooms = async (req, res) => {
     ]
 
     let slotsNeeded = []
-
-    for (let j = extreme.startPeriod - 9; j < extreme.endPeriod - 9; j++) {
+    console.log(extreme.startPeriod, extreme.endPeriod)
+    for (let j = extreme.startPeriod - 9; j < extreme.endPeriod + 2; j++) {
       slotsNeeded.push(periodsString[j])
     }
+    console.log(slotsNeeded)
 
     let availableRooms = []
     for (let j = 0; j < rooms.length; j++) {
@@ -302,14 +333,12 @@ const viewAvailableRooms = async (req, res) => {
 
     while (i < extreme.daysPerWeek) {
       let dayNumber = date.getDay()
-
       const calendar = await CalendarModel.findAll({
         where: {
-          date: date,
+          date: new Date(date).toDateString(),
           slot: { [Op.or]: slotsNeeded },
         },
       })
-
       console.log(calendar)
 
       let flag = false
@@ -324,7 +353,7 @@ const viewAvailableRooms = async (req, res) => {
     }
     return res.json({ statusCode: 0, availableRooms })
   } catch (e) {
-    console.log(e.message)
+    console.log(e)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -333,11 +362,17 @@ const viewAvailableRooms = async (req, res) => {
 }
 const bookRoom = async (req, res) => {
   try {
+    console.log('here')
     let bookingDetails = req.body
     const status =
       bookingDetails.paymentMethod === 'points' ? 'confirmed' : 'pending'
     bookingDetails.status = status
-
+    if (new Date(bookingDetails.date) < new Date()) {
+      return res.json({
+        error: 'you cannot book in past date',
+        statusCode: errorCodes.pastDateBooking,
+      })
+    }
     const roomFound = await RoomModel.findOne({
       where: { roomNumber: bookingDetails.roomNumber },
     })
@@ -349,14 +384,17 @@ const bookRoom = async (req, res) => {
       where: { accountId: req.body.Account.id, status: bookingStatus.PENDING },
     })
     if (mybookings.length >= pend.value) {
-      res.json({
+      return res.json({
         error: 'you have exceeded the allowed number of pending orders',
-        statusCode: 7000,
+        statusCode: errorCodes.pendingLimitExceeded,
       })
     }
 
     if (!roomFound) {
-      res.json({ error: 'room doesnt exist', statusCode: 7000 })
+      return res.json({
+        error: 'room doesnt exist',
+        statusCode: errorCodes.roomNotFound,
+      })
     }
 
     bookingDetails.roomId = roomFound.id
@@ -368,7 +406,7 @@ const bookRoom = async (req, res) => {
       const notAvSl = await CalendarModel.findAll({
         where: {
           roomNumber: bookingDetails.roomNumber,
-          date: bookingDetails.date,
+          date: new Date(bookingDetails.date).toDateString(),
           slot: sl,
         },
       })
@@ -376,9 +414,9 @@ const bookRoom = async (req, res) => {
     }
 
     if (noAvailableSlots) {
-      res.json({
+      return res.json({
         error: 'one room or more is/are busy in that timeslot',
-        statusCode: 7000,
+        statusCode: errorCodes.roomBusy,
       })
     } else {
       const pricing = await calculatePrice(
@@ -386,10 +424,9 @@ const bookRoom = async (req, res) => {
         bookingDetails.slots.length
       )
       if (bookingDetails.paymentMethod === paymentMethods.POINTS) {
-        console.log(pricing.points)
         const e = await deductPoints(req.body.Account.id, pricing.points)
-        console.log(e)
-        if (e.error !== 'success') {
+        if (e.statusCode !== errorCodes.success) {
+          console.log(e)
           return res.json({ error: e.error, statusCode: 7000 })
         }
       } else {
@@ -406,26 +443,36 @@ const bookRoom = async (req, res) => {
         if (oldbookings.length === p.value) {
           res.json({
             error: 'You have exceeded the max number of pending orders',
-            statusCode: 7000,
+            statusCode: errorCodes.pendingLimitExceeded,
           })
         }
       }
 
       const j = await expiryModel.findOne()
-      var expiryDate = new Date()
 
       bookingDetails.expiryDate = expiryDate
       bookingDetails.pricePoints = pricing.points
       bookingDetails.priceCash = pricing.cash
+      bookingDetails.date = new Date(bookingDetails.date).toDateString()
 
       //uncomment this three lines when the model is fixed
-
+      var expiryDate = new Date()
+      expiryDate.setDate(expiryDate.getDate() + j.duration)
+      console.log(expiryDate)
       const booked = await BookingModel.create(bookingDetails)
 
-      expiryDate.setDate(expiryDate.getDate() + j.duration)
       if (j.on_off === 'on') {
         const scheduleJob = cron.job(expiryDate, async () => {
-          await expireBooking(booked.id)
+          BookingModel.update(
+            { status: bookingStatus.EXPIRED },
+            { where: { id: booked.id } }
+          )
+          CalendarModel.destroy({
+            where: {
+              bookingId: booked.id,
+              bookingType: bookingType.REGULAR,
+            },
+          })
         })
         scheduleJob.start()
       }
@@ -438,13 +485,14 @@ const bookRoom = async (req, res) => {
           status: bookingDetails.status,
           slot: sl,
           bookingId: booked.id,
+          accountId: req.body.Account.id,
         })
       }
 
-      return res.json({ statusCode: 0 })
+      return res.json({ statusCode: 0, booked })
     }
   } catch (e) {
-    console.log(e.message)
+    console.log(e)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -457,7 +505,12 @@ const tryBooking = async (req, res) => {
     const status =
       bookingDetails.paymentMethod === 'points' ? 'confirmed' : 'pending'
     bookingDetails.status = status
-
+    if (new Date(bookingDetails.date) < new Date()) {
+      return res.json({
+        error: 'you cannot book in past date',
+        statusCode: errorCodes.pastDateBooking,
+      })
+    }
     const roomFound = await RoomModel.findOne({
       where: { roomNumber: bookingDetails.roomNumber },
     })
@@ -466,16 +519,19 @@ const tryBooking = async (req, res) => {
       where: { pendingType: 'Bookings' },
     })
     const mybookings = await BookingModel.findAll({
-      where: { accountId: res.body.Account.id, status: bookingStatus.PENDING },
+      where: { accountId: req.body.Account.id, status: bookingStatus.PENDING },
     })
     if (mybookings.length >= pend.value) {
-      res.json({
+      return res.json({
         error: 'you have exceeded the allowed number of pending orders',
-        statusCode: 7000,
+        statusCode: errorCodes.pendingLimitExceeded,
       })
     }
     if (!roomFound) {
-      res.json({ error: 'room doesnt exist', statusCode: 7000 })
+      return res.json({
+        error: 'room doesnt exist',
+        statusCode: errorCodes.roomNotFound,
+      })
     }
 
     bookingDetails.roomId = roomFound.id
@@ -487,7 +543,7 @@ const tryBooking = async (req, res) => {
       const notAvSl = await CalendarModel.findAll({
         where: {
           roomNumber: bookingDetails.roomNumber,
-          date: bookingDetails.date,
+          date: new Date(bookingDetails.date).toDateString(),
           slot: sl,
         },
       })
@@ -495,9 +551,9 @@ const tryBooking = async (req, res) => {
     }
 
     if (noAvailableSlots) {
-      res.json({
+      return res.json({
         error: 'one room or more is/are busy in that timeslot',
-        statusCode: 7000,
+        statusCode: errorCodes.roomBusy,
       })
     } else {
       const pricing = await calculatePrice(
@@ -505,10 +561,10 @@ const tryBooking = async (req, res) => {
         bookingDetails.slots.length
       )
       if (bookingDetails.paymentMethod === paymentMethods.POINTS) {
-        const e = await deductPoints(pricing.points, req.body.Account.id)
+        const e = await deductPoints(req.body.Account.id, pricing.points)
         console.log(e)
-        if (e.error !== 'success') {
-          res.json({ error: e.error, statusCode: 7000 })
+        if (e.statusCode !== errorCodes.success) {
+          return res.json({ error: e.error, statusCode: 7000 })
         }
       } else {
         const p = await pendingModel.findOne({
@@ -522,9 +578,9 @@ const tryBooking = async (req, res) => {
           },
         })
         if (oldbookings.length === p.value) {
-          res.json({
+          return res.json({
             error: 'You have exceeded the max number of pending orders',
-            statusCode: 7000,
+            statusCode: errorCodes.pendingLimitExceeded,
           })
         }
       }
@@ -540,6 +596,7 @@ const tryBooking = async (req, res) => {
       return res.json({ statusCode: 0, pricing, bookingDetails })
     }
   } catch (e) {
+    console.log(e)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -557,25 +614,35 @@ const cancelBooking = async (req, res) => {
     })
     if (booking) {
       if (booking.status == bookingStatus.CANCELED) {
-        return res.json({ statusCode: 7000, error: 'booking already canceled' })
+        return res.json({
+          statusCode: errorCodes.bookingAlreadyCanceled,
+          error: 'booking already canceled',
+        })
       }
-      if (booking.accountId !== accountId) {
-        return res.json({ statusCode: 7000, error: 'Not the users booking' })
+      if (
+        booking.accountId !== accountId &&
+        req.data.type !== userTypes.ADMIN
+      ) {
+        return res.json({
+          statusCode: errorCodes.notUserBooking,
+          error: 'Not the users booking',
+        })
       }
 
       await BookingModel.update(
         { status: bookingStatus.CANCELED },
         { where: { id: bookingId } }
       )
-      console.log('YYYY')
       await CalendarModel.destroy({
-        where: { bookingId: bookingId },
+        where: { bookingId: bookingId, bookingType: bookingType.REGULAR },
       })
-      console.log('YYYY')
 
       return res.json({ statusCode: errorCodes.success })
     } else {
-      return res.json({ statusCode: 7000, error: 'booking not found' })
+      return res.json({
+        statusCode: errorCodes.bookingNotFound,
+        error: 'booking not found',
+      })
     }
   } catch (exception) {
     return res.json({
@@ -587,15 +654,22 @@ const cancelBooking = async (req, res) => {
 const viewMyBookings = async (req, res) => {
   try {
     const { Account } = req.body
-
     id = Account.id
-
-    const booking = await BookingModel.findAll({
-      where: {
-        accountId: id,
-        status: { [Op.not]: bookingStatus.CANCELED },
-      },
-    })
+    let booking
+    if (req.body.type) {
+      booking = await BookingModel.findAll({
+        where: {
+          accountId: id,
+          status: req.body.type,
+        },
+      })
+    } else {
+      booking = await BookingModel.findAll({
+        where: {
+          accountId: id,
+        },
+      })
+    }
     if (booking === []) {
       return res.json({ statusCode: 7000, error: 'No bookings not found' })
     } else {
@@ -611,10 +685,8 @@ const viewMyBookings = async (req, res) => {
 const viewAllBookings = async (req, res) => {
   try {
     const booking = await BookingModel.findAll()
-
     return res.json({ booking, statusCode: errorCodes.success })
   } catch (exception) {
-    console.log(exception.message)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -627,11 +699,14 @@ const viewDateBookings = async (req, res) => {
 
     const booking = await BookingModel.findAll({
       where: {
-        date: date,
+        date: new Date(date).toDateString(),
       },
     })
     if (booking === []) {
-      return res.json({ statusCode: 7000, error: 'No bookings not found' })
+      return res.json({
+        statusCode: errorCodes.bookingNotFound,
+        error: 'No bookings not found',
+      })
     } else {
       return res.json({ booking, statusCode: errorCodes.success })
     }
@@ -644,47 +719,57 @@ const viewDateBookings = async (req, res) => {
 }
 const adminConfirmBooking = async (req, res) => {
   try {
-    const accountId = body.Account.id
     const booked = await BookingModel.findOne({
       where: { id: req.body.bookingId },
     })
 
     if (booked) {
       if (booked.status === bookingStatus.CANCELED) {
-        return res.json({ statusCode: 7000, error: 'booking was canceled' })
+        return res.json({
+          statusCode: errorCodes.bookingAlreadyCanceled,
+          error: 'booking was canceled',
+        })
       }
       if (booked.status === bookingStatus.CONFIRMED) {
         return res.json({
-          statusCode: 7000,
+          statusCode: errorCodes.bookingAlreadyConfirmed,
           error: 'booking is already confirmed',
         })
       }
       let text = [
         booked.roomType,
         booked.roomSize,
-        booked.roomLayout,
-        booked.date,
-        booked.slots,
+        moment(booked.date).format('ll'),
+        booked.slots.length + ' hours',
       ]
 
-      createPurchase(accountId, text, booked.priceCash)
+      const c = await createPurchase(
+        booked.accountId,
+        text,
+        parseInt(booked.priceCash)
+      )
       await BookingModel.update(
         { status: bookingStatus.CONFIRMED },
         { where: { id: req.body.bookingId } }
       )
-
-      await CalendarModel.update(
+      CalendarModel.update(
         { status: bookingStatus.CONFIRMED },
-        { where: { bookingId: req.body.bookingId } }
+        {
+          where: {
+            bookingId: req.body.bookingId,
+            bookingType: bookingType.REGULAR,
+          },
+        }
       )
       return res.json({ statusCode: errorCodes.success })
     } else {
       return res.json({
-        statusCode: errorCodes.unknown,
+        statusCode: errorCodes.bookingNotFound,
         error: 'Booking not found',
       })
     }
   } catch (e) {
+    console.log(e)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -699,44 +784,67 @@ const adminConfirmExtremeBooking = async (req, res) => {
 
     if (booked) {
       if (booked.status === bookingStatus.CANCELED) {
-        return res.json({ statusCode: 7000, error: 'booking was canceled' })
+        return res.json({
+          statusCode: errorCodes.bookingCanceled,
+          error: 'booking was canceled',
+        })
       }
       if (booked.status === bookingStatus.CONFIRMED) {
         return res.json({
-          statusCode: 7000,
+          statusCode: errorCodes.bookingAlreadyConfirmed,
           error: 'booking is already confirmed',
         })
       }
-      const booked = await bookingExt.findOne({
-        where: { id: req.body.bookingId },
-      })
 
       let text = [
         booked.roomType,
         booked.roomSize,
-        booked.roomLayout,
-        booked.startDate,
-        booked.endDate,
-        booked.duration,
-        booked.slots,
+        moment(booked.date).format('ll'),
       ]
-      createPurchase(accountId, text, booked.price)
-      await BookingModel.update(
+      const package = await purchasedPackagesModel.findOne({
+        where: { id: booked.purchasedId },
+      })
+
+      if (package.status === packageStatus.ACTIVE) {
+        return res.json({
+          statusCode: errorCodes.unknown,
+          error: 'package already active',
+        })
+      }
+
+      const c = await createPurchase(
+        booked.accountId,
+        text,
+        parseInt(booked.price)
+      )
+      bookingExtreme.update(
         { status: bookingStatus.CONFIRMED },
         { where: { id: req.body.bookingId } }
       )
-      await CalendarModel.update(
-        { status: bookingStatus.CONFIRMED },
-        { where: { bookingId: req.body.bookingId } }
+
+      purchasedPackagesModel.update(
+        { status: packageStatus.ACTIVE },
+        { where: { id: booked.purchasedId } }
       )
+      CalendarModel.update(
+        { status: bookingStatus.CONFIRMED },
+        {
+          where: {
+            bookingId: req.body.bookingId,
+            bookingType: bookingType.EXTREME,
+          },
+        }
+      )
+
       return res.json({ statusCode: errorCodes.success })
     } else {
       return res.json({
-        statusCode: errorCodes.unknown,
+        statusCode: errorCodes.bookingNotFound,
         error: 'Booking not found',
       })
     }
   } catch (e) {
+    console.log(e)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -746,19 +854,25 @@ const adminConfirmExtremeBooking = async (req, res) => {
 const bookExtremePackage = async (req, res) => {
   try {
     const packageName = req.body.packageName
-    const startDate = new Date(req.body.startDate)
+    const startDate = req.body.startDate
     const roomNumber = req.body.roomNumber
+    if (new Date(startDate) < new Date()) {
+      return res.json({
+        error: 'you cannot book in past date',
+        statusCode: errorCodes.pastDateBooking,
+      })
+    }
 
-    const aa = await viewAvailableRoomsHelper(startDate, packageName)
-    console.log(aa)
+    const aa = await viewAvailableRoomsHelper(new Date(startDate), packageName)
     if (aa.indexOf(roomNumber) === -1) {
       return res.json({
         error: 'This room is not available',
-        statusCode: 7000,
+        statusCode: errorCodes.roomNotAvailable,
       })
     }
     const room = await RoomModel.findOne({ where: { roomNumber: roomNumber } })
-    const { roomId, roomType, roomSize } = room
+    const roomSize1 = req.body.roomSize
+    const { roomType } = room
     const roomLayout = req.body.roomLayout
     var date = new Date()
     const pack = await extremePackageModel.findOne({
@@ -781,77 +895,74 @@ const bookExtremePackage = async (req, res) => {
       'TWENTY_TWENTYONE',
     ]
     const startSlot = pack.startPeriod - 9
-    const endSlot = pack.endPeriod - 9
+    const endSlot = pack.endPeriod + 2
 
     var d = 0
 
     const p = await addPoints(req.body.Account.id, packageType.EXTREME, pack.id)
 
-    console.log('HEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE')
-    console.log(p)
-
     if (p.statusCode === 0) {
-      console.log('HEHEHEHEHEHEHEHEH')
       purchaseId = p.purchaseId
     } else {
       return res.json({
         error: 'Cannot purchase new package',
-        statusCode: 7000,
+        statusCode: errorCodes.packageCannotBePurchased,
       })
     }
-    console.log('A7eeehehehehehehe')
-    var endDate = new Date()
-
-    var d = 0
+    var endDate = new Date(startDate)
+    console.log(endDate)
     for (let i = 0; i < pack.daysPerWeek; i++) {
-      d = d + i
-      date.setDate(startDate.getDate() + d)
-      if (date.getDay() === 5) {
-        console.log('this is a friday')
-        d = d + 1
-        date.setDate(startDate.getDate() + d)
+      if (endDate.getDay() === 5) {
+        endDate.setDate(endDate.getDate() + 1)
       }
+
+      endDate.setDate(endDate.getDate() + 1)
     }
-    console.log('LOOOOL')
+    console.log(endDate)
     bookingDetails = {
-      startDate: startDate,
-      endDate: endDate,
+      startDate: new Date(startDate).toDateString(),
+      endDate: new Date(endDate).toDateString(),
       roomType: roomType,
-      roomSize: roomSize,
+      roomNumber: roomNumber,
+      roomSize: roomSize1,
       roomLayout: roomLayout,
       duration: pack.daysPerWeek,
       status: bookingStatus.PENDING,
-      purchasedId: p.id,
+      purchasedId: p.packageId,
       accountId: req.body.Account.id,
-      roomId: roomId,
+      roomId: room.id,
+      price: pack.price,
+    }
+    if (roomSize1 === roomSize.LARGE) {
+      bookingDetails.price = pack.largePrice
+    } else {
+      bookingDetails.price = pack.smallPrice
     }
     booked = await bookingExtreme.create(bookingDetails)
-    console.log('AHAHAHAHAHAHAHHAHAHA')
-
+    d = 0
+    date = new Date(startDate)
     for (let i = 0; i < pack.daysPerWeek; i++) {
-      d = d + i
-      date.setDate(startDate.getDate() + d)
       if (date.getDay() === 5) {
-        console.log('this is a friday')
-        d = d + 1
-        date.setDate(startDate.getDate() + d)
+        date.setDate(date.getDate() + 1)
       }
-
-      for (let i = startSlot; i < endSlot; i++) {
-        await CalendarModel.create({
+      for (let j = startSlot; j < endSlot; j++) {
+        const x = await CalendarModel.create({
           roomNumber: roomNumber,
-          date: date,
+          date: new Date(date).toDateString(),
           status: bookingStatus.PENDING,
-          slot: slots[i],
+          slot: slots[j],
           bookingId: booked.id,
           bookingType: bookingType.EXTREME,
+          accountId: req.body.Account.id,
         })
+        console.log(x)
       }
+      date.setDate(date.getDate() + 1)
     }
 
     return res.json({ statusCode: errorCodes.success })
   } catch (e) {
-    console.log(e.message)
+    console.log(e)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -859,17 +970,6 @@ const bookExtremePackage = async (req, res) => {
   }
 }
 const viewAvailableRoomsHelper = async (startDate, extremeType) => {
-  const weekDays = [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-  ]
-  const periodsNumber = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
-
   const extreme = await extremePackageModel.findOne({
     where: {
       packageName: extremeType,
@@ -894,7 +994,8 @@ const viewAvailableRoomsHelper = async (startDate, extremeType) => {
 
   let slotsNeeded = []
 
-  for (let j = extreme.startPeriod - 9; j < extreme.endPeriod - 9; j++) {
+  for (let j = extreme.startPeriod - 9; j < extreme.endPeriod + 2; j++) {
+    console.log(periodsString)
     slotsNeeded.push(periodsString[j])
   }
 
@@ -911,14 +1012,11 @@ const viewAvailableRoomsHelper = async (startDate, extremeType) => {
 
     const calendar = await CalendarModel.findAll({
       where: {
-        date: date,
+        date: date.toDateString(),
         slot: { [Op.or]: slotsNeeded },
       },
     })
 
-    console.log(calendar)
-
-    let flag = false
     for (let k = 0; k < calendar.length; k++) {
       availableRooms = availableRooms.filter(
         (room) => calendar[k].roomNumber !== room

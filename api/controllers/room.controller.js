@@ -33,13 +33,16 @@ const createRoom = async (req, res) => {
       where: { roomNumber: req.body.roomNumber },
     })
     if (roomFound) {
-      res.json({ statusCode: 7000, error: 'Room already exists' })
+      res.json({
+        statusCode: errorCodes.roomAlreadyExists,
+        error: 'Room already exists',
+      })
     } else {
       roomModel.create(req.body)
       res.json({ statusCode: 0 })
     }
   } catch (e) {
-    res.json({ statusCode: 7000, error: 'Something went wrong' })
+    res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 const editRoom = async (req, res) => {
@@ -63,13 +66,13 @@ const editRoom = async (req, res) => {
     delete roomBody.roomId
     if (roomFound) {
       await roomModel.update(roomBody, { where: { id: roomId } })
-      res.json({ statusCode: 0 })
+      res.json({ statusCode: errorCodes.success })
     } else {
-      res.json({ statusCode: 7000, error: 'room not found' })
+      res.json({ statusCode: errorCodes.roomNotFound, error: 'room not found' })
     }
   } catch (e) {
     console.log(e.message)
-    res.json({ statusCode: 7000, error: 'Something went wrong' })
+    res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 const viewAllRooms = async (req, res) => {
@@ -109,22 +112,28 @@ const viewRoom = async (req, res) => {
         where: { id: req.body.roomId },
       })
       if (roomFound) {
-        res.json({ statusCode: 0, room: roomFound })
+        res.json({ statusCode: errorCodes.success, room: roomFound })
       } else {
-        res.json({ statusCode: 7000, error: 'room not found' })
+        res.json({
+          statusCode: errorCodes.roomNotFound,
+          error: 'room not found',
+        })
       }
     } else {
       const roomFound = await roomModel.findOne({
         where: { roomNumber: req.body.roomNumber },
       })
       if (roomFound) {
-        res.json({ statusCode: 0, room: roomFound })
+        res.json({ statusCode: errorCodes.success, room: roomFound })
       } else {
-        res.json({ statusCode: 7000, error: 'room not found' })
+        res.json({
+          statusCode: errorCodes.roomNotFound,
+          error: 'room not found',
+        })
       }
     }
   } catch (e) {
-    res.json({ statusCode: 7000, error: 'Something went wrong' })
+    res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 const deleteRoom = async (req, res) => {
@@ -144,9 +153,12 @@ const deleteRoom = async (req, res) => {
       })
       if (roomFound) {
         await roomFound.destroy()
-        res.json({ statusCode: 0 })
+        res.json({ statusCode: errorCodes.success })
       } else {
-        res.json({ statusCode: 7000, error: 'room not found' })
+        res.json({
+          statusCode: errorCodes.roomNotFound,
+          error: 'room not found',
+        })
       }
     } else {
       const roomFound = await roomModel.findOne({
@@ -156,13 +168,16 @@ const deleteRoom = async (req, res) => {
       if (roomFound) {
         await roomFound.destroy()
 
-        res.json({ statusCode: 0 })
+        res.json({ statusCode: errorCodes.success })
       } else {
-        res.json({ statusCode: 7000, error: 'room not found' })
+        res.json({
+          statusCode: errorCodes.roomNotFound,
+          error: 'room not found',
+        })
       }
     }
   } catch (e) {
-    res.json({ statusCode: 7000, error: 'Something went wrong' })
+    res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 module.exports = { createRoom, deleteRoom, editRoom, viewRoom, viewAllRooms }

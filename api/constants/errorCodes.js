@@ -73,12 +73,47 @@ const cousrseDoesntExist = 137
 
 const invalidOtp = 138
 const insufficientPoints = 139
-const nameExists = 138
-const invalidId = 139
+const nameExists = 140
+const invalidId = 141
+const approvedCourse = 142
 
-const pendingLimitExceeded = 140
+const pendingLimitExceeded = 143
+
+const phoneExists = 144
+
+const usernameExists = 145
+
+const roomAlreadyExists = 146
+const roomNotFound = 147
+
+const pastDateBooking = 148
+const notUserBooking = 149
+const bookingExpired = 150
+const bookingNotFound = 151
+const roomBusy = 152
+const bookingAlreadyCanceled = 153
+const bookingAlreadyConfirmed = 154
+const roomNotAvailable = 155
+const packageCannotBePurchased = 156
+
+const setExpiryDurationOff = 157
+
+const pricingAlreadyExists = 158
 
 module.exports = {
+  setExpiryDurationOff,
+  pricingAlreadyExists,
+  roomNotAvailable,
+  packageCannotBePurchased,
+  pastDateBooking,
+  notUserBooking,
+  bookingExpired,
+  bookingNotFound,
+  roomBusy,
+  bookingAlreadyCanceled,
+  bookingAlreadyConfirmed,
+  roomAlreadyExists,
+  roomNotFound,
   insufficientPoints,
   invalidOtp,
   success,
@@ -121,5 +156,8 @@ module.exports = {
   cousrseDoesntExist,
   nameExists,
   invalidId,
-  pendingLimitExceeded
+  approvedCourse,
+  pendingLimitExceeded,
+  phoneExists,
+  usernameExists,
 }

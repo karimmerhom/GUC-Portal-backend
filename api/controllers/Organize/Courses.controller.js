@@ -90,7 +90,7 @@ const viewAllCourses = async (req, res) => {
     const accountId = req.body.accountId
     const type = req.data.type
 
-    const checkCourse = await CoursesModel.findOne({
+    const checkCourse = await CoursesModel.findAll({
       where: {
         accountId,
       },
@@ -108,10 +108,11 @@ const viewAllCourses = async (req, res) => {
       })
     }
 
-    return res.json({ AllCourses: result, statusCode: errorCodes.success })
+    return res.json({ AllCourses: checkCourse, statusCode: errorCodes.success })
   } catch (exception) {
+    console.log(exception)
     return res.json({
-      error: 'no courses found',
+      error: 'Something went wrong',
       statusCode: errorCodes.unknown,
     })
   }

@@ -11,11 +11,7 @@ const validateCreateForm = (req, res, next) => {
     form: Joi.object({
       degree: Joi.string().required(),
       university: Joi.string().required(),
-      yearOfGraduation: Joi.string()
-        .regex(
-          /^(0[1-9]|[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|[1-9]|1[012])[- /.](19|20)\d\d$/
-        )
-        .required(),
+      yearOfGraduation: Joi.number().required(),
       CV: Joi.string().required(),
       englishLevel: Joi.string()
         .valid(
@@ -81,9 +77,7 @@ const validateEditForm = (req, res, next) => {
     form: Joi.object({
       degree: Joi.string(),
       university: Joi.string(),
-      yearOfGraduation: Joi.string().regex(
-        /^(0[1-9]|[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|[1-9]|1[012])[- /.](19|20)\d\d$/
-      ),
+      yearOfGraduation: Joi.number(),
       CV: Joi.string(),
       englishLevel: Joi.string().valid(
         englishLevel.BEGINNER,
@@ -99,7 +93,7 @@ const validateEditForm = (req, res, next) => {
         previousOrganizingExperience.OTHER,
         previousOrganizingExperience.PROF
       ),
-      id: Joi.number(),
+      id: Joi.number().required(),
       placesOrganizedAtPreviously: Joi.string(),
       AvailableAudience: Joi.string().valid(
         AvailableAudience.NOTNOW,

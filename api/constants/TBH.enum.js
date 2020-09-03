@@ -108,6 +108,7 @@ const bookingStatus = {
   CONFIRMED: 'confirmed',
   PENDING: 'pending',
   CANCELED: 'canceled',
+  EXPIRED: 'expired',
 }
 
 const eventStatus = {
@@ -160,6 +161,9 @@ const packageStatus = {
   ACTIVE: 'active',
   EXPIRED: 'expired',
 }
+const State = {
+  APPROVED: 'approved',
+}
 
 const otpStatus = {
   AVAILABLE: 'available',
@@ -203,6 +207,11 @@ module.exports = {
   packageType,
   otpStatus,
   category,
+<<<<<<< HEAD
+=======
+
+  State,
+>>>>>>> 0ba5bc74d4adab284f912d1bec6df7ba8d50cbea
   bookingType,
   pendingType,
 }

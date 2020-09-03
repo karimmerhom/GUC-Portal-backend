@@ -58,7 +58,6 @@ router.post(
   verifyToken,
   verifyUser,
   verifiedPhone,
-
   editCourse
 )
 router.post(
@@ -67,7 +66,6 @@ router.post(
   verifyToken,
   verifyUser,
   verifiedPhone,
-
   deleteCourse
 )
 

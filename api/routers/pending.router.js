@@ -16,13 +16,13 @@ const { verifyUser } = require('../../config/authUser')
 
 router.post(
   '/setpendingPackages',
-  //verifyAdmin,
+  verifyAdmin,
   validateSetpending,
   setpendingPackages
 )
 router.post(
   '/setpendingBookings',
-  //verifyAdmin,
+  verifyAdmin,
   validateSetpending,
   setpendingBookings
 )

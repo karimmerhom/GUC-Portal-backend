@@ -1,16 +1,12 @@
 const Joi = require('joi')
 const errorCodes = require('../../constants/errorCodes')
 
-
-
 const validateEditPackageExpiration = (req, res, next) => {
   const schema = Joi.object({
-       
-
     expiry: Joi.string().valid(['true', 'false']),
-    
+
     Account: Joi.object({
-      id: Joi.string().length(3).required(),
+      id: Joi.string().required(),
     }).required(),
   })
 
@@ -24,10 +20,6 @@ const validateEditPackageExpiration = (req, res, next) => {
   return next()
 }
 
-
-
 module.exports = {
- 
   validateEditPackageExpiration,
- 
 }

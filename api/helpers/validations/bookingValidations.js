@@ -13,13 +13,32 @@ const validateViewCalendar = (req, res, next) => {
     Account: Joi.object({
       id: Joi.number().required(),
     }).required(),
-    startDate: Joi.string().required(),
+    startDate: Joi.date().required(),
     filterRoomType: Joi.string().valid([
       roomType.MEETING,
       roomType.TRAINING,
       '',
     ]),
     filterRoomSize: Joi.string().valid([roomSize.LARGE, roomSize.SMALL, '']),
+  }
+
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: statusCodes.validation,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
+
+const validateViewAvalaibleRooms = (req, res, next) => {
+  const schema = {
+    Account: Joi.object({
+      id: Joi.number().required(),
+    }).required(),
+    startDate: Joi.string().required(),
+    extremeType: Joi.string().required(),
   }
 
   const isValid = Joi.validate(req.body, schema)
@@ -108,6 +127,7 @@ const validateViewMyBooking = (req, res, next) => {
     Account: Joi.object({
       id: Joi.number().required(),
     }).required(),
+    type: Joi.string().valid('canceled', 'pending', 'confirmed'),
   })
 
   const isValid = Joi.validate(req.body, schema)
@@ -180,7 +200,7 @@ const validateBookExtremePackage = (req, res, next) => {
     //   .valid([roomType.MEETING, roomType.TRAINING])
     //   .required(),
     roomLayout: Joi.string().required(),
-    // roomSize: Joi.string().valid([roomSize.LARGE, roomSize.SMALL]).required(),
+    roomSize: Joi.string().valid([roomSize.LARGE, roomSize.SMALL]).required(),
   })
 
   const isValid = Joi.validate(req.body, schema)
@@ -219,7 +239,6 @@ const validateEditMyBooking = (req, res, next) => {
         slots.EIGHTEEN_NINETEEN,
         slots.NINETEEN_TWENTY,
         slots.TWENTY_TWENTYONE,
-        slots.TWENTYONE_TWENTYTWO,
       ])
       .required(),
     roomNumber: Joi.number().valid([1, 2, 3, 4]).required(),
@@ -249,4 +268,5 @@ module.exports = {
   validateBookRoom,
   validateAdminConfirmBooking,
   validateAdminConfirmExtremeBooking,
+  validateViewAvalaibleRooms,
 }

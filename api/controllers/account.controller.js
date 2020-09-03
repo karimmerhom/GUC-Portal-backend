@@ -34,7 +34,7 @@ const register = async (req, res) => {
     })
     if (findUsername) {
       return res.json({
-        statusCode: errorCodes.emailExists,
+        statusCode: errorCodes.usernameExists,
         error: 'Username already exists',
       })
     }
@@ -43,7 +43,7 @@ const register = async (req, res) => {
     })
     if (findPhone) {
       return res.json({
-        statusCode: errorCodes.emailExists,
+        statusCode: errorCodes.phoneExists,
         error: 'Phone number already exists',
       })
     }
@@ -140,10 +140,21 @@ const update_profile = async (req, res) => {
         error: 'Account must be verified',
       })
     }
-    if (Account.birthdate) {
-      const check = new Date(Account.birthdate)
+    if (Account.hasOwnProperty('username')) {
+      const checkUsername = await AccountModel.findOne({
+        where: {
+          username: Account.username,
+        },
+      })
+      if (checkUsername && checkUsername.id !== Account.id) {
+        return res.json({
+          statusCode: errorCodes.usernameExists,
+          message: 'username already exists',
+        })
+      }
     }
-
+    delete Account.id
+    AccountModel.update(Account, { where: { id } })
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
     return res.json({
@@ -196,6 +207,8 @@ const verify = async (req, res) => {
         },
       },
     })
+      .then((res) => console.log(res))
+      .catch((err) => console.log(err.response.data.body.err))
 
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
@@ -249,7 +262,10 @@ const verify_email = async (req, res) => {
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
     console.log(exception)
-    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 const verify_confirm_email = async (req, res) => {
@@ -265,7 +281,7 @@ const verify_confirm_email = async (req, res) => {
       })
     }
     const checkCodeExpired = await VerificationCode.findOne({
-      where: { accountId: Account.id, emailCode: Account.statusCode },
+      where: { accountId: Account.id, emailCode: Account.code },
     })
     if (!checkCodeExpired) {
       return res.json({
@@ -297,7 +313,10 @@ const verify_confirm_email = async (req, res) => {
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
     console.log(exception)
-    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 
@@ -366,7 +385,10 @@ const login = async (req, res) => {
     })
   } catch (exception) {
     console.log(exception)
-    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 
@@ -396,7 +418,7 @@ const register_google = async (req, res) => {
     })
     if (findUsername) {
       return res.json({
-        statusCode: errorCodes.emailExists,
+        statusCode: errorCodes.usernameExists,
         error: 'Username already exists',
       })
     }
@@ -405,7 +427,7 @@ const register_google = async (req, res) => {
     })
     if (findPhone) {
       return res.json({
-        code: errorCodes.emailExists,
+        code: errorCodes.phoneExists,
         error: 'Phone number already exists',
       })
     }
@@ -460,7 +482,10 @@ const register_google = async (req, res) => {
     })
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
-    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 
@@ -500,7 +525,10 @@ const login_google = async (req, res) => {
     })
   } catch (exception) {
     console.log(exception)
-    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 
@@ -530,7 +558,7 @@ const register_facebook = async (req, res) => {
     })
     if (findUsername) {
       return res.json({
-        statusCode: errorCodes.emailExists,
+        statusCode: errorCodes.usernameExists,
         error: 'Username already exists',
       })
     }
@@ -539,7 +567,7 @@ const register_facebook = async (req, res) => {
     })
     if (findPhone) {
       return res.json({
-        code: errorCodes.emailExists,
+        code: errorCodes.phoneExists,
         error: 'Phone number already exists',
       })
     }
@@ -595,7 +623,10 @@ const register_facebook = async (req, res) => {
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
     console.log(exception)
-    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 
@@ -634,7 +665,75 @@ const login_facebook = async (req, res) => {
       state: account.status,
     })
   } catch (exception) {
-    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
+  }
+}
+
+const unlink_facebook = async (req, res) => {
+  try {
+    const { Account } = req.body
+    const account = await AccountModel.findOne({
+      where: { id: parseInt(Account.id) },
+    })
+    if (!account) {
+      return res.json({
+        statusCode: errorCodes.emailExists,
+        error: 'User not found',
+      })
+    }
+    AccountModel.update(
+      { facebookId: null },
+      {
+        where: {
+          id: Account.id,
+        },
+      }
+    )
+
+    return res.json({
+      statusCode: errorCodes.success,
+    })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
+  }
+}
+
+const unlink_google = async (req, res) => {
+  try {
+    const { Account } = req.body
+    const account = await AccountModel.findOne({
+      where: { id: parseInt(Account.id) },
+    })
+    if (!account) {
+      return res.json({
+        statusCode: errorCodes.emailExists,
+        error: 'User not found',
+      })
+    }
+    AccountModel.update(
+      { googleId: null },
+      {
+        where: {
+          id: Account.id,
+        },
+      }
+    )
+
+    return res.json({
+      statusCode: errorCodes.success,
+    })
+  } catch (exception) {
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 
@@ -700,7 +799,10 @@ const confirm_verify = async (req, res) => {
       state: accountStatus.VERIFIED,
     })
   } catch (exception) {
-    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 
@@ -742,7 +844,10 @@ const change_password = async (req, res) => {
     )
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
-    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 
@@ -774,7 +879,10 @@ const change_email = async (req, res) => {
 
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
-    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 
@@ -818,7 +926,6 @@ const change_phone = async (req, res) => {
       {
         phone: Account.phoneNumber,
         status: accountStatus.PENDING,
-        verificationCode: statusCode,
       },
       {
         where: {
@@ -829,7 +936,10 @@ const change_phone = async (req, res) => {
 
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
-    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 
@@ -884,7 +994,10 @@ const forget_password = async (req, res) => {
     )
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
-    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 
@@ -915,10 +1028,13 @@ const get_profile = async (req, res) => {
     return res.json({
       statusCode: errorCodes.success,
       profile: account,
-      state: account.status,
     })
   } catch (exception) {
-    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
+    console.log(exception)
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 
@@ -957,7 +1073,10 @@ const suspend_account = async (req, res) => {
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
     console.log(exception)
-    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 
@@ -995,7 +1114,10 @@ const unsuspend_account = async (req, res) => {
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
     console.log(exception)
-    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 
@@ -1028,7 +1150,10 @@ const make_user_verified = async (req, res) => {
     )
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
-    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 
@@ -1052,4 +1177,6 @@ module.exports = {
   make_user_verified,
   register_facebook,
   login_facebook,
+  unlink_facebook,
+  unlink_google,
 }

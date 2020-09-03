@@ -33,13 +33,13 @@ const setExpiryDuration = async (req, res) => {
           },
         }
       )
-      res.json({ statusCode: 0 })
+      res.json({ statusCode: errorCodes.success })
     } else {
       expiryModel.create({ duration: req.body.duration, on_off: 'off' })
-      res.json({ statusCode: 0 })
+      res.json({ statusCode: errorCodes.success })
     }
   } catch (e) {
-    res.json({ statusCode: 7000, error: 'Something went wrong' })
+    res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 
@@ -55,13 +55,16 @@ const turnOnExpiry = async (req, res) => {
           },
         }
       )
-      res.json({ statusCode: 0 })
+      res.json({ statusCode: errorCodes.success })
     } else {
-      res.json({ statusCode: 7000, error: 'please set duration first' })
+      res.json({
+        statusCode: errorCodes.setExpiryDurationOff,
+        error: 'please set duration first',
+      })
     }
   } catch (e) {
     console.log(e.message)
-    res.json({ statusCode: 7000, error: 'Something went wrong' })
+    res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 const turnOffExpiry = async (req, res) => {
@@ -76,13 +79,16 @@ const turnOffExpiry = async (req, res) => {
           },
         }
       )
-      res.json({ statusCode: 0 })
+      res.json({ statusCode: errorCodes.success })
     } else {
-      res.json({ statusCode: 7000, error: 'please set duration first' })
+      res.json({
+        statusCode: errorCodes.setExpiryDurationOff,
+        error: 'please set duration first',
+      })
     }
   } catch (e) {
     console.log(e.message)
-    res.json({ statusCode: 7000, error: 'Something went wrong' })
+    res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 

@@ -46,15 +46,10 @@ const validateUpdateProfile = (req, res, next) => {
       .object({
         firstName: joi.string().min(3),
         lastName: joi.string().min(3),
-        phoneNumber: joi
-          .string()
-          .trim()
-          .regex(/^[0-9]{11,11}$/),
-        email: joi.string().email(),
+        username: joi.string().min(3),
         id: joi.number().required(),
         gender: joi.string().valid('Male', 'Female'),
         birthdate: joi.date(),
-        profession: joi.string(),
       })
       .required(),
   }
@@ -145,7 +140,6 @@ const validateVerify = (req, res, next) => {
     Account: joi
       .object({
         id: joi.number().required(),
-        code: joi.string().required(),
       })
       .required(),
   }
@@ -385,6 +379,24 @@ const validateLoginGoogle = (req, res, next) => {
   }
   return next()
 }
+
+const validateUnlink = (req, res, next) => {
+  const schema = {
+    Account: joi
+      .object({
+        id: joi.string().required(),
+      })
+      .required(),
+  }
+  const isValid = joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: validationFail,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
 const validateCallbackGoogle = (req, res, next) => {
   const schema = {
     state: joi.string().valid('signIn', 'signUp').required(),
@@ -418,4 +430,5 @@ module.exports = {
   validateLoginGoogle,
   validateCallbackGoogle,
   validateConfirmVerifyEmail,
+  validateUnlink,
 }

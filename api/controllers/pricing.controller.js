@@ -25,13 +25,16 @@ const createPricing = async (req, res) => {
       where: { roomType: req.body.roomType, pricingType: req.body.pricingType },
     })
     if (roomFound) {
-      res.json({ statusCode: 7000, error: 'Pricing already exists' })
+      res.json({
+        statusCode: errorCodes.pricingAlreadyExists,
+        error: 'Pricing already exists',
+      })
     } else {
       pricingModel.create(req.body)
-      res.json({ statusCode: 0 })
+      res.json({ statusCode: errorCodes.success })
     }
   } catch (e) {
-    res.json({ statusCode: 7000, error: 'Something went wrong' })
+    res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 
@@ -50,22 +53,22 @@ const editPricing = async (req, res) => {
           pricingType: req.body.pricingType,
         },
       })
-      res.json({ statusCode: 0 })
+      res.json({ statusCode: errorCodes.success })
     } else {
-      res.json({ statusCode: 7000, error: 'room not found' })
+      res.json({ statusCode: errorCodes.roomNotFound, error: 'room not found' })
     }
   } catch (e) {
     console.log(e.message)
-    res.json({ statusCode: 7000, error: 'Something went wrong' })
+    res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 
 const viewPricings = async (req, res) => {
   try {
     const prices = await pricingModel.findAll()
-    res.json({ statusCode: 0, prices })
+    res.json({ statusCode: errorCodes.success, prices })
   } catch (e) {
-    res.json({ statusCode: 7000, error: 'Something went wrong' })
+    res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 
@@ -79,12 +82,12 @@ const deletePricing = async (req, res) => {
 
     if (roomFound) {
       await roomFound.destroy()
-      res.json({ statusCode: 0 })
+      res.json({ statusCode: errorCodes.success })
     } else {
-      res.json({ statusCode: 7000, error: 'room not found' })
+      res.json({ statusCode: errorCodes.roomNotFound, error: 'room not found' })
     }
   } catch (e) {
-    res.json({ statusCode: 7000, error: 'Something went wrong' })
+    res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 module.exports = { editPricing, deletePricing, createPricing, viewPricings }
