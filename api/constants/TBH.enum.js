@@ -170,19 +170,16 @@ const ability = {
   TRUE: 'true',
   FALSE: 'false',
 }
-<<<<<<< HEAD
 const bookingType = {
   REGULAR: 'regular',
   EXTREME: 'extreme',
 }
-=======
 
 const pendingType = {
-  PACKAGES : 'Packages',
-  BOOKINGS : 'Bookings'
+  PACKAGES: 'Packages',
+  BOOKINGS: 'Bookings',
 }
 
->>>>>>> 4a48d6b5f7ae803576c72a5dfd27f43d51bc82c4
 module.exports = {
   packageStatus,
   accountStatus,
@@ -206,9 +203,6 @@ module.exports = {
   packageType,
   otpStatus,
   category,
-<<<<<<< HEAD
   bookingType,
-=======
   pendingType,
->>>>>>> 4a48d6b5f7ae803576c72a5dfd27f43d51bc82c4
 }
