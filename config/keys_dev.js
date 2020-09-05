@@ -10,8 +10,8 @@ module.exports = {
   facebookAuth: {
     client_id: '220638332401032',
     client_secret: 'b0c3014038aa4771ff2d6bc725515df5',
-    redirect_uri_login: 'http://localhost:3000/login',
-    redirect_uri_sign_up: 'http://localhost:3000/signup',
+    redirect_uri_login: 'http://localhost:3000/home/SignIn',
+    redirect_uri_sign_up: 'http://localhost:3000/home/SignUp',
   },
   googleAuth: {
     client_id:
