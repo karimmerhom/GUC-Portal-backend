@@ -9,6 +9,7 @@ const {
   secretOrKey,
   smsAccessKey,
   emailAccessKey,
+  frontEndLink,
 } = require('../../config/keys')
 const {
   accountStatus,
@@ -72,7 +73,7 @@ const register = async (req, res) => {
     })
 
     let link =
-      'http://localhost:3000?emailVerification/code=' +
+      `${frontEndLink}?emailVerification/code=` +
       emailCode +
       '&id=' +
       accountCreated.id
@@ -247,7 +248,7 @@ const verify_email = async (req, res) => {
       },
       { where: { accountId: Account.id } }
     )
-    const link = 'http://localhost:3000?code=' + code + '&id=' + account.id
+    const link = `${frontEndLink}?code=` + code + '&id=' + account.id
     axios({
       method: 'post',
       url: 'https://dev.power-support.lirten.com/email/email/_send_email', //TODO
@@ -434,11 +435,9 @@ const register_google = async (req, res) => {
         error: 'Phone number already exists',
       })
     }
-    const code = await generateOTP()
-    await VerificationCode.create({
-      code,
-      date: new Date(),
-    })
+    const emailCode = await generateOTP()
+    const smsCode = await generateOTP()
+
     const saltKey = bcrypt.genSaltSync(10)
     const hashed_pass = bcrypt.hashSync(Account.password, saltKey)
     const accountCreated = await AccountModel.create({
@@ -454,8 +453,15 @@ const register_google = async (req, res) => {
       googleId: Account.id,
     })
 
-    const link =
-      'http://localhost:3000?code=' + code + '&id=' + accountCreated.id
+    await VerificationCode.create({
+      emailCode,
+      smsCode,
+      emailDate: new Date(),
+      smsDate: new Date(),
+      accountId: accountCreated.id,
+    })
+
+    const link = `${frontEndLink}?code=` + code + '&id=' + accountCreated.id
     axios({
       method: 'post',
       url: 'https://dev.power-support.lirten.com/email/email/_send_email', //TODO
@@ -574,11 +580,8 @@ const register_facebook = async (req, res) => {
         error: 'Phone number already exists',
       })
     }
-    const code = await generateOTP()
-    await VerificationCode.create({
-      code,
-      date: new Date(),
-    })
+    const emailCode = await generateOTP()
+    const smsCode = await generateOTP()
     const saltKey = bcrypt.genSaltSync(10)
     const hashed_pass = bcrypt.hashSync(Account.password, saltKey)
     const accountCreated = await AccountModel.create({
@@ -593,9 +596,15 @@ const register_facebook = async (req, res) => {
       verificationCode: code,
       facebookId: Account.id,
     })
+    await VerificationCode.create({
+      emailCode,
+      smsCode,
+      emailDate: new Date(),
+      smsDate: new Date(),
+      accountId: accountCreated.id,
+    })
 
-    const link =
-      'http://localhost:3000?code=' + code + '&id=' + accountCreated.id
+    const link = `${frontEndLink}?code=` + code + '&id=' + accountCreated.id
     axios({
       method: 'post',
       url: 'https://dev.power-support.lirten.com/email/email/_send_email',
