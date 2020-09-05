@@ -49,13 +49,13 @@ const urlGoogle = async (req, res) => {
 const callback = async (req, res) => {
   if (!req.query.code) {
     return res.json({
-      code: errorCodes.validation,
+      statusCode: errorCodes.validation,
       error: 'Missing code',
     })
   }
   const { state } = req.body
   const info = await getGoogleAccountFromCode(req.query.code, state)
-  return res.json({ info })
+  return res.json({ statusCode: 0, info })
 }
 
 const getGoogleAccountFromCode = async (code, state) => {
@@ -84,7 +84,7 @@ const getGoogleAccountFromCode = async (code, state) => {
     return { userData }
   } catch (exception) {
     console.log(exception)
-    return { code: errorCodes.unknown, error: 'Something went wrong' }
+    return { statusCode: errorCodes.unknown, error: 'Something went wrong' }
   }
 }
 

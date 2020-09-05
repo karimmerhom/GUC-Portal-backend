@@ -72,7 +72,10 @@ const register = async (req, res) => {
     })
 
     let link =
-      'http://localhost:3000?code=' + emailCode + '&id=' + accountCreated.id //TODO
+      'http://localhost:3000?emailVerification/code=' +
+      emailCode +
+      '&id=' +
+      accountCreated.id
     axios({
       method: 'post',
       url: 'https://dev.power-support.lirten.com/email/email/_send_email', //TODO

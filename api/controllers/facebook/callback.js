@@ -38,9 +38,9 @@ const facebook_callback = async (req, res) => {
     }
     const { state } = req.body
     const data = await getAccessTokenFromCode(req.query.code, state)
-    return res.json({ code: errorCodes.success, data })
+    return res.json({ statusCode: errorCodes.success, data })
   } catch (exception) {
-    return res.json({ code: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
   }
 }
 
@@ -71,7 +71,7 @@ async function getAccessTokenFromCode(code, state) {
     const data = await getFacebookUserData(access_token)
     return data
   } catch (exception) {
-    return { code: errorCodes.unknown, error: 'Something went wrong' }
+    return { statusCode: errorCodes.unknown, error: 'Something went wrong' }
   }
 }
 async function getFacebookUserData(accesstoken) {
@@ -93,7 +93,7 @@ async function getFacebookUserData(accesstoken) {
     })
     return { facebookId, firstName, lastName, email }
   } catch (exception) {
-    return { code: errorCodes.unknown, error: 'Something went wrong' }
+    return { statusCode: errorCodes.unknown, error: 'Something went wrong' }
   }
 }
 
