@@ -248,6 +248,7 @@ const verify_email = async (req, res) => {
       },
       { where: { accountId: Account.id } }
     )
+    console.log(frontEndLink)
     const link = `${frontEndLink}?code=` + code + '&id=' + account.id
     axios({
       method: 'post',
