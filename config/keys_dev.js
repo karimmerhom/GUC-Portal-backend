@@ -11,14 +11,14 @@ module.exports = {
   facebookAuth: {
     client_id: '220638332401032',
     client_secret: 'b0c3014038aa4771ff2d6bc725515df5',
-    redirect_uri_login: 'http://localhost:3000/facebook/SignIn',
-    redirect_uri_sign_up: 'http://localhost:3000/facebook/SignUp',
+    redirect_uri_login: 'https://uat.thebusinesshub.space/facebook/SignIn',
+    redirect_uri_sign_up: 'https://uat.thebusinesshub.space/facebook/SignUp',
   },
   googleAuth: {
     client_id:
       '790311029308-uok5sjd316a26f6mjhq6ff6rlg1t8dfi.apps.googleusercontent.com',
     client_secret: 'HnlkzK0HJpJUR1BXW1XC_67U',
-    loginURI: 'http://localhost:3000/google/SignIn',
-    signUpURI: 'http://localhost:3000/google/SignUp',
+    loginURI: 'https://uat.thebusinesshub.space/google/SignIn',
+    signUpURI: 'https://uat.thebusinesshub.space/google/SignUp',
   },
 }
