@@ -1034,8 +1034,6 @@ const get_profile = async (req, res) => {
     }
     let profile = account
     delete profile.dataValues.password
-    delete profile.dataValues.facebookId
-    delete profile.dataValues.googleId
     delete profile.dataValues.type
 
     return res.json({
