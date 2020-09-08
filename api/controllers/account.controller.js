@@ -101,7 +101,7 @@ const register = async (req, res) => {
         },
         body: {
           receiverPhone: accountCreated.phone,
-          body: `Your TBH confirmation code is\n ${smsCode}`,
+          body: smsCode,
         },
       },
     })
@@ -207,7 +207,7 @@ const verify = async (req, res) => {
         },
         body: {
           receiverPhone: account.phone,
-          body: `Your TBH confirmation code is\n ${code}`,
+          body: code,
         },
       },
     })
@@ -490,7 +490,7 @@ const register_google = async (req, res) => {
         },
         body: {
           receiverPhone: accountCreated.phone,
-          body: accountCreated.verificationCode,
+          body: smsCode,
         },
       },
     })
@@ -636,7 +636,7 @@ const register_facebook = async (req, res) => {
         },
         body: {
           receiverPhone: accountCreated.phone,
-          body: accountCreated.verificationCode,
+          body: smsCode,
         },
       },
     })
