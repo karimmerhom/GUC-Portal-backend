@@ -73,7 +73,7 @@ const register = async (req, res) => {
     })
 
     let link =
-      `${frontEndLink}?emailVerification/code=` +
+      `${frontEndLink}/emailVerification?code=` +
       emailCode +
       '&id=' +
       accountCreated.id
@@ -249,7 +249,8 @@ const verify_email = async (req, res) => {
       { where: { accountId: Account.id } }
     )
     console.log(frontEndLink)
-    const link = `${frontEndLink}?code=` + code + '&id=' + account.id
+    const link =
+      `${frontEndLink}/emailVerification?code=` + code + '&id=' + account.id
     axios({
       method: 'post',
       url: 'https://dev.power-support.lirten.com/email/email/_send_email', //TODO
@@ -461,7 +462,11 @@ const register_google = async (req, res) => {
       accountId: accountCreated.id,
     })
 
-    const link = `${frontEndLink}?code=` + code + '&id=' + accountCreated.id
+    const link =
+      `${frontEndLink}/emailVerification?code=` +
+      code +
+      '&id=' +
+      accountCreated.id
     axios({
       method: 'post',
       url: 'https://dev.power-support.lirten.com/email/email/_send_email', //TODO
@@ -603,7 +608,11 @@ const register_facebook = async (req, res) => {
       accountId: accountCreated.id,
     })
 
-    const link = `${frontEndLink}?code=` + code + '&id=' + accountCreated.id
+    const link =
+      `${frontEndLink}/emailVerification?code=` +
+      code +
+      '&id=' +
+      accountCreated.id
     axios({
       method: 'post',
       url: 'https://dev.power-support.lirten.com/email/email/_send_email',
