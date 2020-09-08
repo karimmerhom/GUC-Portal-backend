@@ -8,13 +8,13 @@ module.exports = {
   facebookAuth: {
     client_id: process.env.FACEBOOK_CLIENT_ID,
     client_secret: process.env.FACEBOOK_CLIENT_SECRET,
-    redirect_uri_login: process.env.GOOGLE_URI_LOGIN,
-    redirect_uri_sign_up: process.env.GOOGLE_URI_SIGNUP,
+    redirect_uri_login: process.env.FACEBOOK_LOGIN_URI,
+    redirect_uri_sign_up: process.env.FACEBOOK_SIGNUP_URI,
   },
   googleAuth: {
-    client_id: process.env.GOOGLE.CLIENT_ID,
-    client_secret: process.env.GOOGLE_CLIENT_ID,
-    loginURI: process.env.FACEBOOK_LOGIN_URI,
+    client_id: process.env.GOOGLE_CLIENT_ID,
+    client_secret: process.env.GOOGLE_CLIENT_SECRET,
+    loginURI: process.env.GOOGLE_LOGIN_URI,
     signUpURI: process.env.GOOGLE_SIGNUP_URI,
   },
 }
