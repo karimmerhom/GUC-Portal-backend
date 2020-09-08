@@ -450,7 +450,6 @@ const register_google = async (req, res) => {
       email: Account.email.toString().toLowerCase(),
       status: accountStatus.PENDING,
       type: userTypes.USER,
-      verificationCode: code,
       googleId: Account.id,
     })
 
@@ -594,7 +593,6 @@ const register_facebook = async (req, res) => {
       email: Account.email.toString().toLowerCase(),
       status: accountStatus.PENDING,
       type: userTypes.USER,
-      verificationCode: code,
       facebookId: Account.id,
     })
     await VerificationCode.create({
