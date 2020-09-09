@@ -207,11 +207,8 @@ module.exports = {
   packageType,
   otpStatus,
   category,
-<<<<<<< HEAD
-=======
 
   State,
->>>>>>> 0ba5bc74d4adab284f912d1bec6df7ba8d50cbea
   bookingType,
   pendingType,
 }
