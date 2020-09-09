@@ -102,6 +102,7 @@ const pricingAlreadyExists = 158
 
 const accountDoesNotExist = 159
 const linkedSuccessfully = 160
+
 module.exports = {
   linkedSuccessfully,
   accountDoesNotExist,
