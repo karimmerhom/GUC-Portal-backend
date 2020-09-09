@@ -482,4 +482,6 @@ module.exports = {
   validateCallbackGoogle,
   validateConfirmVerifyEmail,
   validateUnlink,
+  validateCallBackLirtenHub,
+  validateSignUpWithLirtenHub,
 }

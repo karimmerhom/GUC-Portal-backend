@@ -2,6 +2,8 @@ const bcrypt = require('bcryptjs')
 const axios = require('axios')
 const jwt = require('jsonwebtoken')
 const AccountModel = require('../../models/account.model')
+const lirtenHubAccountsModel = require('../../models/lirtenHubAccounts.model')
+
 const VerificationCode = require('../../models/verificationCodes')
 const errorCodes = require('../constants/errorCodes')
 const { Op } = require('sequelize')
@@ -17,6 +19,7 @@ const {
   userTypes,
 } = require('../constants/TBH.enum')
 const { generateOTP } = require('../helpers/helpers')
+const { findOne } = require('../../models/account.model')
 
 const register = async (req, res) => {
   try {
@@ -1175,6 +1178,155 @@ const make_user_verified = async (req, res) => {
   }
 }
 
+const callBackLirtenHub = async (req, res) => {
+  try {
+    const { token } = req.body
+    let data = {}
+    jwt.verify(token, secretOrKey, (err, authorizedData) => {
+      if (!err) {
+        data = authorizedData
+      } else {
+        return res.json({ code: 11111, error: 'breach' })
+      }
+    })
+
+    const lirtenAccId = data.id
+    const link = await lirtenHubAccountsModel.findOne({
+      where: { lirtenAccountId: lirtenAccId },
+    })
+
+    if (!link) {
+      const account = await AccountModel.findOne({
+        where: { email: data.email },
+      })
+
+      if (account) {
+        const accountCreated = await lirtenHubAccountsModel.create({
+          accountId: account.id,
+          lirtenAccountId: lirtenAccId,
+        })
+
+        if (account.status === accountStatus.SUSPENDED) {
+          return res.json({
+            statusCode: errorCodes.alreadySuspended,
+            error: 'Account suspended',
+          })
+        }
+        const payLoad = {
+          id: account.id,
+          firstName: account.firstName,
+          lastName: account.lastName,
+          username: account.username,
+          phone: account.phone,
+          email: account.email,
+          status: account.status,
+          type: account.type,
+          emailVerified: account.emailVerified,
+        }
+
+        const token = jwt.sign(payLoad, secretOrKey, {
+          expiresIn: '8h',
+        })
+
+        return res.json({
+          statusCode: errorCodes.linkedSuccessfully,
+
+          token,
+          id: account.id,
+          username: account.username,
+          state: account.status,
+          emailVerified: account.emailVerified,
+        })
+
+        //create link
+      } else {
+        return res.json({
+          statusCode: errorCodes.accountDoesNotExist,
+          error: 'account doesnot exist',
+          data,
+        })
+      }
+
+      //create link
+      console.log('NO LINK')
+    } else {
+      const account = await AccountModel.findOne({
+        where: { id: link.accountId },
+      })
+
+      if (!account) {
+        return res.json({
+          statusCode: errorCodes.invalidCredentials,
+          error: 'account doesnot exist',
+        })
+      }
+
+      if (account.status === accountStatus.SUSPENDED) {
+        return res.json({
+          statusCode: errorCodes.alreadySuspended,
+          error: 'Account suspended',
+        })
+      }
+      const payLoad = {
+        id: account.id,
+        firstName: account.firstName,
+        lastName: account.lastName,
+        username: account.username,
+        phone: account.phone,
+        email: account.email,
+        status: account.status,
+        type: account.type,
+        emailVerified: account.emailVerified,
+      }
+
+      const token = jwt.sign(payLoad, secretOrKey, {
+        expiresIn: '8h',
+      })
+
+      return res.json({
+        statusCode: errorCodes.success,
+        token,
+        id: account.id,
+        username: account.username,
+        state: account.status,
+        emailVerified: account.emailVerified,
+      })
+    }
+
+    // const { id } = Account
+    // const account = await AccountModel.findOne({ where: { id } })
+    // if (!account) {
+    //   return res.json({
+    //     statusCode: errorCodes.entityNotFound,
+    //     error: 'User not found',
+    //   })
+    // }
+    // if (account.status === accountStatus.VERIFIED) {
+    //   return res.json({
+    //     statusCode: errorCodes.alreadyVerified,
+    //     error: 'User already verified',
+    //   })
+    // }
+    // await AccountModel.update(
+    //   {
+    //     status: accountStatus.VERIFIED,
+    //   },
+    //   {
+    //     where: {
+    //       id,
+    //     },
+    //   }
+    // )
+    return res.json({ statusCode: errorCodes.success })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
+  }
+}
+
 module.exports = {
   register,
   login,
@@ -1197,4 +1349,5 @@ module.exports = {
   login_facebook,
   unlink_facebook,
   unlink_google,
+  callBackLirtenHub,
 }

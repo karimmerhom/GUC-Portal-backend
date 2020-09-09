@@ -147,10 +147,10 @@ router.post(
 
 router.post('/callBackLirtenHub', validateCallBackLirtenHub, callBackLirtenHub)
 
-router.post(
-  '/signUpWithLirtenHub',
-  validateSignUpWithLirtenHub,
-  signUpWithLirtenHub
-)
+// router.post(
+//   '/signUpWithLirtenHub',
+//   validateSignUpWithLirtenHub,
+//   signUpWithLirtenHub
+// )
 
 module.exports = router

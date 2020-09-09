@@ -9,7 +9,7 @@ const { Model } = Sequelize
 class lirtenHubAccounts extends Model {}
 lirtenHubAccounts.init(
   {
-    accountID: {
+    accountId: {
       type: Sequelize.INTEGER,
     },
     lirtenAccountId: {
