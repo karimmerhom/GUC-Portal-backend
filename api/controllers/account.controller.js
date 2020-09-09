@@ -1226,7 +1226,6 @@ const signUpWithLirtenHub = async (req, res) => {
 
     const hashed_pass = bcrypt.hashSync(req.body.Account.password, saltKey)
     req.body.Account.password = hashed_pass
-    console.log('hellp', tbhAccountFound, lirtenHubAccountFound)
 
     if (lirtenHubAccountFound) {
       if (tbhAccountFound) {
@@ -1309,7 +1308,7 @@ const callBackLirtenHub = async (req, res) => {
       if (!err) {
         data = authorizedData
       } else {
-        return res.json({ code: 11111, error: 'breach' })
+        return res.json({ code: errorCodes.authentication, error: 'breach' })
       }
     })
 
