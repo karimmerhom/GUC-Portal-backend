@@ -99,7 +99,8 @@ const packageCannotBePurchased = 156
 const setExpiryDurationOff = 157
 
 const pricingAlreadyExists = 158
-
+const accountDoesNotExist = 159
+const linkedSuccessfully = 160
 const accountAlreadyLinkedSuccessfully = 161
 const couldntCreateAccount = 162
 const lirtenHubLinkedToAnotherAcount = 163
@@ -110,6 +111,8 @@ module.exports = {
   couldntCreateAccount,
   lirtenHubLinkedToAnotherAcount,
   tbhLinkedToAnotherAccount,
+  linkedSuccessfully,
+  accountDoesNotExist,
   setExpiryDurationOff,
   pricingAlreadyExists,
   roomNotAvailable,
