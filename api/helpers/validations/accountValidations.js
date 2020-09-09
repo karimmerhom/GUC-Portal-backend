@@ -384,7 +384,7 @@ const validateUnlink = (req, res, next) => {
   const schema = {
     Account: joi
       .object({
-        id: joi.string().required(),
+        id: joi.number().required(),
       })
       .required(),
   }

@@ -9,6 +9,7 @@ const {
   secretOrKey,
   smsAccessKey,
   emailAccessKey,
+  frontEndLink,
 } = require('../../config/keys')
 const {
   accountStatus,
@@ -72,7 +73,10 @@ const register = async (req, res) => {
     })
 
     let link =
-      'http://localhost:3000?code=' + emailCode + '&id=' + accountCreated.id //TODO
+      `${frontEndLink}/emailVerification?code=` +
+      emailCode +
+      '&id=' +
+      accountCreated.id
     axios({
       method: 'post',
       url: 'https://dev.power-support.lirten.com/email/email/_send_email', //TODO
@@ -97,7 +101,7 @@ const register = async (req, res) => {
         },
         body: {
           receiverPhone: accountCreated.phone,
-          body: `Your TBH confirmation code is\n ${smsCode}`,
+          body: smsCode,
         },
       },
     })
@@ -203,7 +207,7 @@ const verify = async (req, res) => {
         },
         body: {
           receiverPhone: account.phone,
-          body: `Your TBH confirmation code is\n ${code}`,
+          body: code,
         },
       },
     })
@@ -244,7 +248,9 @@ const verify_email = async (req, res) => {
       },
       { where: { accountId: Account.id } }
     )
-    const link = 'http://localhost:3000?code=' + code + '&id=' + account.id
+    console.log(frontEndLink)
+    const link =
+      `${frontEndLink}/emailVerification?code=` + code + '&id=' + account.id
     axios({
       method: 'post',
       url: 'https://dev.power-support.lirten.com/email/email/_send_email', //TODO
@@ -431,11 +437,9 @@ const register_google = async (req, res) => {
         error: 'Phone number already exists',
       })
     }
-    const code = await generateOTP()
-    await VerificationCode.create({
-      code,
-      date: new Date(),
-    })
+    const emailCode = await generateOTP()
+    const smsCode = await generateOTP()
+
     const saltKey = bcrypt.genSaltSync(10)
     const hashed_pass = bcrypt.hashSync(Account.password, saltKey)
     const accountCreated = await AccountModel.create({
@@ -447,12 +451,22 @@ const register_google = async (req, res) => {
       email: Account.email.toString().toLowerCase(),
       status: accountStatus.PENDING,
       type: userTypes.USER,
-      verificationCode: code,
       googleId: Account.id,
     })
 
+    await VerificationCode.create({
+      emailCode,
+      smsCode,
+      emailDate: new Date(),
+      smsDate: new Date(),
+      accountId: accountCreated.id,
+    })
+
     const link =
-      'http://localhost:3000?code=' + code + '&id=' + accountCreated.id
+      `${frontEndLink}/emailVerification?code=` +
+      code +
+      '&id=' +
+      accountCreated.id
     axios({
       method: 'post',
       url: 'https://dev.power-support.lirten.com/email/email/_send_email', //TODO
@@ -476,7 +490,7 @@ const register_google = async (req, res) => {
         },
         body: {
           receiverPhone: accountCreated.phone,
-          body: accountCreated.verificationCode,
+          body: smsCode,
         },
       },
     })
@@ -571,11 +585,8 @@ const register_facebook = async (req, res) => {
         error: 'Phone number already exists',
       })
     }
-    const code = await generateOTP()
-    await VerificationCode.create({
-      code,
-      date: new Date(),
-    })
+    const emailCode = await generateOTP()
+    const smsCode = await generateOTP()
     const saltKey = bcrypt.genSaltSync(10)
     const hashed_pass = bcrypt.hashSync(Account.password, saltKey)
     const accountCreated = await AccountModel.create({
@@ -587,12 +598,21 @@ const register_facebook = async (req, res) => {
       email: Account.email.toString().toLowerCase(),
       status: accountStatus.PENDING,
       type: userTypes.USER,
-      verificationCode: code,
       facebookId: Account.id,
+    })
+    await VerificationCode.create({
+      emailCode,
+      smsCode,
+      emailDate: new Date(),
+      smsDate: new Date(),
+      accountId: accountCreated.id,
     })
 
     const link =
-      'http://localhost:3000?code=' + code + '&id=' + accountCreated.id
+      `${frontEndLink}/emailVerification?code=` +
+      code +
+      '&id=' +
+      accountCreated.id
     axios({
       method: 'post',
       url: 'https://dev.power-support.lirten.com/email/email/_send_email',
@@ -616,7 +636,7 @@ const register_facebook = async (req, res) => {
         },
         body: {
           receiverPhone: accountCreated.phone,
-          body: accountCreated.verificationCode,
+          body: smsCode,
         },
       },
     })
@@ -1021,8 +1041,6 @@ const get_profile = async (req, res) => {
     }
     let profile = account
     delete profile.dataValues.password
-    delete profile.dataValues.facebookId
-    delete profile.dataValues.googleId
     delete profile.dataValues.type
 
     return res.json({
