@@ -18,7 +18,7 @@ lirtenHubAccounts.init(
   },
   {
     sequelize,
-    timestamps: false,
+    timestamps: true,
   }
 )
 
