@@ -429,15 +429,16 @@ const validateSignUpWithLirtenHub = (req, res, next) => {
         username: joi.string().regex(usernamePattern).required(),
         firstName: joi.string().min(3).required(),
         lastName: joi.string().min(3).required(),
-        phoneNumber: joi
+        phone: joi
           .string()
           .trim()
           .regex(/^[0-9]{11,11}$/)
           .required(),
         email: joi.string().email().required(),
-        lirtenAccountId: joi.number().required(),
+        birthdate: joi.date(),
       })
       .required(),
+    lirtenAccountId: joi.number().required(),
   }
   const isValid = joi.validate(req.body, schema)
   if (isValid.error) {
@@ -482,4 +483,6 @@ module.exports = {
   validateCallbackGoogle,
   validateConfirmVerifyEmail,
   validateUnlink,
+  validateCallBackLirtenHub,
+  validateSignUpWithLirtenHub,
 }

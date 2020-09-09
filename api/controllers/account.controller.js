@@ -3,6 +3,7 @@ const axios = require('axios')
 const jwt = require('jsonwebtoken')
 const AccountModel = require('../../models/account.model')
 const VerificationCode = require('../../models/verificationCodes')
+const lirtenHubAccountsModel = require('../../models/lirtenHubAccounts.model')
 const errorCodes = require('../constants/errorCodes')
 const { Op } = require('sequelize')
 const {
@@ -1175,6 +1176,116 @@ const make_user_verified = async (req, res) => {
   }
 }
 
+const signUpWithLirtenHub = async (req, res) => {
+  try {
+    const lirtenHubAccountFound = await lirtenHubAccountsModel.findOne({
+      where: {
+        lirtenAccountId: req.body.lirtenAccountId,
+      },
+    })
+
+    const tbhAccountFound = await AccountModel.findOne({
+      where: { email: req.body.Account.email },
+    })
+
+    const findEmail = await AccountModel.findOne({
+      where: { email: req.body.Account.email.toString().toLowerCase() },
+    })
+    if (findEmail) {
+      return res.json({
+        statusCode: errorCodes.emailExists,
+        error: 'Email already exists',
+      })
+    }
+    const findUsername = await AccountModel.findOne({
+      where: { username: req.body.Account.username.toString().toLowerCase() },
+    })
+    if (findUsername) {
+      return res.json({
+        statusCode: errorCodes.usernameExists,
+        error: 'Username already exists',
+      })
+    }
+    const findPhone = await AccountModel.findOne({
+      where: { phone: req.body.Account.phone },
+    })
+    if (findPhone) {
+      return res.json({
+        statusCode: errorCodes.phoneExists,
+        error: 'Phone number already exists',
+      })
+    }
+
+    req.body.Account.emailVerified = true
+    req.body.Account.status = 'verified'
+    req.body.Account.type = 'user'
+
+    const saltKey = bcrypt.genSaltSync(10)
+
+    const hashed_pass = bcrypt.hashSync(req.body.Account.password, saltKey)
+    req.body.Account.password = hashed_pass
+    console.log('hellp', tbhAccountFound, lirtenHubAccountFound)
+
+    if (lirtenHubAccountFound) {
+      if (tbhAccountFound) {
+        if (tbhAccountFound.id === lirtenHubAccountFound.accountId) {
+          return res.json({
+            statusCode: errorCodes.accountAlreadyLinkedSuccessfully,
+            message: 'The account is already linked successfully',
+          })
+        } else {
+          return res.json({
+            statusCode: errorCodes.lirtenHubLinkedToAnotherAcount,
+            message: 'The LirtenHub account is linked to another TBH account',
+          })
+        }
+      } else {
+        return res.json({
+          statusCode: errorCodes.tbhLinkedToAnotherAccount,
+          error: 'Another TBH account is linked to that lirtenHub account',
+        })
+      }
+    } else {
+      if (tbhAccountFound) {
+        const lirtenHubAccountTBHFound = await lirtenHubAccountsModel.findOne({
+          where: {
+            accountId: tbhAccountFound.id,
+          },
+        })
+        if (lirtenHubAccountTBHFound) {
+          return res.json({
+            statusCode: errorCodes.lirtenHubLinkedToAnotherAcount,
+            error: 'Another LirtenHub account is linked to that TBH account',
+          })
+        }
+      }
+      const tbhAccountCreated = await AccountModel.create(req.body.Account)
+      if (tbhAccountCreated) {
+        await lirtenHubAccountsModel.create({
+          accountId: tbhAccountCreated.id,
+          lirtenAccountId: req.body.lirtenAccountId,
+        })
+        return res.json({
+          statusCode: errorCodes.success,
+          message: 'Your account has successfully been linked to a new TBH',
+        })
+      } else {
+        return res.json({
+          statusCode: errorCodes.couldntCreateAccount,
+          error: 'Could not create TBH account successfully',
+        })
+      }
+    }
+  } catch (e) {
+    console.log('wowowowowowo')
+    console.log(e.message)
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
+  }
+}
+
 module.exports = {
   register,
   login,
@@ -1197,4 +1308,5 @@ module.exports = {
   login_facebook,
   unlink_facebook,
   unlink_google,
+  signUpWithLirtenHub,
 }

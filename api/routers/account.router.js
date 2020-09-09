@@ -24,7 +24,7 @@ const {
   login_facebook,
   unlink_google,
   unlink_facebook,
-  callBackLirtenHub,
+  // callBackLirtenHub,
   signUpWithLirtenHub,
 } = accountController
 
@@ -145,7 +145,7 @@ router.post(
   verify_confirm_email
 )
 
-router.post('/callBackLirtenHub', validateCallBackLirtenHub, callBackLirtenHub)
+// router.post('/callBackLirtenHub', validateCallBackLirtenHub, callBackLirtenHub)
 
 router.post(
   '/signUpWithLirtenHub',
