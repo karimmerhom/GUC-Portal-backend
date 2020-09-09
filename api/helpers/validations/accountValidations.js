@@ -411,6 +411,57 @@ const validateCallbackGoogle = (req, res, next) => {
   return next()
 }
 
+const validateSignUpWithLirtenHub = (req, res, next) => {
+  const complexityOptions = {
+    min: 8,
+    max: 255,
+    lowerCase: 1,
+    upperCase: 1,
+    numeric: 1,
+    symbol: 0,
+    requirementCount: 8,
+  }
+  const usernamePattern = /^[a-zA-Z0-9!#_$%&*]{3,25}$/
+  const schema = {
+    Account: joi
+      .object({
+        password: new PasswordComplexity(complexityOptions).required(),
+        username: joi.string().regex(usernamePattern).required(),
+        firstName: joi.string().min(3).required(),
+        lastName: joi.string().min(3).required(),
+        phoneNumber: joi
+          .string()
+          .trim()
+          .regex(/^[0-9]{11,11}$/)
+          .required(),
+        email: joi.string().email().required(),
+        lirtenAccountId: joi.number().required(),
+      })
+      .required(),
+  }
+  const isValid = joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: validationFail,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
+
+const validateCallBackLirtenHub = (req, res, next) => {
+  const schema = {
+    token: joi.string().required(),
+  }
+  const isValid = joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: validationFail,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
 module.exports = {
   validateAccount,
   validateLogin,
