@@ -13,7 +13,7 @@ const bookingExtreme = require('../../models/bookingExtreme.model')
 const purchasedPackagesModel = require('../../models/purchasedPackages.model')
 
 const moment = require('moment')
-const { createPurchase } = require('../helpers/helpers')
+const { createPurchase, expireBooking } = require('../helpers/helpers')
 const validator = require('../helpers/validations/bookingValidations')
 const errorCodes = require('../constants/errorCodes')
 const { Op, where, INTEGER } = require('sequelize')
@@ -362,7 +362,6 @@ const viewAvailableRooms = async (req, res) => {
 }
 const bookRoom = async (req, res) => {
   try {
-    console.log('here')
     let bookingDetails = req.body
     const status =
       bookingDetails.paymentMethod === 'points' ? 'confirmed' : 'pending'
@@ -456,26 +455,25 @@ const bookRoom = async (req, res) => {
       bookingDetails.date = new Date(bookingDetails.date).toDateString()
 
       //uncomment this three lines when the model is fixed
-      var expiryDate = new Date()
-      expiryDate.setDate(expiryDate.getDate() + j.duration)
-      console.log(expiryDate)
+      // var expiryDate = new Date().setDate(new Date().getDate() + j.duration)
+      // bookingDetails.expiryDate = new Date(expiryDate).toDateString()
+      var expiryDate = new Date().setHours(new Date().getHours())
+      expiryDate = new Date(expiryDate).setMinutes(
+        new Date(expiryDate).getMinutes() + 1
+      )
+      expiryDate = new Date(expiryDate).setDate(
+        new Date(expiryDate).getDate() + 2
+      )
+      bookingDetails.expiryDate = new Date(expiryDate).toDateString()
       const booked = await BookingModel.create(bookingDetails)
 
       if (j.on_off === 'on') {
-        const scheduleJob = cron.job(expiryDate, async () => {
-          BookingModel.update(
-            { status: bookingStatus.EXPIRED },
-            { where: { id: booked.id } }
-          )
-          CalendarModel.destroy({
-            where: {
-              bookingId: booked.id,
-              bookingType: bookingType.REGULAR,
-            },
-          })
+        const scheduleJob = cron.job(new Date(expiryDate), async () => {
+          expireBooking(booked.id)
         })
         scheduleJob.start()
       }
+
       for (let i = 0; i < bookingDetails.slots.length; i++) {
         let sl = bookingDetails.slots[i]
 

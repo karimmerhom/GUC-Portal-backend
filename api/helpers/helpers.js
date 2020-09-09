@@ -4,8 +4,16 @@ const extremePackage = require('../../models/extremePackage.model')
 const regularPackage = require('../../models/regularPackage.model')
 const purchases = require('../../models/purchases.model')
 const boolExpirePackage = require('../../models/packageExpiration.model')
+const BookingModel = require('../../models/booking.model')
+const CalendarModel = require('../../models/calendar.model')
 const errorCodes = require('../constants/errorCodes')
-const { packageStatus, packageType, ability } = require('../constants/TBH.enum')
+const {
+  packageStatus,
+  packageType,
+  ability,
+  bookingStatus,
+  bookingType,
+} = require('../constants/TBH.enum')
 
 Date.prototype.addDays = function (days) {
   var date = new Date(this.valueOf())
@@ -240,10 +248,28 @@ const expirePackage = async (packageId) => {
   }
 }
 
+const expireBooking = async (bookingId) => {
+  console.log('here')
+  const bookingFound = await BookingModel.findOne({ where: { id: bookingId } })
+  if (bookingFound.status !== bookingStatus.CONFIRMED) {
+    BookingModel.update(
+      { status: bookingStatus.EXPIRED },
+      { where: { id: bookingId } }
+    )
+    CalendarModel.destroy({
+      where: {
+        bookingId,
+        bookingType: bookingType.REGULAR,
+      },
+    })
+  }
+}
+
 module.exports = {
   generateOTP,
   deductPoints,
   addPoints,
   refund,
   createPurchase,
+  expireBooking,
 }
