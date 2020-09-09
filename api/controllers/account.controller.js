@@ -1267,8 +1267,24 @@ const signUpWithLirtenHub = async (req, res) => {
           accountId: tbhAccountCreated.id,
           lirtenAccountId: req.body.lirtenAccountId,
         })
+        const payLoad = {
+          id: tbhAccountCreated.id,
+          firstName: tbhAccountCreated.firstName,
+          lastName: tbhAccountCreated.lastName,
+          username: tbhAccountCreated.username,
+          phone: tbhAccountCreated.phone,
+          email: tbhAccountCreated.email,
+          status: tbhAccountCreated.status,
+          type: tbhAccountCreated.type,
+          emailVerified: tbhAccountCreated.emailVerified,
+        }
+
+        const token = jwt.sign(payLoad, secretOrKey, {
+          expiresIn: '8h',
+        })
         return res.json({
           statusCode: errorCodes.success,
+          token: token,
           message: 'Your account has successfully been linked to a new TBH',
         })
       } else {
