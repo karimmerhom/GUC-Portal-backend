@@ -12,6 +12,7 @@ const {
   smsAccessKey,
   emailAccessKey,
   frontEndLink,
+  LirtenKey,
 } = require('../../config/keys')
 const {
   accountStatus,
@@ -1304,7 +1305,7 @@ const callBackLirtenHub = async (req, res) => {
   try {
     const { token } = req.body
     let data = {}
-    jwt.verify(token, secretOrKey, (err, authorizedData) => {
+    jwt.verify(token, LirtenKey, (err, authorizedData) => {
       if (!err) {
         data = authorizedData
       } else {

@@ -22,9 +22,15 @@ const { verifyToken } = require('../../config/AuthenticationMiddleWare')
 const { verifyAdmin } = require('../../config/AdminAuthentication')
 const { verifyUser } = require('../../config/authUser')
 
-router.post('/createPricing', verifyAdmin, validateCreatePricing, createPricing)
-router.post('/editPricing', verifyAdmin, validateEditPricing, editPricing)
-router.post('/deletePricing', verifyAdmin, validateDeletePricing, deletePricing)
-router.post('/viewPricings', verifyAdmin, validateViewPricing, viewPricings)
+router.post('/createPricing', validateCreatePricing, verifyAdmin, createPricing)
+router.post('/editPricing', validateEditPricing, verifyAdmin, editPricing)
+router.post('/deletePricing', validateDeletePricing, verifyAdmin, deletePricing)
+router.post(
+  '/viewPricings',
+  validateViewPricing,
+  verifyToken,
+  verifyUser,
+  viewPricings
+)
 
 module.exports = router

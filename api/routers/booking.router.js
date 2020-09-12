@@ -87,7 +87,6 @@ router.post(
   validateViewMyBooking,
   verifyToken,
   verifyUser,
-  verifiedPhone,
   viewMyBookings
 )
 router.post(
@@ -120,6 +119,7 @@ router.post(
 router.post(
   '/bookExtremePackage',
   validateBookExtremePackage,
+  verifiedPhone,
   bookExtremePackage
 )
 
