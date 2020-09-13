@@ -91,6 +91,28 @@ const deductPoints = async (accountId, points) => {
   return { statusCode: errorCodes.success }
 }
 
+const tryDeductPoints = async (accountId, points) => {
+  const purchase = await purchasedPackage.findAll({
+    where: { accountId: accountId },
+  })
+  if (!purchase) {
+    return { error: 'account did not purchase any packages' }
+  }
+  const activePackages = purchase.filter(
+    (account) =>
+      account.status === packageStatus.ACTIVE &&
+      account.packageType === packageType.REGULAR
+  )
+  let total = 0
+  for (package of activePackages) {
+    total += parseInt(package.totalPoints)
+  }
+  if (total < points) {
+    return { error: 'not enough points to be deducted' }
+  }
+  return { statusCode: errorCodes.success }
+}
+
 const refund = async (accountId, points) => {
   const purchase = await purchasedPackage.findAll({
     where: { accountId: accountId },
@@ -272,4 +294,5 @@ module.exports = {
   refund,
   createPurchase,
   expireBooking,
+  tryDeductPoints,
 }

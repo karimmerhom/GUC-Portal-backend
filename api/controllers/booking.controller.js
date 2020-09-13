@@ -13,7 +13,11 @@ const bookingExtreme = require('../../models/bookingExtreme.model')
 const purchasedPackagesModel = require('../../models/purchasedPackages.model')
 
 const moment = require('moment')
-const { createPurchase, expireBooking } = require('../helpers/helpers')
+const {
+  createPurchase,
+  expireBooking,
+  tryDeductPoints,
+} = require('../helpers/helpers')
 const validator = require('../helpers/validations/bookingValidations')
 const errorCodes = require('../constants/errorCodes')
 const { Op, where, INTEGER } = require('sequelize')
@@ -559,10 +563,13 @@ const tryBooking = async (req, res) => {
         bookingDetails.slots.length
       )
       if (bookingDetails.paymentMethod === paymentMethods.POINTS) {
-        const e = await deductPoints(req.body.Account.id, pricing.points)
+        const e = await tryDeductPoints(req.body.Account.id, pricing.points)
         console.log(e)
         if (e.statusCode !== errorCodes.success) {
-          return res.json({ error: e.error, statusCode: 7000 })
+          return res.json({
+            error: e.error,
+            statusCode: errorCodes.insufficientPoints,
+          })
         }
       } else {
         const p = await pendingModel.findOne({
