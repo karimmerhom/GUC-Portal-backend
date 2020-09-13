@@ -267,6 +267,33 @@ const tryEditBooking = async (req, res) => {
           bookingDetails.roomSize,
           bookingDetails.slots.length
         )
+        if (bookingDetails.paymentMethod === paymentMethods.POINTS) {
+          const e = await tryDeductPoints(req.body.Account.id, pricing.points)
+          console.log(e)
+          if (e.statusCode !== errorCodes.success) {
+            return res.json({
+              error: e.error,
+              statusCode: errorCodes.insufficientPoints,
+            })
+          }
+        } else {
+          const p = await pendingModel.findOne({
+            where: { pendingType: 'Bookings' },
+          })
+
+          const oldbookings = await BookingModel.findAll({
+            where: {
+              accountId: req.body.Account.id,
+              status: bookingStatus.PENDING,
+            },
+          })
+          if (oldbookings.length === p.value) {
+            return res.json({
+              error: 'You have exceeded the max number of pending orders',
+              statusCode: errorCodes.pendingLimitExceeded,
+            })
+          }
+        }
         return res.json({
           statusCode: errorCodes.success,
           bookingDetails,
