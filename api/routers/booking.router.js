@@ -119,6 +119,8 @@ router.post(
 router.post(
   '/bookExtremePackage',
   validateBookExtremePackage,
+  verifyToken,
+  verifyUser,
   verifiedPhone,
   bookExtremePackage
 )

@@ -17,6 +17,7 @@ module.exports = {
           req.token = token
           return next()
         }
+        console.log(err)
         return res.json({ code: authentication, error: 'breach' })
       }
     )

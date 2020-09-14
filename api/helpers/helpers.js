@@ -47,7 +47,11 @@ const deductPoints = async (accountId, points) => {
     where: { accountId: accountId },
   })
   if (!purchase) {
-    return { error: 'account did not purchase any packages' }
+    console.log(purchase)
+    return {
+      error: 'account did not purchase any packages',
+      statusCode: errorCodes.insufficientPoints,
+    }
   }
   const activePackages = purchase.filter(
     (account) =>
@@ -56,10 +60,14 @@ const deductPoints = async (accountId, points) => {
   )
   let total = 0
   for (package of activePackages) {
-    total += parseInt(package.totalPoints)
+    total += parseInt(package.totalPoints) - parseInt(package.usedPoints)
   }
+  console.log(total)
   if (total < points) {
-    return { error: 'not enough points to be deducted' }
+    return {
+      error: 'not enough points to be deducted',
+      statusCode: errorCodes.insufficientPoints,
+    }
   }
   activePackages.sort(function (a, b) {
     var dateA = new Date(a.expiryDate),
@@ -96,7 +104,10 @@ const tryDeductPoints = async (accountId, points) => {
     where: { accountId: accountId },
   })
   if (!purchase) {
-    return { error: 'account did not purchase any packages' }
+    return {
+      error: 'account did not purchase any packages',
+      statusCode: errorCodes.insufficientPoints,
+    }
   }
   const activePackages = purchase.filter(
     (account) =>
@@ -108,7 +119,10 @@ const tryDeductPoints = async (accountId, points) => {
     total += parseInt(package.totalPoints)
   }
   if (total < points) {
-    return { error: 'not enough points to be deducted' }
+    return {
+      error: 'not enough points to be deducted',
+      statusCode: errorCodes.insufficientPoints,
+    }
   }
   return { statusCode: errorCodes.success }
 }
@@ -247,14 +261,19 @@ const createPurchase = async (accountId, textArray, price) => {
     const body = {}
     body.accountId = accountId
     var narrativeValue = ''
+    let space = ', '
+    console.log(narrativeValue)
     for (i = 0; i < textArray.length; i++) {
-      narrativeValue += textArray[i] + ' ,'
+      if (i === textArray.length - 1) {
+        space = ''
+      }
+      narrativeValue += textArray[i] + space
+      console.log(narrativeValue)
     }
     body.narrative = narrativeValue
     body.price = price
     console.log(body)
     const x = await purchases.create(body)
-    console.log('here2')
   } catch (exception) {
     console.log(exception)
     return { code: errorCodes.unknown, error: 'failed to add purchase' }

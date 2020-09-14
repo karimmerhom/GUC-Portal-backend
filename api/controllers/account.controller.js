@@ -21,6 +21,7 @@ const {
 } = require('../constants/TBH.enum')
 const { generateOTP } = require('../helpers/helpers')
 const { findOne } = require('../../models/account.model')
+const { alreadyVerified } = require('../constants/errorCodes')
 
 const register = async (req, res) => {
   try {
@@ -148,6 +149,7 @@ const update_profile = async (req, res) => {
         error: 'Account must be verified',
       })
     }
+
     if (Account.hasOwnProperty('username')) {
       const checkUsername = await AccountModel.findOne({
         where: {
@@ -883,7 +885,11 @@ const change_email = async (req, res) => {
     const found = await AccountModel.findOne({
       where: { email: Account.email },
     })
+    console.log(found)
     if (found) {
+      if (found.id === Account.id) {
+        return res.json({ statusCode: errorCodes.success })
+      }
       return res.json({
         statusCode: errorCodes.emailExists,
         error: 'Email Already exists',
@@ -1284,7 +1290,11 @@ const signUpWithLirtenHub = async (req, res) => {
         })
         return res.json({
           statusCode: errorCodes.success,
+          id: tbhAccountCreated.id,
           token: token,
+          username: tbhAccountCreated.username,
+          state: tbhAccountCreated.status,
+          emailVerified: tbhAccountCreated.emailVerified,
           message: 'Your account has successfully been linked to a new TBH',
         })
       } else {
@@ -1424,6 +1434,55 @@ const callBackLirtenHub = async (req, res) => {
   }
 }
 
+const resend_token = async (req, res) => {
+  try {
+    const { token } = req.body
+    let data = {}
+    jwt.verify(token, secretOrKey, (err, authorizedData) => {
+      if (!err) {
+        data = authorizedData
+      } else {
+        return res.json({ code: errorCodes.authentication, error: 'breach' })
+      }
+    })
+    const account = await AccountModel.findOne({ where: { id: data.id } })
+    if (!account) {
+      return res.json({ statusCode: errorCodes.entityNotFound })
+    }
+    if (account.status === accountStatus.VERIFIED) {
+      const payLoad = {
+        id: account.id,
+        firstName: account.firstName,
+        lastName: account.lastName,
+        username: account.username,
+        phone: account.phone,
+        email: account.email,
+        status: account.status,
+        type: account.type,
+      }
+
+      const token = jwt.sign(payLoad, secretOrKey, {
+        expiresIn: '999999h',
+      })
+      return res.json({
+        token,
+        id: account.id,
+        username: account.username,
+        state: account.status,
+        statusCode: errorCodes.success,
+      })
+    } else {
+      return res.json({ statusCode: errorCodes.unVerified })
+    }
+  } catch (exception) {
+    console.log(exception)
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
+  }
+}
+
 module.exports = {
   register,
   login,
@@ -1448,4 +1507,5 @@ module.exports = {
   unlink_google,
   signUpWithLirtenHub,
   callBackLirtenHub,
+  resend_token,
 }

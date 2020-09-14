@@ -26,6 +26,7 @@ const {
   unlink_facebook,
   callBackLirtenHub,
   signUpWithLirtenHub,
+  resend_token,
 } = accountController
 
 const {
@@ -58,6 +59,7 @@ const {
   validateUnlink,
   validateCallBackLirtenHub,
   validateSignUpWithLirtenHub,
+  validateResendToken,
 } = require('../helpers/validations/accountValidations')
 
 router.post('/register', validateAccount, register)
@@ -151,6 +153,14 @@ router.post(
   '/signUpWithLirtenHub',
   validateSignUpWithLirtenHub,
   signUpWithLirtenHub
+)
+
+router.post(
+  '/resendToken',
+  validateResendToken,
+  verifyToken,
+  verifyUser,
+  resend_token
 )
 
 module.exports = router

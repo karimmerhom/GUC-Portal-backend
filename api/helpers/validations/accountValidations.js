@@ -397,6 +397,26 @@ const validateUnlink = (req, res, next) => {
   }
   return next()
 }
+
+const validateResendToken = (req, res, next) => {
+  const schema = {
+    Account: joi
+      .object({
+        id: joi.number().required(),
+      })
+      .required(),
+    token: joi.string().required(),
+  }
+  const isValid = joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: validationFail,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
+
 const validateCallbackGoogle = (req, res, next) => {
   const schema = {
     state: joi.string().valid('signIn', 'signUp').required(),
@@ -485,4 +505,5 @@ module.exports = {
   validateUnlink,
   validateCallBackLirtenHub,
   validateSignUpWithLirtenHub,
+  validateResendToken,
 }

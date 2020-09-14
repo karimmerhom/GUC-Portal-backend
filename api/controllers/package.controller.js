@@ -388,7 +388,7 @@ const sendGift = async (req, res) => {
       where: { accountId: req.body.Account.id },
     })
     if (!purchases) {
-      return { error: 'account did not purchase any packages' }
+      return res.json({ error: 'account did not purchase any packages' })
     }
     const activePackages = purchases.filter((account) => {
       return (
@@ -402,10 +402,10 @@ const sendGift = async (req, res) => {
       total += parseInt(package.totalPoints)
     }
     if (total < req.points) {
-      return {
+      return res.json({
         statusCode: errorCodes.insufficientPoints,
         error: 'insufficient points',
-      }
+      })
     }
     const code = await generateOTP()
     const body = {}
@@ -427,7 +427,7 @@ const sendGift = async (req, res) => {
     console.log(deductMessage)
     if (deductMessage.statusCode !== errorCodes.success) {
       return res.json({
-        statusCode: errorCodes.unknown,
+        statusCode: deductMessage.statusCode,
         error: 'problem in deduction',
       })
     }
@@ -459,6 +459,8 @@ const sendGift = async (req, res) => {
           },
         },
       })
+        .then((res) => console.log(res))
+        .catch((err) => console.log(err.response))
     }
 
     await giftOtp.create(body)
