@@ -284,7 +284,10 @@ const viewMyPackages = async (req, res) => {
     let consumed = 0
     let remaining = 0
     for (package of purchases) {
-      if (package.packageType !== packageType.EXTREME) {
+      if (
+        package.packageType !== packageType.EXTREME &&
+        package.status !== packageStatus.EXPIRED
+      ) {
         if (package.packageName === 'gift') {
           gifted += parseInt(package.totalPoints)
         } else {
@@ -484,7 +487,7 @@ const redeemGift = async (req, res) => {
   })
   otpCode = await giftOtp.findOne({ where: { otpCode: code } })
   if (!otpCode) {
-    return { statusCode: errorCodes.invalidOtp, error: 'invalid otp' }
+    return res.json({ statusCode: errorCodes.invalidOtp, error: 'invalid otp' })
   }
 
   giftOtp.update({ status: otpStatus.USED }, { where: { otpCode: code } })
