@@ -286,7 +286,8 @@ const viewMyPackages = async (req, res) => {
     for (package of purchases) {
       if (
         package.packageType !== packageType.EXTREME &&
-        package.status !== packageStatus.EXPIRED
+        package.status !== packageStatus.EXPIRED &&
+        package.status !== packageStatus.PENDING
       ) {
         if (package.packageName === 'gift') {
           gifted += parseInt(package.totalPoints)
