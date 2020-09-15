@@ -22,6 +22,6 @@ module.exports = {
     client_secret: 'HnlkzK0HJpJUR1BXW1XC_67U',
     loginURI: 'https://uat.thebusinesshub.space/google/SignIn',
     signUpURI: 'https://uat.thebusinesshub.space/google/SignUp',
-    link: 'http://localhost:3000/Account/google',
+    link: 'https://uat.thebusinesshub.space/Account/google',
   },
 }
