@@ -6,6 +6,7 @@ var {
   client_secret,
   redirect_uri_login,
   redirect_uri_sign_up,
+  link,
 } = facebookAuth
 const errorCodes = require('../../constants/errorCodes')
 const validator = require('../../helpers/validations/accountValidations')
@@ -19,10 +20,13 @@ const get_url = (req, res) => {
   if (state === 'signIn') {
     uri = redirect_uri_login
   }
+  if (state === 'link') {
+    uri = link
+  }
   const stringifiedParams = queryString.stringify({
     client_id,
     redirect_uri: uri,
-    scope: ['email', 'user_friends'].join(','), // comma seperated string
+    scope: ['email'].join(','), // comma seperated string
     response_type: 'code',
     auth_type: 'rerequest',
     display: 'popup',
@@ -40,7 +44,10 @@ const facebook_callback = async (req, res) => {
     const data = await getAccessTokenFromCode(req.query.code, state)
     return res.json({ statusCode: errorCodes.success, data })
   } catch (exception) {
-    return res.json({ statusCode: errorCodes.unknown, error: 'Something went wrong' })
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
   }
 }
 
@@ -53,6 +60,9 @@ async function getAccessTokenFromCode(code, state) {
     }
     if (state === 'signIn') {
       uri = redirect_uri_login
+    }
+    if (state === 'link') {
+      uri = link
     }
     await axios({
       url: 'https://graph.facebook.com/v4.0/oauth/access_token',

@@ -60,7 +60,9 @@ const {
   validateCallBackLirtenHub,
   validateSignUpWithLirtenHub,
   validateResendToken,
+  validateLink,
 } = require('../helpers/validations/accountValidations')
+const { link_google_facebook } = require('../controllers/account.controller')
 
 router.post('/register', validateAccount, register)
 router.post('/login', validateLogin, login)
@@ -161,6 +163,14 @@ router.post(
   verifyToken,
   verifyUser,
   resend_token
+)
+
+router.post(
+  '/linkGoogleFacebook',
+  validateLink,
+  verifyToken,
+  verifyUser,
+  link_google_facebook
 )
 
 module.exports = router

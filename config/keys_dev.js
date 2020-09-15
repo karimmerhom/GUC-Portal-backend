@@ -14,6 +14,7 @@ module.exports = {
     client_secret: 'b0c3014038aa4771ff2d6bc725515df5',
     redirect_uri_login: 'https://uat.thebusinesshub.space/facebook/SignIn',
     redirect_uri_sign_up: 'https://uat.thebusinesshub.space/facebook/SignUp',
+    link: 'https://uat.thebusinesshub.space/Account/facebook',
   },
   googleAuth: {
     client_id:
@@ -21,5 +22,6 @@ module.exports = {
     client_secret: 'HnlkzK0HJpJUR1BXW1XC_67U',
     loginURI: 'https://uat.thebusinesshub.space/google/SignIn',
     signUpURI: 'https://uat.thebusinesshub.space/google/SignUp',
+    link: 'http://localhost:3000/Account/google',
   },
 }

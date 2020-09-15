@@ -417,9 +417,29 @@ const validateResendToken = (req, res, next) => {
   return next()
 }
 
+const validateLink = (req, res, next) => {
+  const schema = {
+    Account: joi
+      .object({
+        id: joi.number().required(),
+      })
+      .required(),
+    method: joi.string().valid(['facebook', 'google']).required(),
+    id: joi.string().required(),
+  }
+  const isValid = joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: validationFail,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
+
 const validateCallbackGoogle = (req, res, next) => {
   const schema = {
-    state: joi.string().valid('signIn', 'signUp').required(),
+    state: joi.string().valid('signIn', 'signUp', 'link').required(),
   }
   const isValid = joi.validate(req.body, schema)
   if (isValid.error) {
@@ -483,6 +503,7 @@ const validateCallBackLirtenHub = (req, res, next) => {
   }
   return next()
 }
+
 module.exports = {
   validateAccount,
   validateLogin,
@@ -506,4 +527,5 @@ module.exports = {
   validateCallBackLirtenHub,
   validateSignUpWithLirtenHub,
   validateResendToken,
+  validateLink,
 }

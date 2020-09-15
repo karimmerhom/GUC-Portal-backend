@@ -105,6 +105,8 @@ const accountAlreadyLinkedSuccessfully = 161
 const couldntCreateAccount = 162
 const lirtenHubLinkedToAnotherAcount = 163
 const tbhLinkedToAnotherAccount = 164
+const linkedGoogleFacebook = 165
+const linkedWithAnotherAccount = 166
 
 module.exports = {
   accountAlreadyLinkedSuccessfully,
@@ -172,4 +174,6 @@ module.exports = {
   pendingLimitExceeded,
   phoneExists,
   usernameExists,
+  linkedGoogleFacebook,
+  linkedWithAnotherAccount,
 }

@@ -1483,6 +1483,54 @@ const resend_token = async (req, res) => {
   }
 }
 
+const link_google_facebook = async (req, res) => {
+  try {
+    const { Account, method, id } = req.body
+    const account = AccountModel.findOne({ where: { id: Account.id } })
+    const linkedWithAnotherAccount =
+      method === 'facebook'
+        ? AccountModel.findOne({ where: { facebookId: id } })
+        : AccountModel.findOne({ where: { googleId: id } })
+    const x = await Promise.all([account, linkedWithAnotherAccount])
+    console.log(x)
+    if (!x[0]) {
+      return res.json({ statusCode: errorCodes.entityNotFound })
+    }
+    if (x[1]) {
+      console.log(x[1])
+      if (x[1].id !== parseInt(Account.id)) {
+        return res.json({ statusCode: errorCodes.linkedWithAnotherAccount })
+      }
+    }
+
+    if (method === 'google') {
+      if (account.googleId && account.googleId !== null) {
+        return res.json({
+          statusCode: errorCodes.linkedGoogleFacebook,
+        })
+      }
+      AccountModel.update({ googleId: id }, { where: { id: Account.id } })
+    }
+    if (method === 'facebook') {
+      if (account.facebookId && account.facebookId !== null) {
+        return res.json({
+          statusCode: errorCodes.linkedGoogleFacebook,
+        })
+      }
+      AccountModel.update({ facebookId: id }, { where: { id: Account.id } })
+    }
+    return res.json({
+      statusCode: errorCodes.success,
+    })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
+  }
+}
+
 module.exports = {
   register,
   login,
@@ -1508,4 +1556,5 @@ module.exports = {
   signUpWithLirtenHub,
   callBackLirtenHub,
   resend_token,
+  link_google_facebook,
 }

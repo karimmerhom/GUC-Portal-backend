@@ -41,6 +41,9 @@ const urlGoogle = async (req, res) => {
   if (state === 'signIn') {
     uri = googleAuth.loginURI
   }
+  if (state === 'link') {
+    uri = googleAuth.link
+  }
   const auth = createConnection(uri) // this is from previous step
   const url = getConnectionUrl(auth)
   return res.json({ url })
@@ -66,6 +69,9 @@ const getGoogleAccountFromCode = async (code, state) => {
     }
     if (state === 'signIn') {
       uri = googleAuth.loginURI
+    }
+    if (state === 'link') {
+      uri = googleAuth.link
     }
     const auth = createConnection(uri)
     console.log(auth)
