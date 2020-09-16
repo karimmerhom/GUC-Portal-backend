@@ -214,14 +214,16 @@ const addPoints = async (
         body.totalPoints = points
       }
       body.usedPoints = 0
-      body.purchaseDate = new Date().addHours(2)
+      body.purchaseDate = new Date().toDateString()
       body.packageName = packageBody.packageName
 
-      body.expiryDate = body.purchaseDate.addDays(packageBody.expiryDuration)
+      body.expiryDate = new Date(
+        new Date(body.purchaseDate).addDays(packageBody.expiryDuration)
+      ).toDateString()
       const package = await purchasedPackage.create(body)
       packageId = package.id
 
-      const scheduleJob = cron.job(body.expiryDate, async () => {
+      const scheduleJob = cron.job(new Date(body.expiryDate), async () => {
         await expirePackage(packageId)
       })
       scheduleJob.start()
