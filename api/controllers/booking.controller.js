@@ -130,6 +130,7 @@ const viewCalendar = async (req, res) => {
     })
   }
 }
+
 const editBooking = async (req, res) => {
   try {
     if (req.body.date) {
@@ -313,6 +314,7 @@ const tryEditBooking = async (req, res) => {
     })
   }
 }
+
 const viewAvailableRooms = async (req, res) => {
   try {
     const startDate = req.body.startDate
@@ -391,6 +393,7 @@ const viewAvailableRooms = async (req, res) => {
     })
   }
 }
+
 const bookRoom = async (req, res) => {
   try {
     let bookingDetails = req.body
@@ -528,6 +531,7 @@ const bookRoom = async (req, res) => {
     })
   }
 }
+
 const tryBooking = async (req, res) => {
   try {
     let bookingDetails = req.body
@@ -1064,7 +1068,63 @@ const viewAvailableRoomsHelper = async (startDate, extremeType) => {
   return availableRooms
 }
 
+const viewAvailableRoomsSlots = async (req, res) => {
+  try {
+    let bookingDetails = req.body
+
+    if (new Date(bookingDetails.date) < new Date()) {
+      return res.json({
+        error: 'you cannot book in past date',
+        statusCode: errorCodes.pastDateBooking,
+      })
+    }
+    const rooms = await RoomModel.findAll()
+
+    var notBusyRooms = []
+
+    for (let i = 0; i < rooms.length; i++) {
+      const roomFound = rooms[i]
+      bookingDetails.roomId = roomFound.id
+
+      //bookingDetails.accountId = req.body.Account.id
+
+      let noAvailableSlots = false
+      for (let i = 0; i < bookingDetails.slots.length; i++) {
+        let sl = bookingDetails.slots[i]
+        const notAvSl = await CalendarModel.findAll({
+          where: {
+            roomNumber: roomFound.roomNumber,
+            date: new Date(bookingDetails.date).toDateString(),
+            slot: sl,
+          },
+        })
+        if (notAvSl.length !== 0) noAvailableSlots = true
+      }
+      if (noAvailableSlots) {
+      } else {
+        notBusyRooms.push(rooms[i].roomNumber)
+      }
+    }
+
+    if (notBusyRooms.length === 0) {
+      return res.json({
+        statusCode: errorCodes.noAvailableRoomSlots,
+        error: 'no available rooms in this slot',
+      })
+    } else {
+      return res.json({ statusCode: 0, notBusyRooms })
+    }
+  } catch (e) {
+    console.log(e)
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
+  }
+}
+
 module.exports = {
+  viewAvailableRoomsSlots,
   adminConfirmExtremeBooking,
   bookExtremePackage,
   viewCalendar,

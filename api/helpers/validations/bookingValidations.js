@@ -258,7 +258,43 @@ const validateEditMyBooking = (req, res, next) => {
   }
   return next()
 }
+
+const validateViewAvailableRoomsSlots = (req, res, next) => {
+  const schema = Joi.object({
+    Account: Joi.object({
+      id: Joi.number().required(),
+    }).required(),
+    date: Joi.date().required(),
+
+    slots: Joi.array()
+      .items([
+        slots.TEN_ELEVEN,
+        slots.NINE_TEN,
+        slots.ELEVEN_TWELVE,
+        slots.TWELVE_THIRTEEN,
+        slots.THIRTEEN_FOURTEEN,
+        slots.FOURTEEN_FIFTEEN,
+        slots.FIFTEEN_SIXTEEN,
+        slots.SIXTEEN_SEVENTEEN,
+        slots.SEVENTEEN_EIGHTEEN,
+        slots.EIGHTEEN_NINETEEN,
+        slots.NINETEEN_TWENTY,
+        slots.TWENTY_TWENTYONE,
+      ])
+      .required(),
+  })
+
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: statusCodes.validation,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
 module.exports = {
+  validateViewAvailableRoomsSlots,
   validateBookExtremePackage,
   validateViewMyBooking,
   validateCancelBooking,
