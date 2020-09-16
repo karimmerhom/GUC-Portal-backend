@@ -277,14 +277,21 @@ const viewMyPackages = async (req, res) => {
     const purchases = await purchasedPackage.findAll({
       where: { accountId: req.body.Account.id },
     })
-    const extreme =  await extremePackage.findAll({})
-    for(purchase of purchases) {
-      
-      if(purchase.packageType === packageType.EXTREME){
-       
-      const extremePackageType = extreme.filter( extremeType => extremeType.id+'' === purchase.packageId+'') 
-       purchase.dataValues.duration = extremePackageType[0].daysPerWeek
-
+    const extreme = extremePackage.findAll({})
+    const regular = regularPackage.findAll({})
+    const x = await Promise.all([extreme, regular])
+    for (purchase of purchases) {
+      if (purchase.packageType === packageType.EXTREME) {
+        const extremePackageType = x[0].filter(
+          (extremeType) => extremeType.id + '' === purchase.packageId + ''
+        )
+        purchase.dataValues.duration = extremePackageType[0].daysPerWeek
+      }
+      if (purchase.packageType === packageType.REGULAR) {
+        const regularPackageType = x[1].filter(
+          (regularType) => regularType.id + '' === purchase.packageId + ''
+        )
+        purchase.dataValues.price = regularPackageType[0].price
       }
     }
 
@@ -293,6 +300,7 @@ const viewMyPackages = async (req, res) => {
     let purchased = 0
     let consumed = 0
     let remaining = 0
+    let packages = []
     for (package of purchases) {
       if (
         package.packageType !== packageType.EXTREME &&
@@ -335,7 +343,7 @@ const viewMyPurchases = async (req, res) => {
     const purchases = await purchasesModel.findAll({
       where: { accountId: req.body.Account.id },
     })
-    
+
     return res.json({
       purchases,
       statusCode: errorCodes.success,
@@ -548,7 +556,7 @@ const editStatus = async (req, res) => {
     if (package.packageType === packageType.REGULAR) {
       const regPackage = await regularPackage.findByPk(package.packageId)
       const price = regPackage.price
-      let text = [package.packageType, regPackage.points , package.purchaseDate]
+      let text = [package.packageType, regPackage.points, package.purchaseDate]
       console.log('in regular')
       createPurchase(accountId, text, price)
     }

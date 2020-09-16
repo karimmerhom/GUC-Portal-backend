@@ -894,7 +894,7 @@ const bookExtremePackage = async (req, res) => {
         statusCode: errorCodes.pastDateBooking,
       })
     }
-
+    console.log(startDate, 'here1')
     const aa = await viewAvailableRoomsHelper(new Date(startDate), packageName)
     if (aa.indexOf(roomNumber) === -1) {
       return res.json({
@@ -910,8 +910,6 @@ const bookExtremePackage = async (req, res) => {
     const pack = await extremePackageModel.findOne({
       where: { packageName: packageName },
     })
-    console.log(pack)
-
     let slots = [
       'NINE_TEN',
       'TEN_ELEVEN',
@@ -930,8 +928,15 @@ const bookExtremePackage = async (req, res) => {
     const endSlot = pack.endPeriod + 2
 
     var d = 0
-
-    const p = await addPoints(req.body.Account.id, packageType.EXTREME, pack.id)
+    console.log(new Date(startDate).toDateString(), 'here')
+    const p = await addPoints(
+      req.body.Account.id,
+      packageType.EXTREME,
+      pack.id,
+      0,
+      roomSize1,
+      startDate
+    )
 
     if (p.statusCode === 0) {
       purchaseId = p.purchaseId
@@ -972,7 +977,6 @@ const bookExtremePackage = async (req, res) => {
     }
     booked = await bookingExtreme.create(bookingDetails)
     d = 0
-    date = new Date(startDate)
     for (let i = 0; i < pack.daysPerWeek; i++) {
       if (date.getDay() === 5) {
         date.setDate(date.getDate() + 1)
@@ -980,14 +984,13 @@ const bookExtremePackage = async (req, res) => {
       for (let j = startSlot; j < endSlot; j++) {
         const x = await CalendarModel.create({
           roomNumber: roomNumber,
-          date: new Date(date).toDateString(),
+          date: new Date(startDate).toDateString(),
           status: bookingStatus.PENDING,
           slot: slots[j],
           bookingId: booked.id,
           bookingType: bookingType.EXTREME,
           accountId: req.body.Account.id,
         })
-        console.log(x)
       }
       date.setDate(date.getDate() + 1)
     }

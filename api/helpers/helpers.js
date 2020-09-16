@@ -6,6 +6,7 @@ const purchases = require('../../models/purchases.model')
 const boolExpirePackage = require('../../models/packageExpiration.model')
 const BookingModel = require('../../models/booking.model')
 const CalendarModel = require('../../models/calendar.model')
+const AccountModel = require('../../models/account.model')
 const errorCodes = require('../constants/errorCodes')
 const {
   packageStatus,
@@ -181,7 +182,14 @@ const refund = async (accountId, points) => {
   return { statusCode: errorCodes.success }
 }
 
-const addPoints = async (accountId, type, packageId, points = 0) => {
+const addPoints = async (
+  accountId,
+  type,
+  packageId,
+  points = 0,
+  size = '',
+  date = new Date()
+) => {
   try {
     const body = {}
     body.packageType = type
@@ -229,13 +237,19 @@ const addPoints = async (accountId, type, packageId, points = 0) => {
           error: 'package does not exist',
         }
       }
-      body.purchaseDate = new Date().addHours(2)
-      body.expiryDate = body.purchaseDate.addDays(packageBody.expiryDuration)
+      console.log(date, 'herepackage')
+      console.log(size, 'herepackage1')
+      body.purchaseDate = new Date(date).toDateString()
+      body.expiryDate = new Date(
+        new Date(body.purchaseDate).addDays(packageBody.daysPerWeek)
+      ).toDateString()
       body.status = packageStatus.PENDING
       body.packageName = packageBody.packageName
+      body.price =
+        size === 'large group' ? packageBody.largePrice : packageBody.smallPrice
       const package = await purchasedPackage.create(body)
       packageId = package.id
-      const scheduleJob = cron.job(body.expiryDate, async () => {
+      const scheduleJob = cron.job(new Date(body.expiryDate), async () => {
         await expirePackage(packageId)
       })
       scheduleJob.start()
@@ -306,6 +320,24 @@ const expireBooking = async (bookingId) => {
   }
 }
 
+const generateUsername = async (username) => {
+  let found = true
+  let x = 1
+  let nameGenerated = username
+
+  while (found) {
+    nameGenerated = username + `${x}`
+    const found = await AccountModel.findOne({
+      where: { username: nameGenerated },
+    })
+    if (!found) {
+      found = false
+    }
+    i += 1
+  }
+  return nameGenerated
+}
+
 module.exports = {
   generateOTP,
   deductPoints,
@@ -314,4 +346,5 @@ module.exports = {
   createPurchase,
   expireBooking,
   tryDeductPoints,
+  generateUsername,
 }

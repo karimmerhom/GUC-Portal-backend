@@ -24,10 +24,10 @@ PurchasePackage.init(
       type: Sequelize.STRING,
     },
     purchaseDate: {
-      type: Sequelize.DATE,
+      type: Sequelize.STRING,
     },
     expiryDate: {
-      type: Sequelize.DATE,
+      type: Sequelize.STRING,
     },
     status: {
       type: Sequelize.STRING,
@@ -37,6 +37,9 @@ PurchasePackage.init(
     },
     packageName: {
       type: Sequelize.STRING,
+    },
+    price: {
+      type: Sequelize.INTEGER,
     },
   },
   {

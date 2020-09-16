@@ -19,7 +19,7 @@ const {
   verificationMethods,
   userTypes,
 } = require('../constants/TBH.enum')
-const { generateOTP } = require('../helpers/helpers')
+const { generateOTP, generateUsername } = require('../helpers/helpers')
 const { findOne } = require('../../models/account.model')
 const { alreadyVerified } = require('../constants/errorCodes')
 
@@ -425,15 +425,7 @@ const register_google = async (req, res) => {
         error: 'Email already exists',
       })
     }
-    const findUsername = await AccountModel.findOne({
-      where: { username: Account.username.toString().toLowerCase() },
-    })
-    if (findUsername) {
-      return res.json({
-        statusCode: errorCodes.usernameExists,
-        error: 'Username already exists',
-      })
-    }
+    const username = await generateUsername()
     const findPhone = await AccountModel.findOne({
       where: { phone: Account.phoneNumber },
     })
@@ -445,15 +437,11 @@ const register_google = async (req, res) => {
     }
     const emailCode = await generateOTP()
     const smsCode = await generateOTP()
-
-    const saltKey = bcrypt.genSaltSync(10)
-    const hashed_pass = bcrypt.hashSync(Account.password, saltKey)
     const accountCreated = await AccountModel.create({
-      username: Account.username.toString().toLowerCase(),
+      username: username,
       firstName: Account.firstName,
       lastName: Account.lastName,
       phone: Account.phoneNumber,
-      password: hashed_pass,
       email: Account.email.toString().toLowerCase(),
       status: accountStatus.PENDING,
       type: userTypes.USER,
