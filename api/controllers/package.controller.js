@@ -26,6 +26,8 @@ const {
   refund,
   deductPoints,
   createPurchase,
+  expireBooking,
+  deleteExtreme,
 } = require('../helpers/helpers')
 const giftOtp = require('../../models/giftOtp.model')
 const { Op } = require('sequelize')
@@ -186,7 +188,13 @@ const cancelPackage = async (req, res) => {
       })
     }
     body.status = packageStatus.CANCELED
-    await purchasedPackage.update(body, { where: { id: bodyId } })
+    await purchasedPackage.update(
+      { status: packageStatus.CANCELED },
+      { where: { id: bodyId } }
+    )
+    if (package.packageType === packageType.EXTREME) {
+      await deleteExtreme(bodyId)
+    }
     return res.json({
       statusCode: errorCodes.success,
     })

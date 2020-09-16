@@ -15,6 +15,7 @@ const {
   bookingStatus,
   bookingType,
 } = require('../constants/TBH.enum')
+const bookingExtreme = require('../../models/bookingExtreme.model')
 
 Date.prototype.addDays = function (days) {
   var date = new Date(this.valueOf())
@@ -320,6 +321,25 @@ const expireBooking = async (bookingId) => {
   }
 }
 
+const deleteExtreme = async (purchasedId) => {
+  console.log('here')
+  const bookingFound = await bookingExtreme.findOne({
+    where: { purchasedId },
+  })
+  if (bookingFound.status !== bookingStatus.CONFIRMED) {
+    bookingExtreme.update(
+      { status: bookingStatus.EXPIRED },
+      { where: { purchasedId } }
+    )
+    CalendarModel.destroy({
+      where: {
+        bookingId: bookingFound.id,
+        bookingType: bookingType.EXTREME,
+      },
+    })
+  }
+}
+
 const generateUsername = async (username) => {
   let found = true
   let x = 1
@@ -347,4 +367,5 @@ module.exports = {
   expireBooking,
   tryDeductPoints,
   generateUsername,
+  deleteExtreme,
 }

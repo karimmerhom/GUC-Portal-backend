@@ -425,7 +425,15 @@ const register_google = async (req, res) => {
         error: 'Email already exists',
       })
     }
-    const username = await generateUsername()
+    const findUsername = await AccountModel.findOne({
+      where: { username: Account.username.toString().toLowerCase() },
+    })
+    if (findUsername) {
+      return res.json({
+        statusCode: errorCodes.usernameExists,
+        error: 'Username already exists',
+      })
+    }
     const findPhone = await AccountModel.findOne({
       where: { phone: Account.phoneNumber },
     })
@@ -437,11 +445,15 @@ const register_google = async (req, res) => {
     }
     const emailCode = await generateOTP()
     const smsCode = await generateOTP()
+
+    const saltKey = bcrypt.genSaltSync(10)
+    const hashed_pass = bcrypt.hashSync(Account.password, saltKey)
     const accountCreated = await AccountModel.create({
-      username: username,
+      username: Account.username.toString().toLowerCase(),
       firstName: Account.firstName,
       lastName: Account.lastName,
       phone: Account.phoneNumber,
+      password: hashed_pass,
       email: Account.email.toString().toLowerCase(),
       status: accountStatus.PENDING,
       type: userTypes.USER,

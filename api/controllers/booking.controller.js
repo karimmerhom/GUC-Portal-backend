@@ -981,6 +981,7 @@ const bookExtremePackage = async (req, res) => {
     }
     booked = await bookingExtreme.create(bookingDetails)
     d = 0
+    date = new Date(startDate)
     for (let i = 0; i < pack.daysPerWeek; i++) {
       if (date.getDay() === 5) {
         date.setDate(date.getDate() + 1)
@@ -988,7 +989,7 @@ const bookExtremePackage = async (req, res) => {
       for (let j = startSlot; j < endSlot; j++) {
         const x = await CalendarModel.create({
           roomNumber: roomNumber,
-          date: new Date(startDate).toDateString(),
+          date: new Date(date).toDateString(),
           status: bookingStatus.PENDING,
           slot: slots[j],
           bookingId: booked.id,
