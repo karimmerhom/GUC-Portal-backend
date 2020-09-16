@@ -107,8 +107,10 @@ const lirtenHubLinkedToAnotherAcount = 163
 const tbhLinkedToAnotherAccount = 164
 const linkedGoogleFacebook = 165
 const linkedWithAnotherAccount = 166
+const noAvailableRoomSlots = 167
 
 module.exports = {
+  noAvailableRoomSlots,
   accountAlreadyLinkedSuccessfully,
   couldntCreateAccount,
   lirtenHubLinkedToAnotherAcount,
