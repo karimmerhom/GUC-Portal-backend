@@ -906,7 +906,34 @@ const change_email = async (req, res) => {
         },
       }
     )
-
+    const emailCode = await generateOTP()
+    await VerificationCode.update(
+      { emailCode, emailDate: new Date() },
+      {
+        where: {
+          accountId: Account.id,
+        },
+      }
+    )
+    const link =
+      `${frontEndLink}/emailVerification?code=` +
+      emailCode +
+      '&id=' +
+      Account.id
+    axios({
+      method: 'post',
+      url: 'https://dev.power-support.lirten.com/email/email/_send_email', //TODO
+      data: {
+        header: {
+          accessKey: emailAccessKey,
+        },
+        body: {
+          receiverMail: Account.email,
+          body: link,
+          subject: 'Verify your email',
+        },
+      },
+    })
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
     return res.json({
