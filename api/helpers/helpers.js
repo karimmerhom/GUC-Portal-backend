@@ -342,24 +342,6 @@ const deleteExtreme = async (purchasedId) => {
   }
 }
 
-const generateUsername = async (username) => {
-  let found = true
-  let x = 1
-  let nameGenerated = username
-
-  while (found) {
-    nameGenerated = username + `${x}`
-    const found = await AccountModel.findOne({
-      where: { username: nameGenerated },
-    })
-    if (!found) {
-      found = false
-    }
-    i += 1
-  }
-  return nameGenerated
-}
-
 module.exports = {
   generateOTP,
   deductPoints,
@@ -368,6 +350,5 @@ module.exports = {
   createPurchase,
   expireBooking,
   tryDeductPoints,
-  generateUsername,
   deleteExtreme,
 }

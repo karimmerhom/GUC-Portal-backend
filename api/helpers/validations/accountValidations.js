@@ -340,7 +340,6 @@ const validateAccountGoogle = (req, res, next) => {
     Account: joi
       .object({
         id: joi.string().required(),
-        password: new PasswordComplexity(complexityOptions).required(),
         username: joi.string().regex(usernamePattern).required(),
         firstName: joi.string().min(3).required(),
         lastName: joi.string().min(3).required(),
@@ -465,7 +464,6 @@ const validateSignUpWithLirtenHub = (req, res, next) => {
   const schema = {
     Account: joi
       .object({
-        password: new PasswordComplexity(complexityOptions).required(),
         username: joi.string().regex(usernamePattern).required(),
         firstName: joi.string().min(3).required(),
         lastName: joi.string().min(3).required(),
@@ -503,6 +501,23 @@ const validateCallBackLirtenHub = (req, res, next) => {
   }
   return next()
 }
+const validateGenerateUsername = (req, res, next) => {
+  const schema = {
+    Account: joi
+      .object({
+        firstName: joi.string().min(3).required(),
+      })
+      .required(),
+  }
+  const isValid = joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: validationFail,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
 
 module.exports = {
   validateAccount,
@@ -528,4 +543,5 @@ module.exports = {
   validateSignUpWithLirtenHub,
   validateResendToken,
   validateLink,
+  validateGenerateUsername,
 }
