@@ -446,8 +446,6 @@ const register_google = async (req, res) => {
     const emailCode = await generateOTP()
     const smsCode = await generateOTP()
 
-    const saltKey = bcrypt.genSaltSync(10)
-    const hashed_pass = bcrypt.hashSync(Account.password, saltKey)
     const accountCreated = await AccountModel.create({
       username: Account.username.toString().toLowerCase(),
       firstName: Account.firstName,
@@ -469,7 +467,7 @@ const register_google = async (req, res) => {
 
     const link =
       `${frontEndLink}/emailVerification?code=` +
-      code +
+      emailCode +
       '&id=' +
       accountCreated.id
     axios({
@@ -501,6 +499,7 @@ const register_google = async (req, res) => {
     })
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
+    console.log(exception)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -593,10 +592,8 @@ const register_facebook = async (req, res) => {
     const emailCode = await generateOTP()
     const smsCode = await generateOTP()
     const saltKey = bcrypt.genSaltSync(10)
-    const hashed_pass = bcrypt.hashSync(Account.password, saltKey)
     const accountCreated = await AccountModel.create({
       username: Account.username.toString().toLowerCase(),
-      password: hashed_pass,
       firstName: Account.firstName,
       lastName: Account.lastName,
       phone: Account.phoneNumber,
@@ -615,7 +612,7 @@ const register_facebook = async (req, res) => {
 
     const link =
       `${frontEndLink}/emailVerification?code=` +
-      code +
+      emailCode +
       '&id=' +
       accountCreated.id
     axios({
