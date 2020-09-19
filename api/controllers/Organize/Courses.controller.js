@@ -7,6 +7,7 @@ const FormModel = require('../../../models/form.model')
 const validator = require('../../helpers/validations/coursesValidations')
 const Courses = require('../../../models/courses.model')
 const coursesValidations = require('../../helpers/validations/coursesValidations')
+const { State } = require('../../constants/TBH.enum')
 
 const createCourse = async (req, res) => {
   try {
@@ -146,6 +147,12 @@ const editCourse = async (req, res) => {
       return res.json({
         msg: 'course doesnt exist for this account',
         statusCode: errorCodes.cousrseDoesntExist,
+      })
+    }
+    if (courseid.State === State.APPROVED) {
+      return res.json({
+        statusCode: errorCodes.approvedCourse,
+        msg: 'Cannot edit course when it is approved',
       })
     }
     CoursesModel.update(Course, { where: { id: courseID, accountId } })

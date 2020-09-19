@@ -936,6 +936,7 @@ const change_email = async (req, res) => {
     })
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
+    console.log(exception)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
