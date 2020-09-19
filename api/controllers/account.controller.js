@@ -18,8 +18,9 @@ const {
   accountStatus,
   verificationMethods,
   userTypes,
+  packageType,
 } = require('../constants/TBH.enum')
-const { generateOTP } = require('../helpers/helpers')
+const { generateOTP, addPoints } = require('../helpers/helpers')
 const { findOne } = require('../../models/account.model')
 const { alreadyVerified } = require('../constants/errorCodes')
 
@@ -110,7 +111,7 @@ const register = async (req, res) => {
         },
       },
     })
-
+    addPoints(accountCreated.id, packageType.REGULAR, 4)
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
     console.log(exception)
@@ -497,6 +498,7 @@ const register_google = async (req, res) => {
         },
       },
     })
+    addPoints(accountCreated.id, packageType.REGULAR, 4)
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
     console.log(exception)
@@ -642,6 +644,7 @@ const register_facebook = async (req, res) => {
         },
       },
     })
+    addPoints(accountCreated.id, packageType.REGULAR, 4)
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
     console.log(exception)
