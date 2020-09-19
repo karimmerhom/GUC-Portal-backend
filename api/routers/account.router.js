@@ -27,6 +27,7 @@ const {
   callBackLirtenHub,
   signUpWithLirtenHub,
   resend_token,
+  generateUsername,
 } = accountController
 
 const {
@@ -61,6 +62,7 @@ const {
   validateSignUpWithLirtenHub,
   validateResendToken,
   validateLink,
+  validateGenerateUsername,
 } = require('../helpers/validations/accountValidations')
 const { link_google_facebook } = require('../controllers/account.controller')
 
@@ -172,5 +174,6 @@ router.post(
   verifyUser,
   link_google_facebook
 )
+router.post('/generateUsername', validateGenerateUsername, generateUsername)
 
 module.exports = router

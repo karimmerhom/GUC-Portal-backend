@@ -21,7 +21,7 @@ module.exports = {
       '790311029308-uok5sjd316a26f6mjhq6ff6rlg1t8dfi.apps.googleusercontent.com',
     client_secret: 'HnlkzK0HJpJUR1BXW1XC_67U',
     loginURI: 'https://uat.thebusinesshub.space/google/SignIn',
-    signUpURI: 'https://uat.thebusinesshub.space/google/SignUp',
+    signUpURI: 'http://localhost:3000/google/SignUp',
     link: 'https://uat.thebusinesshub.space/Account/google',
   },
 }

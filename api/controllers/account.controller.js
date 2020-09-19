@@ -19,7 +19,7 @@ const {
   verificationMethods,
   userTypes,
 } = require('../constants/TBH.enum')
-const { generateOTP, generateUsername } = require('../helpers/helpers')
+const { generateOTP } = require('../helpers/helpers')
 const { findOne } = require('../../models/account.model')
 const { alreadyVerified } = require('../constants/errorCodes')
 
@@ -446,14 +446,11 @@ const register_google = async (req, res) => {
     const emailCode = await generateOTP()
     const smsCode = await generateOTP()
 
-    const saltKey = bcrypt.genSaltSync(10)
-    const hashed_pass = bcrypt.hashSync(Account.password, saltKey)
     const accountCreated = await AccountModel.create({
       username: Account.username.toString().toLowerCase(),
       firstName: Account.firstName,
       lastName: Account.lastName,
       phone: Account.phoneNumber,
-      password: hashed_pass,
       email: Account.email.toString().toLowerCase(),
       status: accountStatus.PENDING,
       type: userTypes.USER,
@@ -470,7 +467,7 @@ const register_google = async (req, res) => {
 
     const link =
       `${frontEndLink}/emailVerification?code=` +
-      code +
+      emailCode +
       '&id=' +
       accountCreated.id
     axios({
@@ -502,6 +499,7 @@ const register_google = async (req, res) => {
     })
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
+    console.log(exception)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -594,10 +592,8 @@ const register_facebook = async (req, res) => {
     const emailCode = await generateOTP()
     const smsCode = await generateOTP()
     const saltKey = bcrypt.genSaltSync(10)
-    const hashed_pass = bcrypt.hashSync(Account.password, saltKey)
     const accountCreated = await AccountModel.create({
       username: Account.username.toString().toLowerCase(),
-      password: hashed_pass,
       firstName: Account.firstName,
       lastName: Account.lastName,
       phone: Account.phoneNumber,
@@ -616,7 +612,7 @@ const register_facebook = async (req, res) => {
 
     const link =
       `${frontEndLink}/emailVerification?code=` +
-      code +
+      emailCode +
       '&id=' +
       accountCreated.id
     axios({
@@ -1259,9 +1255,6 @@ const signUpWithLirtenHub = async (req, res) => {
 
     const saltKey = bcrypt.genSaltSync(10)
 
-    const hashed_pass = bcrypt.hashSync(req.body.Account.password, saltKey)
-    req.body.Account.password = hashed_pass
-
     if (lirtenHubAccountFound) {
       if (tbhAccountFound) {
         if (tbhAccountFound.id === lirtenHubAccountFound.accountId) {
@@ -1333,6 +1326,7 @@ const signUpWithLirtenHub = async (req, res) => {
       }
     }
   } catch (e) {
+    console.log(e)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -1360,7 +1354,7 @@ const callBackLirtenHub = async (req, res) => {
       const account = await AccountModel.findOne({
         where: { email: data.email },
       })
-
+      console.log(account)
       if (account) {
         const accountCreated = await lirtenHubAccountsModel.create({
           accountId: account.id,
@@ -1409,7 +1403,6 @@ const callBackLirtenHub = async (req, res) => {
       }
 
       //create link
-      console.log('NO LINK')
     } else {
       const account = await AccountModel.findOne({
         where: { id: link.accountId },
@@ -1559,6 +1552,24 @@ const link_google_facebook = async (req, res) => {
   }
 }
 
+const generateUsername = async (req, res) => {
+  let found = true
+  let x = 1
+  let nameGenerated = req.body.Account.firstName
+
+  while (found) {
+    nameGenerated = req.body.Account.firstName + `${x}`
+    const accountFound = await AccountModel.findOne({
+      where: { username: nameGenerated },
+    })
+    if (!accountFound) {
+      found = false
+    }
+    x += 1
+  }
+  return res.json({ statusCode: errorCodes.success, username: nameGenerated })
+}
+
 module.exports = {
   register,
   login,
@@ -1585,4 +1596,5 @@ module.exports = {
   callBackLirtenHub,
   resend_token,
   link_google_facebook,
+  generateUsername,
 }
