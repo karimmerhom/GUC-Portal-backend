@@ -1,14 +1,11 @@
 const Joi = require('joi')
 const errorCodes = require('../../constants/errorCodes')
 
-
 const validateEditGiftPackageAccess = (req, res, next) => {
   const schema = Joi.object({
-       
-    gifting: Joi.string().valid(['true', 'false']),
-
+    gifting: Joi.bool().required(),
     Account: Joi.object({
-      id: Joi.string().length(3).required(),
+      id: Joi.string().required(),
     }).required(),
   })
 
@@ -22,10 +19,6 @@ const validateEditGiftPackageAccess = (req, res, next) => {
   return next()
 }
 
-
-
 module.exports = {
-
   validateEditGiftPackageAccess,
- 
 }

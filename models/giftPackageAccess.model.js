@@ -8,20 +8,13 @@ const { Model } = Sequelize
 class giftPackageAccess extends Model {}
 giftPackageAccess.init(
   {
-  
-   
-    gifting : {
-      type: Sequelize.ENUM,
-      values: [
-        ability.TRUE,
-        ability.FALSE,
-  
-      ]
+    gifting: {
+      type: Sequelize.BOOLEAN,
     },
   },
   {
     sequelize,
-    timestamps: false
+    timestamps: false,
   }
 )
 

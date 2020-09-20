@@ -118,8 +118,9 @@ const tryDeductPoints = async (accountId, points) => {
   )
   let total = 0
   for (package of activePackages) {
-    total += parseInt(package.totalPoints)
+    total += parseInt(package.totalPoints) - parseInt(package.usedPoints)
   }
+  console.log(total)
   if (total < points) {
     return {
       error: 'not enough points to be deducted',
@@ -240,8 +241,6 @@ const addPoints = async (
           error: 'package does not exist',
         }
       }
-      console.log(date, 'herepackage')
-      console.log(size, 'herepackage1')
       body.purchaseDate = new Date(date).toDateString()
       body.expiryDate = new Date(
         new Date(body.purchaseDate).addDays(packageBody.daysPerWeek)

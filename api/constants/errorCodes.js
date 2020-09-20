@@ -108,6 +108,7 @@ const tbhLinkedToAnotherAccount = 164
 const linkedGoogleFacebook = 165
 const linkedWithAnotherAccount = 166
 const noAvailableRoomSlots = 167
+const hasNoPassword = 168
 
 module.exports = {
   noAvailableRoomSlots,
@@ -178,4 +179,5 @@ module.exports = {
   usernameExists,
   linkedGoogleFacebook,
   linkedWithAnotherAccount,
+  hasNoPassword,
 }

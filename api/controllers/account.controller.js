@@ -23,6 +23,8 @@ const {
 const { generateOTP, addPoints } = require('../helpers/helpers')
 const { findOne } = require('../../models/account.model')
 const { alreadyVerified } = require('../constants/errorCodes')
+const regularPackage = require('../../models/regularPackage.model')
+const giftPackageAccess = require('../../models/giftPackageAccess.model')
 
 const register = async (req, res) => {
   try {
@@ -111,7 +113,15 @@ const register = async (req, res) => {
         },
       },
     })
-    addPoints(accountCreated.id, packageType.REGULAR, 4)
+    let giftAccess = await giftPackageAccess.findOne({ where: { id: 1 } })
+    if (giftAccess && giftAccess.gifting) {
+      const gift = await regularPackage.findOne({
+        where: { packageName: 'gift' },
+      })
+
+      const giftId = gift.id
+      addPoints(accountCreated.id, packageType.REGULAR, giftId, gift.points)
+    }
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
     console.log(exception)
@@ -497,8 +507,16 @@ const register_google = async (req, res) => {
           body: smsCode,
         },
       },
-    })
-    addPoints(accountCreated.id, packageType.REGULAR, 4)
+    }).then((res) => console.log(res))
+    let giftAccess = await giftPackageAccess.findOne({ where: { id: 1 } })
+    if (giftAccess && giftAccess.gifting) {
+      const gift = await regularPackage.findOne({
+        where: { packageName: 'gift' },
+      })
+
+      const giftId = gift.id
+      addPoints(accountCreated.id, packageType.REGULAR, giftId, gift.points)
+    }
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
     console.log(exception)
@@ -644,7 +662,15 @@ const register_facebook = async (req, res) => {
         },
       },
     })
-    addPoints(accountCreated.id, packageType.REGULAR, 4)
+    let giftAccess = await giftPackageAccess.findOne({ where: { id: 1 } })
+    if (giftAccess && giftAccess.gifting) {
+      const gift = await regularPackage.findOne({
+        where: { packageName: 'gift' },
+      })
+
+      const giftId = gift.id
+      addPoints(accountCreated.id, packageType.REGULAR, giftId, gift.points)
+    }
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
     console.log(exception)
@@ -709,6 +735,12 @@ const unlink_facebook = async (req, res) => {
         error: 'User not found',
       })
     }
+    if (account.password === null) {
+      return res.json({
+        statusCode: errorCodes.hasNoPassword,
+        error: 'You have to set up a password first',
+      })
+    }
     AccountModel.update(
       { facebookId: null },
       {
@@ -740,6 +772,12 @@ const unlink_google = async (req, res) => {
       return res.json({
         statusCode: errorCodes.emailExists,
         error: 'User not found',
+      })
+    }
+    if (account.password === null) {
+      return res.json({
+        statusCode: errorCodes.hasNoPassword,
+        error: 'You have to set up a password first',
       })
     }
     AccountModel.update(
@@ -841,13 +879,14 @@ const change_password = async (req, res) => {
         id: parseInt(id, 10),
       },
     })
-
-    const match = bcrypt.compareSync(Credentials.password, account.password)
-    if (!match) {
-      return res.json({
-        statusCode: errorCodes.invalidCredentials,
-        error: 'Old password is wrong',
-      })
+    if (account.password !== null) {
+      const match = bcrypt.compareSync(Credentials.password, account.password)
+      if (!match) {
+        return res.json({
+          statusCode: errorCodes.invalidCredentials,
+          error: 'Old password is wrong',
+        })
+      }
     }
     if (Credentials.newPassword === Credentials.password) {
       return res.json({
@@ -1076,13 +1115,16 @@ const get_profile = async (req, res) => {
         error: 'User not found',
       })
     }
+    const password = account.password
     let profile = account
     delete profile.dataValues.password
     delete profile.dataValues.type
-
+    console.log(profile)
+    console.log(profile.dataValues.password, 'password')
     return res.json({
       statusCode: errorCodes.success,
       profile: account,
+      hasPassword: password !== null,
     })
   } catch (exception) {
     console.log(exception)
