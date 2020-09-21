@@ -92,7 +92,7 @@ const deductPoints = async (accountId, points) => {
       { where: { id: package.id } }
     )
     purchasedPackage.update(
-      { status: 'expired' },
+      { status: packageStatus.USED },
       { where: { id: package.id } }
     )
 

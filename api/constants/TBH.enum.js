@@ -160,6 +160,7 @@ const packageStatus = {
   CANCELED: 'canceled',
   ACTIVE: 'active',
   EXPIRED: 'expired',
+  USED: 'used',
 }
 const State = {
   APPROVED: 'approved',
