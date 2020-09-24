@@ -6,7 +6,7 @@ const bodyParser = require('body-parser')
 const fileUpload = require('express-fileupload')
 
 const { populate_admins } = require('./config/populateAdmins')
-const { populate_users } = require('./config/populateUser')
+const { populate } = require('./config/populate')
 
 const app = express()
 
@@ -103,15 +103,15 @@ app.use((req, res, next) => {
   next()
 })
 
-const eraseDatabaseOnSync = false
+const eraseDatabaseOnSync = true
 
 sequelize
   .sync({ force: eraseDatabaseOnSync })
   .then(() => console.log('Synced models with database'))
   .then(() => {
     if (eraseDatabaseOnSync) {
+      populate()
       populate_admins()
-      populate_users()
     }
   })
   .catch((error) => console.log('Could not sync models with database', error))

@@ -517,6 +517,13 @@ const bookRoom = async (req, res) => {
           expireBooking(booked.id)
         })
         scheduleJob.start()
+        const scheduleJobDateAlreadyPassed = cron.job(
+          new Date(bookingDetails.date),
+          async () => {
+            expireBooking(booked.id)
+          }
+        )
+        scheduleJobDateAlreadyPassed.start()
       }
 
       for (let i = 0; i < bookingDetails.slots.length; i++) {
@@ -722,6 +729,26 @@ const viewMyBookings = async (req, res) => {
     } else {
       return res.json({ booking, statusCode: errorCodes.success })
     }
+  } catch (exception) {
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
+  }
+}
+const viewBooking = async (req, res) => {
+  try {
+    const { Account, bookingId } = req.body
+    id = Account.id
+    let booking
+    booking = await BookingModel.findOne({ where: { id: bookingId } })
+    if (booking.accountId !== id && req.data.type !== 'admin') {
+      return res.json({
+        statusCode: errorCodes.unauthorized,
+        error: 'This is not your booking',
+      })
+    }
+    return res.json({ booking, statusCode: errorCodes.success })
   } catch (exception) {
     return res.json({
       statusCode: errorCodes.unknown,
@@ -1151,4 +1178,5 @@ module.exports = {
   adminConfirmBooking,
   viewAvailableRooms,
   tryEditBooking,
+  viewBooking,
 }
