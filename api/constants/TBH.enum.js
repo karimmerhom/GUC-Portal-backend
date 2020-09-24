@@ -13,7 +13,11 @@ const userTypes = {
   ADMIN: 'admin',
   USER: 'user',
 }
-
+const role = {
+  OWNER: 'owner',
+  USER: 'user',
+  MANAGER: 'manager',
+}
 const paymentMethods = {
   CASH: 'cash',
   VODAFONECASH: 'vodafone cash',
@@ -208,7 +212,7 @@ module.exports = {
   packageType,
   otpStatus,
   category,
-
+  role,
   State,
   bookingType,
   pendingType,
