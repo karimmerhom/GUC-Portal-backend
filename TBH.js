@@ -6,7 +6,7 @@ const bodyParser = require('body-parser')
 const fileUpload = require('express-fileupload')
 
 const { populate_admins } = require('./config/populateAdmins')
-const { populate_users } = require('./config/populateUser')
+const { populate } = require('./config/populate')
 
 const app = express()
 
@@ -21,7 +21,7 @@ const booking = require('./api/routers/booking.router')
 const room = require('./api/routers/room.router')
 const pricing = require('./api/routers/pricing.router')
 const expiry = require('./api/routers/expiry.router')
-
+const organization = require('./api/routers/oragnization.router')
 const pending = require('./api/routers/pending.router')
 
 // import db configuration
@@ -80,6 +80,7 @@ app.use('/tbhapp/package', package)
 
 app.use('/tbhapp/giftPackageAccess', giftPackageAccess)
 app.use('/tbhapp/packageExpiration', packageExpiration)
+app.use('/tbhapp/organization', organization)
 
 app.use('/tbhapp/explore', explore)
 
@@ -105,15 +106,15 @@ app.use((req, res, next) => {
   next()
 })
 
-const eraseDatabaseOnSync = false
+const eraseDatabaseOnSync = true
 
 sequelize
   .sync({ force: eraseDatabaseOnSync })
   .then(() => console.log('Synced models with database'))
   .then(() => {
     if (eraseDatabaseOnSync) {
+      populate()
       populate_admins()
-      populate_users()
     }
   })
   .catch((error) => console.log('Could not sync models with database', error))

@@ -1,9 +1,11 @@
 module.exports = {
-  postgresURI:
-    'postgres://tbh_read_write:tbh_read_write@odoo.cwkflpbzjgkp.eu-central-1.rds.amazonaws.com:5432/tbh-dev',
+  // postgresURI:
+  // postgresURI:
+    // 'postgres://tbh_read_write:tbh_read_write@odoo.cwkflpbzjgkp.eu-central-1.rds.amazonaws.com:5432/tbh-dev',
+  postgresURI: 'postgres://postgres:654@localhost:5432/TBH', 
   secretOrKey: 'SECRET',
   frontEndLink: 'https://uat.thebusinesshub.space',
-  LirtenKey: '3azamauat',
+  LirtenKey: 'lirtenhub_signingkey',
   salt: '10',
   smsAccessKey:
     'U2FsdGVkX19jTU8iULYNra7x0VyjoXNs0rf40VHMxCcgvRpBXUGGNDK3UbBNrlQC',
