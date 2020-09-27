@@ -24,11 +24,12 @@ const createOrganization = async (req, res) => {
             error: 'Member email does not exsist',
           })
         }
-        roles.create({
-          accountId: account.id,
-          role: member.role,
-          organizationId: org.id,
-        })
+        if (account.id !== owner)
+          roles.create({
+            accountId: account.id,
+            role: member.role,
+            organizationId: org.id,
+          })
       })
     }
     return res.json({ statusCode: errorCodes.success })
