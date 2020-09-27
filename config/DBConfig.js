@@ -10,3 +10,4 @@ const keys = require('./keys')
 const sequelize = new Sequelize(keys.postgresURI)
 
 module.exports = sequelize
+    
