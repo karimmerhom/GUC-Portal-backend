@@ -46,6 +46,9 @@ confirmedCourses.init(
     endDate: {
       type: Sequelize.STRING,
     },
+    dateCreated: {
+      type: Sequelize.STRING,
+    },
     price: {
       type: Sequelize.DOUBLE,
     },

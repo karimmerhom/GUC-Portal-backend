@@ -31,6 +31,7 @@ const validateCreate = (req, res, next) => {
       numberOfSessions: Joi.number().required(),
       startDate: Joi.string().required(),
       endDate: Joi.string().required(),
+      dateCreated: Joi.string().required(),
       price: Joi.number().required(),
       maxNumberOfAttendees: Joi.number().required(),
       minNumberOfAttendees: Joi.number().required(),
