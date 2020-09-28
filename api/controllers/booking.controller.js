@@ -507,11 +507,9 @@ const bookRoom = async (req, res) => {
         booked.slots.length + ' hours',
       ]
 
-      const c = await createPurchase(
-        booked.accountId,
-        text,
-        parseInt(booked.priceCash)
-      )
+      if (status === 'confirmed') {
+        await createPurchase(booked.accountId, text, parseInt(booked.priceCash))
+      }
       if (j.on_off === 'on') {
         const scheduleJob = cron.job(new Date(expiryDate), async () => {
           expireBooking(booked.id)
