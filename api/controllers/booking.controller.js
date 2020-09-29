@@ -503,7 +503,7 @@ const bookRoom = async (req, res) => {
       let text = [
         booked.roomType,
         booked.roomSize,
-        moment(booked.date).format('ll'),
+        moment(new Date(booked.date)).format('ll'),
         booked.slots.length + ' hours',
       ]
 
@@ -811,7 +811,7 @@ const adminConfirmBooking = async (req, res) => {
       let text = [
         booked.roomType,
         booked.roomSize,
-        moment(booked.date).format('ll'),
+        moment(new Date(booked.date)).format('ll'),
         booked.slots.length + ' hours',
       ]
 
@@ -871,7 +871,7 @@ const adminConfirmExtremeBooking = async (req, res) => {
       let text = [
         booked.roomType,
         booked.roomSize,
-        moment(booked.date).format('ll'),
+        moment(new Date(booked.date)).format('ll'),
       ]
       const package = await purchasedPackagesModel.findOne({
         where: { id: booked.purchasedId },
