@@ -1,11 +1,15 @@
 module.exports = {
   // postgresURI:
   // postgresURI:
-    // 'postgres://tbh_read_write:tbh_read_write@odoo.cwkflpbzjgkp.eu-central-1.rds.amazonaws.com:5432/tbh-dev',
-  postgresURI: 'postgres://postgres:654@localhost:5432/TBH', 
+  // 'postgres://tbh_read_write:tbh_read_write@odoo.cwkflpbzjgkp.eu-central-1.rds.amazonaws.com:5432/tbh-dev',
+  postgresURI: 'postgres://postgres:654@localhost:5432/TBH',
   secretOrKey: 'SECRET',
   frontEndLink: 'https://uat.thebusinesshub.space',
   LirtenKey: 'lirtenhub_signingkey',
+  powerSupportSMSLink:
+    'https://dev.api.power-support.lirten.com/epush/sms/_send_sms',
+  powerSupportEmailLink:
+    'https://dev.api.power-support.lirten.com/email/email/_send_email',
   salt: '10',
   smsAccessKey:
     'U2FsdGVkX19jTU8iULYNra7x0VyjoXNs0rf40VHMxCcgvRpBXUGGNDK3UbBNrlQC',

@@ -106,7 +106,7 @@ app.use((req, res, next) => {
   next()
 })
 
-const eraseDatabaseOnSync = true
+const eraseDatabaseOnSync = false
 
 sequelize
   .sync({ force: eraseDatabaseOnSync })

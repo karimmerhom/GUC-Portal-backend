@@ -189,6 +189,11 @@ const pendingType = {
   BOOKINGS: 'Bookings',
 }
 
+const courseStatus = {
+  AVAILABLE: 'Available',
+  FULL: 'Fully booked',
+}
+
 module.exports = {
   packageStatus,
   accountStatus,
@@ -216,4 +221,5 @@ module.exports = {
   State,
   bookingType,
   pendingType,
+  courseStatus,
 }

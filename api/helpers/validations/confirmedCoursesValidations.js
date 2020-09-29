@@ -29,20 +29,21 @@ const validateCreate = (req, res, next) => {
       daysPerWeek: Joi.number().required(),
       sessionDuration: Joi.number().required(),
       numberOfSessions: Joi.number().required(),
-      startDate: Joi.string().required(),
-      endDate: Joi.string().required(),
+      startDate: Joi.date().required(),
+      endDate: Joi.date().required(),
       price: Joi.number().required(),
       maxNumberOfAttendees: Joi.number().required(),
       minNumberOfAttendees: Joi.number().required(),
       teacherName: Joi.string().required(),
-      status: Joi.string(),
       location: Joi.string().required(),
-    }),
+    }).required(),
     Account: Joi.object({
       id: Joi.number().required(),
-    }),
+    }).required(),
+    accountId: Joi.number().required(),
   }
   const isValid = Joi.validate(req.body, schema)
+  console.log(isValid)
   if (isValid.error) {
     return res.json({
       statusCode: errorCodes.unknown,
@@ -56,10 +57,10 @@ const validateViewCourse = (req, res, next) => {
   const schema = {
     Account: Joi.object({
       id: Joi.number().required(),
-    }),
+    }).required(),
     Course: Joi.object({
       id: Joi.number().required(),
-    }),
+    }).required(),
   }
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
@@ -76,8 +77,7 @@ const validateViewAllCourses = (req, res, next) => {
   const schema = {
     Account: Joi.object({
       id: Joi.number().required(),
-    }),
-   
+    }).required(),
   }
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
@@ -90,15 +90,8 @@ const validateViewAllCourses = (req, res, next) => {
   return next()
 }
 
-
-
-
-
-
-
 module.exports = {
   validateCreate,
   validateViewCourse,
   validateViewAllCourses,
-  
 }

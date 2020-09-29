@@ -13,6 +13,8 @@ const {
   emailAccessKey,
   frontEndLink,
   LirtenKey,
+  powerSupportSMSLink,
+  powerSupportEmailLink,
 } = require('../../config/keys')
 const {
   accountStatus,
@@ -87,7 +89,7 @@ const register = async (req, res) => {
       accountCreated.id
     axios({
       method: 'post',
-      url: 'https://dev.power-support.lirten.com/email/email/_send_email', //TODO
+      url: powerSupportEmailLink, //TODO
       data: {
         header: {
           accessKey: emailAccessKey,
@@ -102,7 +104,7 @@ const register = async (req, res) => {
 
     axios({
       method: 'post',
-      url: 'https://dev.power-support.lirten.com/epush/sms/_send_sms', //TODO
+      url: powerSupportSMSLink, //TODO
       data: {
         header: {
           accessKey: smsAccessKey,
@@ -217,7 +219,7 @@ const verify = async (req, res) => {
 
     axios({
       method: 'post',
-      url: 'https://dev.power-support.lirten.com/epush/sms/_send_sms', //TODO
+      url: powerSupportSMSLink, //TODO
       data: {
         header: {
           accessKey: smsAccessKey,
@@ -270,7 +272,7 @@ const verify_email = async (req, res) => {
       `${frontEndLink}/emailVerification?code=` + code + '&id=' + account.id
     axios({
       method: 'post',
-      url: 'https://dev.power-support.lirten.com/email/email/_send_email', //TODO
+      url: powerSupportEmailLink, //TODO
       data: {
         header: {
           accessKey: emailAccessKey,
@@ -483,7 +485,7 @@ const register_google = async (req, res) => {
       accountCreated.id
     axios({
       method: 'post',
-      url: 'https://dev.power-support.lirten.com/email/email/_send_email', //TODO
+      url: powerSupportEmailLink, //TODO
       data: {
         header: {
           accessKey: emailAccessKey,
@@ -497,7 +499,7 @@ const register_google = async (req, res) => {
     })
     axios({
       method: 'post',
-      url: 'https://dev.power-support.lirten.com/epush/sms/_send_sms', //TODO
+      url: powerSupportSMSLink, //TODO
       data: {
         header: {
           accessKey: smsAccessKey,
@@ -637,7 +639,7 @@ const register_facebook = async (req, res) => {
       accountCreated.id
     axios({
       method: 'post',
-      url: 'https://dev.power-support.lirten.com/email/email/_send_email',
+      url: powerSupportEmailLink,
       data: {
         header: {
           accessKey: emailAccessKey,
@@ -651,7 +653,7 @@ const register_facebook = async (req, res) => {
     })
     axios({
       method: 'post',
-      url: 'https://dev.power-support.lirten.com/epush/sms/_send_sms',
+      url: powerSupportSMSLink,
       data: {
         header: {
           accessKey: smsAccessKey,
@@ -960,7 +962,7 @@ const change_email = async (req, res) => {
       Account.id
     axios({
       method: 'post',
-      url: 'https://dev.power-support.lirten.com/email/email/_send_email', //TODO
+      url: powerSupportEmailLink, //TODO
       data: {
         header: {
           accessKey: emailAccessKey,
@@ -1007,7 +1009,7 @@ const change_phone = async (req, res) => {
     )
     axios({
       method: 'post',
-      url: 'https://dev.power-support.lirten.com/epush/sms/_send_sms', //TODO
+      url: powerSupportSMSLink, //TODO
       data: {
         header: {
           accessKey: smsAccessKey,
@@ -1066,7 +1068,7 @@ const forget_password = async (req, res) => {
 
     axios({
       method: 'post',
-      url: 'https://dev.power-support.lirten.com/epush/sms/_send_sms', //TODO
+      url: powerSupportSMSLink, //TODO
       data: {
         header: {
           accessKey: smsAccessKey,

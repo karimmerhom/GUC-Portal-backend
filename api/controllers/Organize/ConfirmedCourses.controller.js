@@ -1,43 +1,42 @@
 const CoursesModel = require('../../../models/confirmedCourses.model')
 const errorCodes = require('../../constants/errorCodes')
 const FormModel = require('../../../models/form.model')
-const { State } = require('../../constants/TBH.enum')
+const { courseStatus } = require('../../constants/TBH.enum')
 
 const createCourse = async (req, res) => {
   try {
-    const { Course, Account } = req.body
+    const { Course, accountId } = req.body
 
     const formFound = await FormModel.findOne({
-      where: { accountId: Account.id },
+      where: { accountId },
     })
 
     if (!formFound) {
       return res.json({
         statusCode: errorCodes.formNotFound,
-        error: 'You must Create a form first',
+        error: 'User must Create a form first',
       })
     }
     const courseFound = await CoursesModel.findOne({
-      where: { 
-      title: Course.title,
-      eventTitle: Course.eventTitle,
-      description: Course.description,
-      category: Course.category,
-      attachedMediaIn: Course.attachedMediaIn,
-      attachedMediaOut: Course.attachedMediaOut,
-      durationInHours: Course.durationInHours,
-      daysPerWeek: Course.daysPerWeek,
-      sessionDuration: Course.sessionDuration,
-      numberOfSessions: Course.numberOfSessions,
-      startDate: Course.startDate,
-      endDate: Course.endDate,
-      price: Course.price,
-      maxNumberOfAttendees: Course.maxNumberOfAttendees,
-      minNumberOfAttendees: Course.minNumberOfAttendees,
-      teacherName: Course.teacherName,
-      status: Course.status,
-      location: Course.location,
-      accountId: Account.id,
+      where: {
+        title: Course.title,
+        eventTitle: Course.eventTitle,
+        description: Course.description,
+        category: Course.category,
+        attachedMediaIn: Course.attachedMediaIn,
+        attachedMediaOut: Course.attachedMediaOut,
+        durationInHours: Course.durationInHours,
+        daysPerWeek: Course.daysPerWeek,
+        sessionDuration: Course.sessionDuration,
+        numberOfSessions: Course.numberOfSessions,
+        startDate: Course.startDate,
+        endDate: Course.endDate,
+        price: Course.price,
+        maxNumberOfAttendees: Course.maxNumberOfAttendees,
+        minNumberOfAttendees: Course.minNumberOfAttendees,
+        teacherName: Course.teacherName,
+        location: Course.location,
+        accountId,
       },
     })
 
@@ -65,9 +64,9 @@ const createCourse = async (req, res) => {
       maxNumberOfAttendees: Course.maxNumberOfAttendees,
       minNumberOfAttendees: Course.minNumberOfAttendees,
       teacherName: Course.teacherName,
-      status: Course.status,
+      status: courseStatus.AVAILABLE,
       location: Course.location,
-      accountId: Account.id,
+      accountId,
     }
     CoursesModel.create(newCourse)
     return res.json({
@@ -88,7 +87,7 @@ const viewCourse = async (req, res) => {
 
     const checkCourse = await CoursesModel.findOne({
       where: {
-       id: Course.id,
+        id: Course.id,
       },
     })
     if (!checkCourse) {
@@ -97,12 +96,10 @@ const viewCourse = async (req, res) => {
         statusCode: errorCodes.cousrseDoesntExist,
       })
     }
-    
 
     return res.json({ Course: checkCourse, statusCode: errorCodes.success })
-  } catch (exception)
-  {
-   console.log(exception)
+  } catch (exception) {
+    console.log(exception)
     return res.json({
       error: 'Something went wrong',
       statusCode: errorCodes.unknown,
@@ -112,8 +109,7 @@ const viewCourse = async (req, res) => {
 
 const viewAllCourses = async (req, res) => {
   try {
-    
-    const checkCourse = await CoursesModel.findAll({ })
+    const checkCourse = await CoursesModel.findAll({})
     if (!checkCourse) {
       return res.json({
         error: 'No Courses Yet',
@@ -130,11 +126,8 @@ const viewAllCourses = async (req, res) => {
   }
 }
 
-
-
-
 module.exports = {
   viewCourse,
   viewAllCourses,
-  createCourse
+  createCourse,
 }
