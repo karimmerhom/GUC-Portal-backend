@@ -13,7 +13,11 @@ const userTypes = {
   ADMIN: 'admin',
   USER: 'user',
 }
-
+const role = {
+  OWNER: 'owner',
+  USER: 'user',
+  MANAGER: 'manager',
+}
 const paymentMethods = {
   CASH: 'cash',
   VODAFONECASH: 'vodafone cash',
@@ -185,6 +189,11 @@ const pendingType = {
   BOOKINGS: 'Bookings',
 }
 
+const courseStatus = {
+  AVAILABLE: 'Available',
+  FULL: 'Fully booked',
+}
+
 module.exports = {
   packageStatus,
   accountStatus,
@@ -208,8 +217,9 @@ module.exports = {
   packageType,
   otpStatus,
   category,
-
+  role,
   State,
   bookingType,
   pendingType,
+  courseStatus,
 }

@@ -594,7 +594,7 @@ const editStatus = async (req, res) => {
           package.packageType,
           extPackage.packageName,
           size,
-          moment(bookingrecord.startDate).format('ll'),
+          moment(new Date(bookingrecord.startDate)).format('ll'),
         ]
         await createPurchase(accountId, text, price)
 

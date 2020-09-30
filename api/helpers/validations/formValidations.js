@@ -28,7 +28,8 @@ const validateCreateForm = (req, res, next) => {
           previousOrganizingExperience.INFORMAL,
           previousOrganizingExperience.ONLINE,
           previousOrganizingExperience.OTHER,
-          previousOrganizingExperience.PROF
+          previousOrganizingExperience.PROF,
+          englishLevel.NONE
         )
         .required(),
       placesOrganizedAtPreviously: Joi.string().required(),
@@ -91,7 +92,8 @@ const validateEditForm = (req, res, next) => {
         previousOrganizingExperience.INFORMAL,
         previousOrganizingExperience.ONLINE,
         previousOrganizingExperience.OTHER,
-        previousOrganizingExperience.PROF
+        previousOrganizingExperience.PROF,
+        englishLevel.NONE
       ),
       id: Joi.number().required(),
       placesOrganizedAtPreviously: Joi.string(),

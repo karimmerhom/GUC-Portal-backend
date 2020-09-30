@@ -503,20 +503,25 @@ const bookRoom = async (req, res) => {
       let text = [
         booked.roomType,
         booked.roomSize,
-        moment(booked.date).format('ll'),
+        moment(new Date(booked.date)).format('ll'),
         booked.slots.length + ' hours',
       ]
 
-      const c = await createPurchase(
-        booked.accountId,
-        text,
-        parseInt(booked.priceCash)
-      )
+      if (status === 'confirmed') {
+        await createPurchase(booked.accountId, text, parseInt(booked.priceCash))
+      }
       if (j.on_off === 'on') {
         const scheduleJob = cron.job(new Date(expiryDate), async () => {
           expireBooking(booked.id)
         })
         scheduleJob.start()
+        const scheduleJobDateAlreadyPassed = cron.job(
+          new Date(bookingDetails.date),
+          async () => {
+            expireBooking(booked.id)
+          }
+        )
+        scheduleJobDateAlreadyPassed.start()
       }
 
       for (let i = 0; i < bookingDetails.slots.length; i++) {
@@ -729,6 +734,26 @@ const viewMyBookings = async (req, res) => {
     })
   }
 }
+const viewBooking = async (req, res) => {
+  try {
+    const { Account, bookingId } = req.body
+    id = Account.id
+    let booking
+    booking = await BookingModel.findOne({ where: { id: bookingId } })
+    if (booking.accountId !== id && req.data.type !== 'admin') {
+      return res.json({
+        statusCode: errorCodes.unauthorized,
+        error: 'This is not your booking',
+      })
+    }
+    return res.json({ booking, statusCode: errorCodes.success })
+  } catch (exception) {
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
+  }
+}
 const viewAllBookings = async (req, res) => {
   try {
     const booking = await BookingModel.findAll()
@@ -786,7 +811,7 @@ const adminConfirmBooking = async (req, res) => {
       let text = [
         booked.roomType,
         booked.roomSize,
-        moment(booked.date).format('ll'),
+        moment(new Date(booked.date)).format('ll'),
         booked.slots.length + ' hours',
       ]
 
@@ -846,7 +871,7 @@ const adminConfirmExtremeBooking = async (req, res) => {
       let text = [
         booked.roomType,
         booked.roomSize,
-        moment(booked.date).format('ll'),
+        moment(new Date(booked.date)).format('ll'),
       ]
       const package = await purchasedPackagesModel.findOne({
         where: { id: booked.purchasedId },
@@ -1151,4 +1176,5 @@ module.exports = {
   adminConfirmBooking,
   viewAvailableRooms,
   tryEditBooking,
+  viewBooking,
 }
