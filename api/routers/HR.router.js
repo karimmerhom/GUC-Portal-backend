@@ -5,14 +5,16 @@ createCourse,
 updateCourse,
 deleteCourse,
 createFaculty,
-createDepartment
+createDepartment,
+deleteDepartment
 } = require("../controllers/HR.controller")
 const {
    validateCreateCourse,
    validateUpdateCourse,
    validateDeleteCourse,
    validateCreatefaculty,
-   validateCreateDepartment
+   validateCreateDepartment,
+   validateDeleteDepartment
 } = require('../helpers/validations/HRValidations')
 
 
@@ -21,5 +23,6 @@ router.post("/updateCourse", validateUpdateCourse ,updateCourse)
 router.post("/deleteCourse", validateDeleteCourse ,deleteCourse)
 router.post("/createFaculty",   validateCreatefaculty ,createFaculty)
 router.post("/createDepartment",   validateCreateDepartment ,createDepartment)
+router.post("/deleteDepartment",   validateDeleteDepartment ,deleteDepartment)
 
 module.exports = router
