@@ -1,5 +1,5 @@
 const coursesModel = require('../../models/courses.model')
-const coursesModel = require('../../models/department.model')
+const departmentModel = require('../../models/department.model')
 
 const createCourse = async (req, res) => {
     try {
