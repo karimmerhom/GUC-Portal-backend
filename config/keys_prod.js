@@ -1,23 +1,5 @@
 module.exports = {
-  postgresURI: process.env.POSTGRES_URI,
-  secretOrKey: process.env.SECRET,
+  mongoURI: process.env.MONGO_URI,
   salt: process.env.SALT,
-  LirtenKey: process.env.LIRTEN_KEY,
-  frontEndLink: process.env.FRONTEND_LINK,
-  smsAccessKey: process.env.SMS_ACCESS_KEY,
-  emailAccessKey: process.env.EMAIL_ACCESS_KEY,
-  facebookAuth: {
-    client_id: process.env.FACEBOOK_CLIENT_ID,
-    client_secret: process.env.FACEBOOK_CLIENT_SECRET,
-    redirect_uri_login: process.env.FACEBOOK_LOGIN_URI,
-    redirect_uri_sign_up: process.env.FACEBOOK_SIGNUP_URI,
-    link: process.env.FACEBOOK_LINK_URI,
-  },
-  googleAuth: {
-    client_id: process.env.GOOGLE_CLIENT_ID,
-    client_secret: process.env.GOOGLE_CLIENT_SECRET,
-    loginURI: process.env.GOOGLE_LOGIN_URI,
-    signUpURI: process.env.GOOGLE_SIGNUP_URI,
-    link: process.env.GOOGLE_LINK_URI,
-  },
+  signingKey: process.env.SIGNING_KEY,
 }

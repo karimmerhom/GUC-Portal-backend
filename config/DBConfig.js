@@ -1,13 +1,19 @@
-const Sequelize = require('sequelize')
-const keys = require('./keys')
+//Import the mongoose module
+const { default: Axios } = require('axios')
+const mongoose = require('mongoose')
+const { mongoURI } = require('./keys')
 
-// Connecting to local database
-// const sequelize = new Sequelize('TBH', 'postgres', 'postgres', {
-//   host: 'localhost',
-//   dialect: 'postgres',
-// })
-// Connecting to online database
-const sequelize = new Sequelize(keys.postgresURI)
+const connectDB = async () => {
+  const uri = mongoURI
+  mongoose
+    .connect(uri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    })
+    .then(() => {
+      console.log('MongoDB Connected…')
+    })
+    .catch((err) => console.log(err))
+}
 
-module.exports = sequelize
-    
+module.exports = { connectDB }

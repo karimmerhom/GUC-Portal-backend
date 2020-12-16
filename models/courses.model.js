@@ -1,53 +1,17 @@
-const Sequelize = require('sequelize')
+var mongoose = require('mongoose')
+//const accountsModel = require('./account.model')
 
-const sequelize = require('../config/DBConfig')
+//Define a schema
+var Schema = mongoose.Schema
 
-const UserModel = require('./account.model')
+const courses = new Schema({
+  courseId: { type: String },
+  courseName: {type: String},
+  creditHours: {type: Number},
+  //staff: [accountsModel.schema],
+  faculty: {type: String},
+  department: {type: String}
+})
+var coursesModel = mongoose.model('courses', courses)
 
-const { Model } = Sequelize
-
-class Courses extends Model {}
-Courses.init(
-  {
-    title: {
-      type: Sequelize.STRING,
-    },
-
-    description: {
-      type: Sequelize.STRING,
-    },
-    category: {
-      type: Sequelize.STRING,
-    },
-    attachedMedia: {
-      type: Sequelize.STRING,
-    },
-    durationInHours: {
-      type: Sequelize.DOUBLE,
-    },
-    daysPerWeek: {
-      type: Sequelize.INTEGER,
-    },
-    sessionDuration: {
-      type: Sequelize.DOUBLE,
-    },
-    pricePerPerson: {
-      type: Sequelize.DOUBLE,
-    },
-    maxNumberOfAttendees: {
-      type: Sequelize.INTEGER,
-    },
-    minNumberOfAttendees: {
-      type: Sequelize.INTEGER,
-    },
-    State: {
-      type: Sequelize.STRING,
-      defaultValue: 'pending'
-    },
-  },
-  { sequelize, timestamps: false }
-)
-
-Courses.belongsTo(UserModel, { foreignKey: 'accountId' })
-
-module.exports = Courses
+module.exports = coursesModel
