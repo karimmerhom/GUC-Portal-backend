@@ -1,16 +1,15 @@
 var mongoose = require('mongoose')
-const coursesModel = require('./courses.model')
+const departmentModel = require('./department.model')
 //const accountsModel = require('./account.model')
 
 //Define a schema
 var Schema = mongoose.Schema
 
-const department = new Schema({
+const faculty = new Schema({
   name : {type: String},
-  courses: [coursesModel.schema],
-  faculty: {type: String},
- // head : [accountsModel.schema],
-})
-var departmentsModel = mongoose.model('department', department)
+  departments: [departmentModel.schema],
 
-module.exports = coursesModel
+})
+var facultysModel = mongoose.model('faculty', faculty)
+
+module.exports = facultysModel
