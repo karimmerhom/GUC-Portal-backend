@@ -38,7 +38,23 @@ const validateCreateCourse = (req, res, next) => {
     return next()
   }
 
+  const validateDeleteCourse = (req, res, next) => {
+    const schema = Joi.object({
+      courseId: Joi.string().required(),
+    })
+  
+    const isValid = Joi.validate(req.body, schema)
+    if (isValid.error) {
+      return res.json({
+        statusCode: 1001,
+        error: isValid.error.details[0].message,
+      })
+    }
+    return next()
+  }
+
 module.exports = {
   validateCreateCourse,
-  validateUpdateCourse
+  validateUpdateCourse,
+  validateDeleteCourse
 }
