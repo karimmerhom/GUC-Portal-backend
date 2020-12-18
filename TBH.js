@@ -8,7 +8,7 @@ const app = express()
 const courses = require('./api/routers/courses.router')
 const departments = require('./api/routers/departments.router')
 const faculties = require('./api/routers/faculties.router')
-
+const locations = require('./api/routers/locations.router')
 const { connectDB } = require('./config/dbConfig')
 app.use(cors())
 app.use(bodyParser.json())
@@ -33,7 +33,7 @@ const explore = (req, res) => {
 app.use('/courses', courses)
 app.use('/departments', departments)
 app.use('/faculties', faculties)
-
+app.use('/locations', locations)
 
 app.use('/explore', explore)
 
