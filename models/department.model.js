@@ -7,7 +7,6 @@ var Schema = mongoose.Schema
 
 const department = new Schema({
   name : {type: String},
-  courses: [coursesModel.schema],
   faculty: {type: String},
 //  head : [accountsModel.schema],
 })

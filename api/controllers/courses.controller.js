@@ -33,11 +33,7 @@ const createCourse = async (req, res) => {
         console.log(result)
       })
 
-      departmentFound.courses.push(course)
-      departmentModel.findByIdAndUpdate(departmentFound.id,departmentFound, function (err, result) {
-        console.log(err)
-        console.log(result)
-      })
+      
 
       return res.json({ statusCode: 0000 })
     } catch (exception) {
@@ -76,12 +72,7 @@ const createCourse = async (req, res) => {
         console.log(result)
       })
 
-      var foundIndex = departmentFound.courses.findIndex(x => x.courseId == course.courseId);
-      departmentFound.courses.splice(foundIndex, 1);
-      departmentModel.findByIdAndUpdate(departmentFound.id,departmentFound, function (err, result) {
-        console.log(err)
-        console.log(result)
-      })
+      
 
       return res.json({ statusCode: 0000 })
     } 
@@ -121,20 +112,7 @@ const createCourse = async (req, res) => {
         console.log(result)
       })
       
-      var foundIndex = departmentFound.courses.findIndex(x => x.courseId == course.courseId);
-      const oldCourse = departmentFound.courses[foundIndex] ;
-      if(course.creditHours != null){
-        oldCourse.creditHours = course.creditHours
-      }
-      if(course.courseName != null){
-        oldCourse.courseName = course.courseName
-      }
-
       
-      departmentModel.findByIdAndUpdate(departmentFound.id,departmentFound, function (err, result) {
-        console.log(err)
-        console.log(result)
-      })
 
       return res.json({ statusCode: 0000 })
     } catch (exception) {

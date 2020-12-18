@@ -2,7 +2,8 @@
 // creating courses , departments tables 3shan homa gwa faculty 
 const departmentModel = require('../../models/department.model')
 const facultyModel = require('../../models/faculty.model')
-  
+const coursesModel = require('../../models/courses.model')
+
   const createDepartment = async (req, res) => {
     try {
       const department = req.body
@@ -33,12 +34,7 @@ const facultyModel = require('../../models/faculty.model')
         console.log(result)
       })
     
-      facultyFound.departments.push(department)
-      facultyModel.findByIdAndUpdate(facultyFound.id,facultyFound, function (err, result) {
-        console.log(err)
-        console.log(result)
-      })
-
+     
       return res.json({ statusCode: 0000 })
     } catch (exception) {
         console.log(exception)
@@ -74,15 +70,19 @@ const facultyModel = require('../../models/faculty.model')
         console.log(err)
         console.log(result)
       })
+      const coursesFound = await coursesModel.find({
+        department: department.name,
+       })
+       for( var i =0 ; i<coursesFound.length ; i ++)
+       {
+        coursesModel.findByIdAndDelete(coursesFound[i].id, function (err, result) {
+          console.log(err)
+          console.log(result)
+        })
+        
+       }
     
-      var foundIndex = facultyFound.departments.findIndex(x => x.name == departmentFound.name);
-      facultyFound.departments.splice(foundIndex, 1);
-     
-      facultyModel.findByIdAndUpdate(facultyFound.id,facultyFound, function (err, result) {
-        console.log(err)
-        console.log(result)
-      })
-
+      
       return res.json({ statusCode: 0000 })
     } catch (exception) {
         console.log(exception)
@@ -90,8 +90,82 @@ const facultyModel = require('../../models/faculty.model')
     }
   }
 
+  const updateDepartment = async (req, res) =>{
+    try {
+      const department = req.body
+      const facultyFound = await facultyModel.findOne({
+       name: department.faculty,
+      })
+      const facultyNewFound = await facultyModel.findOne({
+        name: department.department.faculty,
+       })
+  
+      if (!facultyFound) {
+        return res.json({
+          statusCode: 101,
+          error: 'faculty not found',
+        })
+      }
+      if (!facultyNewFound) {
+        return res.json({
+          statusCode: 101,
+          error: 'new faculty not found',
+        })
+      }
+      const departmentFound = await departmentModel.findOne({
+        name: department.name,
+        faculty : department.faculty
+       })
+       const departmentNewFound = await departmentModel.findOne({
+        name: department.name,
+        faculty : department.department.faculty
+       })
+  
+   
+      if (!departmentFound) {
+        return res.json({
+          statusCode: 101,
+          error: 'department not found',
+        })
+      }
+      if (!departmentNewFound) {
+        return res.json({
+          statusCode: 101,
+          error: 'new department not found',
+        })
+      }
+      await departmentModel.findByIdAndUpdate(departmentFound.id,department.department, function (err, result) {
+        console.log(err)
+        console.log(result)
+      })
+      if(department.department.name != null)
+      {
+      const coursesFound = await coursesModel.find({
+        department: department.name,
+       })
+       for( var i =0 ; i<coursesFound.length ; i ++)
+       {
+        const newCourse = coursesFound[i] 
+        newCourse.department = department.department.name
+        coursesModel.findByIdAndUpdate(coursesFound[i].id,newCourse, function (err, result) {
+          console.log(err)
+          console.log(result)
+        })
+        
+       }
+      }
+      return res.json({ statusCode: 0000 })
+    } catch (exception) {
+        console.log(exception)
+      return res.json({ statusCode: 400, error: 'Something went wrong' })
+    }
+  }
+
+  // update department wa2fa 3ala youssef head of department
+
   
 module.exports = {
     deleteDepartment,
     createDepartment,
+    updateDepartment
 }
