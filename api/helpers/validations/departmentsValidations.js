@@ -1,12 +1,9 @@
 const Joi = require('joi')
 
-const validateCreateCourse = (req, res, next) => {
+const validateCreateDepartment = (req, res, next) => {
     const schema = Joi.object({
-      courseId: Joi.string().required(),
-      courseName: Joi.string().required(),
-      creditHours: Joi.number().required(),
+      name: Joi.string().required(),
       faculty: Joi.string().required(),
-      department: Joi.string().required(),
     })
   
     const isValid = Joi.validate(req.body, schema)
@@ -19,13 +16,11 @@ const validateCreateCourse = (req, res, next) => {
     return next()
   }
 
-  const validateUpdateCourse = (req, res, next) => {
+const validateDeleteDepartment = (req, res, next) => {
     const schema = Joi.object({
-      courseId: Joi.string().required(),
-      courseName: Joi.string(),
-      creditHours: Joi.number(),
-      faculty: Joi.string(),
-      department: Joi.string(),
+      name: Joi.string().required(),
+      faculty: Joi.string().required(),
+
     })
   
     const isValid = Joi.validate(req.body, schema)
@@ -37,10 +32,15 @@ const validateCreateCourse = (req, res, next) => {
     }
     return next()
   }
-
-  const validateDeleteCourse = (req, res, next) => {
+  
+  const validateUpdateDepartment = (req, res, next) => {
     const schema = Joi.object({
-      courseId: Joi.string().required(),
+      name: Joi.string().required(),
+      faculty: Joi.string().required(),
+      department: Joi.object({
+        name: Joi.string(),
+        faculty: Joi.string(),
+      }).required(),
     })
   
     const isValid = Joi.validate(req.body, schema)
@@ -52,9 +52,9 @@ const validateCreateCourse = (req, res, next) => {
     }
     return next()
   }
-
 module.exports = {
-  validateCreateCourse,
-  validateUpdateCourse,
-  validateDeleteCourse
-}
+    validateDeleteDepartment,
+    validateCreateDepartment,
+    validateUpdateDepartment,
+  }
+  

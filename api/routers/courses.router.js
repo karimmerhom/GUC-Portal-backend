@@ -3,13 +3,13 @@ const router = express.Router()
 const {
 createCourse,
 updateCourse,
-deleteCourse
-} = require("../controllers/HR.controller")
+deleteCourse,
+} = require("../controllers/courses.controller")
 const {
    validateCreateCourse,
    validateUpdateCourse,
-   validateDeleteCourse
-} = require('../helpers/validations/HRValidations')
+   validateDeleteCourse,
+} = require('../helpers/validations/coursesValidations')
 
 
 router.post("/createCourse", validateCreateCourse ,createCourse)

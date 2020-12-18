@@ -9,7 +9,6 @@ const courses = new Schema({
   courseName: {type: String},
   creditHours: {type: Number},
   //staff: [accountsModel.schema],
-  faculty: {type: String},
   department: {type: String}
 })
 var coursesModel = mongoose.model('courses', courses)
