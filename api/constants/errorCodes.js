@@ -8,7 +8,7 @@ const unknown = 103
 
 const invalidCredentials = 104
 
-const unVerified = 105
+const firstLogin = 105
 
 const wrongVerificationCode = 106
 
@@ -112,6 +112,7 @@ const hasNoPassword = 168
 const adminOnlyAccess = 169
 
 module.exports = {
+  firstLogin,
   noAvailableRoomSlots,
   accountAlreadyLinkedSuccessfully,
   couldntCreateAccount,
@@ -139,7 +140,6 @@ module.exports = {
   emailExists,
   unknown,
   invalidCredentials,
-  unVerified,
   wrongVerificationCode,
   alreadyVerified,
   SamePassword,
