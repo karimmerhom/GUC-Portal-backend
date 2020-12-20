@@ -1,14 +1,17 @@
 const express = require("express")
 const router = express.Router()
 const {
-createLocation
+createLocation,
+assignLocation
 } = require("../controllers/locations.controller")
 const {
-validateCreateLocations
+validateCreateLocations,
+validateAssignLocations
 } = require('../helpers/validations/locationsValidations')
 
 
 
 router.post("/createLocation",  validateCreateLocations ,createLocation)
+router.post("/assignLocation",  validateAssignLocations ,assignLocation)
 
 module.exports = router

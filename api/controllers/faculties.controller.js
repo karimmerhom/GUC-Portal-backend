@@ -3,6 +3,8 @@
 const facultyModel = require('../../models/faculty.model')
 const departmentModel = require('../../models/department.model')
 const coursesModel = require('../../models/courses.model')
+const AccountModel = require('../../models/account.model')
+
 const createFaculty = async (req, res) => {
     try {
       const faculty = req.body

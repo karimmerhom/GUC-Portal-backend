@@ -2,6 +2,7 @@
 // creating courses , departments tables 3shan homa gwa faculty 
 const coursesModel = require('../../models/courses.model')
 const departmentModel = require('../../models/department.model')
+const staffCoursesModel = require('../../models/satffCourses')
 
 const createCourse = async (req, res) => {
     try {
@@ -66,7 +67,7 @@ const createCourse = async (req, res) => {
           error: 'course not found',
         })
       }
-  
+      staffCoursesModel.deleteMany({ course : course.id })
       coursesModel.findByIdAndDelete(course.courseId, function (err, result) {
         console.log(err)
         console.log(result)
