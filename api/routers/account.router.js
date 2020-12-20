@@ -5,15 +5,15 @@ const router = express.Router()
 const accountController = require('../controllers/account.controller')
 
 const {
-  register,
-  // login,
-  // verify,
-  // change_password,
+  createAccount,
+  login,
+  firstLogin,
+  change_password,
   // change_email,
   // change_phone,
   // forget_password,
   // confirm_verify,
-  // update_profile,
+  update_profile,
   // get_profile,
   // suspend_account,
   // verify_email,
@@ -36,11 +36,17 @@ const {
 //const { verifyUser } = require('../../config/authUser')
 
 const {
-  validateRegister,
+  validateCreateAccount,
+  validateLogin,
+  validateFirstLogin,
+  validateChangePassword,
+  validateUpdateProfile,
 } = require('../helpers/validations/accountValidations')
 
-router.post('/register', validateRegister, register)
-//router.post('/login', validateLogin, login)
+router.post('/createAccount', validateCreateAccount, createAccount)
+router.post('/login', validateLogin, login)
+router.post('/firstLogin', validateFirstLogin, firstLogin)
+
 //router.post('/loginAdmin', validateLogin, login_admin)
 //router.post('/verify', validateVerify, verifyToken, verify)
 // router.post(
@@ -49,34 +55,21 @@ router.post('/register', validateRegister, register)
 //   verifyToken,
 //   confirm_verify
 // )
-// router.post(
-//   '/changePassword',
-//   validateChangePassword,
-//   verifyToken,
-//   verifyUser,
-//   change_password
-// )
-// router.post(
-//   '/changeEmail',
-//   validateChangeEmail,
-//   verifyToken,
-//   verifyUser,
-//   change_email
-// )
-// router.post(
-//   '/changePhone',
-//   validateChangePhone,
-//   verifyToken,
-//   verifyUser,
-//   change_phone
-// )
+router.post(
+  '/changePassword',
+  validateChangePassword,
+  //verifyToken,
+  //verifyUser,
+  change_password
+)
+
 // router.post('/forgetpassword', validateForgetPassword, forget_password)
-// router.post(
-//   '/updateprofile',
-//   validateUpdateProfile,
-//   verifyToken,
-//   update_profile
-// )
+router.post(
+  '/updateprofile',
+  validateUpdateProfile,
+  //  verifyToken,
+  update_profile
+)
 // router.post(
 //   '/getprofile',
 //   validateGetProfile,

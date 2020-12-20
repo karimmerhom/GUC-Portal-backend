@@ -21,7 +21,7 @@ const Accounts = new Schema({
   email: {
     type: String,
   },
-  phone: {
+  phoneNumber: {
     type: String,
   },
   type: {
