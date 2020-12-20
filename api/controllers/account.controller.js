@@ -3,6 +3,8 @@ const axios = require('axios')
 const jwt = require('jsonwebtoken')
 const AccountModel = require('../../models/account.model')
 const countersModel = require('../../models/counters.model')
+const locationsModel = require('../../models/locations.model')
+const departmentModel = require('../../models/department.model')
 
 const errorCodes = require('../constants/errorCodes')
 const {
@@ -41,34 +43,59 @@ const createAccount = async (req, res) => {
       })
     }
 
+    const department = await departmentModel.findOne({
+      name: Account.department,
+    })
+    if (!department) {
+      return res.json({
+        statusCode: errorCodes.departmentDoesnotExist,
+        error: 'department Does not Exist',
+      })
+    }
+
     const saltKey = bcrypt.genSaltSync(10)
     const hashed_pass = bcrypt.hashSync('123456', saltKey)
 
-    const x = await firstAssignLocation(id, Account.office)
-    if (!x) {
+    const x = await firstAssignLocation(Account.office, id)
+    if (x === 101) {
+      return res.json({
+        statusCode: 101,
+        error: 'location does not  exist',
+      })
+    }
+
+    if (x === 201) {
+      return res.json({
+        statusCode: 201,
+        error: 'office is full',
+      })
+    }
+
+    if (x === 400) {
       return res.json({
         statusCode: 5555,
         error: 'No office',
       })
-    }
-    const accountCreated = await AccountModel.create({
-      //username: Account.username.toString().toLowerCase(),
-      academicId: id,
-      password: hashed_pass,
-      firstName: Account.firstName,
-      lastName: Account.lastName,
-      phoneNumber: Account.phoneNumber,
-      email: Account.email.toString().toLowerCase(),
-      type: Account.type,
-      memberType: Account.memberType,
-      daysOff: Account.daysOff,
-      gender: Account.gender,
-      salary: Account.salary,
-      office: Account.office,
-      department: Account.department,
-    })
+    } else {
+      const accountCreated = await AccountModel.create({
+        //username: Account.username.toString().toLowerCase(),
+        academicId: id,
+        password: hashed_pass,
+        firstName: Account.firstName,
+        lastName: Account.lastName,
+        phoneNumber: Account.phoneNumber,
+        email: Account.email.toString().toLowerCase(),
+        type: Account.type,
+        memberType: Account.memberType,
+        daysOff: Account.daysOff,
+        gender: Account.gender,
+        salary: Account.salary,
+        office: Account.office,
+        department: Account.department,
+      })
 
-    return res.json({ statusCode: errorCodes.success })
+      return res.json({ statusCode: errorCodes.success })
+    }
   } catch (exception) {
     console.log(exception)
     return res.json({
@@ -770,30 +797,25 @@ const generateId = async (type) => {
 const firstAssignLocation = async (location, academicId) => {
   try {
     const locationFound = await locationsModel.findOne({
-      name: location.office,
+      name: location,
     })
+    console.log(locationFound)
 
     if (!locationFound) {
-      return res.json({
-        statusCode: 101,
-        error: 'location does not  exist',
-      })
+      return 101
     }
 
     if (locationFound.MaxCapacity == locationFound.capacity) {
-      return res.json({
-        statusCode: 201,
-        error: 'office is full',
-      })
+      return 201
     }
     locationFound.capacity = locationFound.capacity + 1
     locationFound.list.push(academicId)
     await locationsModel.findByIdAndUpdate(locationFound.id, locationFound)
 
-    return true
+    return 0
   } catch (exception) {
     console.log(exception)
-    return res.json({ statusCode: 400, error: 'Something went wrong' })
+    return 400
   }
 }
 

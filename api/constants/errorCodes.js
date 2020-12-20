@@ -22,7 +22,7 @@ const forgotPassword = 110
 
 const notAccessibleNow = 111
 
-const verificationCodeExpired = 112
+const departmentDoesnotExist = 112
 
 const dateInThePast = 113
 
@@ -146,7 +146,7 @@ module.exports = {
   authentication,
   forgotPassword,
   notAccessibleNow,
-  verificationCodeExpired,
+  departmentDoesnotExist,
   dateInThePast,
   entityNotFound,
   bookingCanceled,

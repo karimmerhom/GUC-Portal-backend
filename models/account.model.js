@@ -53,7 +53,11 @@ const Accounts = new Schema({
     ],
     default: days.SATURDAY,
   },
+  salary: { type: String },
+  office: { type: String },
+  department: { type: String },
 })
+
 var accoundtsModal = mongoose.model('Accounts', Accounts)
 
 module.exports = accoundtsModal
