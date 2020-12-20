@@ -6,8 +6,10 @@ var Schema = mongoose.Schema
 
 const locations = new Schema({
   name: { type: String },
+  MaxCapacity: {type: Number},
   capacity: {type: Number},
   type: {type: String},
+  list: [{type: String}]
 })
 var locationsModel = mongoose.model('locations', locations)
 
