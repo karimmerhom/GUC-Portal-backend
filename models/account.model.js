@@ -1,65 +1,59 @@
-const Sequelize = require('sequelize')
+var mongoose = require('mongoose')
+//const accountsModel = require('./account.model')
+const { userTypes, memberType, days } = require('../api/constants/GUC.enum')
 
-const sequelize = require('../config/DBConfig')
+//Define a schema
+var Schema = mongoose.Schema
 
-const { accountStatus, userTypes } = require('../api/constants/TBH.enum')
-
-const { Model } = Sequelize
-
-class Account extends Model {}
-Account.init(
-  {
-    username: {
-      type: Sequelize.STRING,
-    },
-    password: {
-      type: Sequelize.STRING,
-    },
-    firstName: {
-      type: Sequelize.STRING,
-    },
-    lastName: {
-      type: Sequelize.STRING,
-    },
-    email: {
-      type: Sequelize.STRING,
-    },
-    phone: {
-      type: Sequelize.STRING,
-    },
-    status: {
-      type: Sequelize.ENUM,
-      values: [
-        accountStatus.VERIFIED,
-        accountStatus.PENDING,
-        accountStatus.SUSPENDED,
-      ],
-    },
-    type: {
-      type: Sequelize.ENUM,
-      values: [userTypes.ADMIN, userTypes.USER],
-    },
-    emailVerified: {
-      type: Sequelize.BOOLEAN,
-      defaultValue: false,
-    },
-    birthdate: {
-      type: Sequelize.STRING,
-    },
-    gender: {
-      type: Sequelize.STRING,
-    },
-    facebookId: {
-      type: Sequelize.STRING,
-    },
-    googleId: {
-      type: Sequelize.STRING,
-    },
+const Accounts = new Schema({
+  academicId: {
+    type: String,
   },
-  {
-    sequelize,
-    timestamps: false,
-  }
-)
+  password: {
+    type: String,
+  },
+  firstName: {
+    type: String,
+  },
+  lastName: {
+    type: String,
+  },
+  email: {
+    type: String,
+  },
+  phone: {
+    type: String,
+  },
+  type: {
+    type: String,
+    enum: [userTypes.HR, userTypes.ACADEMICMEMBER],
+  },
+  memberType: {
+    type: String,
+    enum: [
+      memberType.MEMBER,
+      memberType.HOD,
+      memberType.INSTRUCTOR,
+      memberType.COORDINATOR,
+    ],
+    default: memberType.MEMBER,
+  },
+  gender: {
+    type: String,
+  },
+  dayOff: {
+    type: String,
+    enum: [
+      days.SATURDAY,
+      days.SUNDAY,
+      days.MONDAY,
+      days.TUESDAY,
+      days.WEDNESDAY,
+      days.THURSDAY,
+    ],
+    default: days.SATURDAY,
+  },
+})
+var accoundtsModal = mongoose.model('Accounts', Accounts)
 
-module.exports = Account
+module.exports = accoundtsModal
