@@ -32,9 +32,44 @@ const validateCreateLocations = (req, res, next) => {
     }
     return next()
   } 
+
+  const validateDeleteLocation = (req, res, next) => {
+    const schema = Joi.object({
+      name: Joi.string().required(),
+    })
+  
+    const isValid = Joi.validate(req.body, schema)
+    if (isValid.error) {
+      return res.json({
+        statusCode: 1001,
+        error: isValid.error.details[0].message,
+      })
+    }
+    return next()
+  } 
+
+  const validateUpdateLocation = (req, res, next) => {
+    const schema = Joi.object({
+      name: Joi.string().required(),
+      newName: Joi.string(),
+      MaxCapacity: Joi.number(),
+    })
+  
+    const isValid = Joi.validate(req.body, schema)
+    if (isValid.error) {
+      return res.json({
+        statusCode: 1001,
+        error: isValid.error.details[0].message,
+      })
+    }
+    return next()
+  } 
+ 
  
   
   module.exports = {
     validateCreateLocations,
-    validateAssignLocations
+    validateAssignLocations,
+    validateDeleteLocation,
+    validateUpdateLocation
   }
