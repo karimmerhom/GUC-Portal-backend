@@ -21,7 +21,7 @@ const Accounts = new Schema({
   email: {
     type: String,
   },
-  phone: {
+  phoneNumber: {
     type: String,
   },
   type: {
@@ -53,7 +53,11 @@ const Accounts = new Schema({
     ],
     default: days.SATURDAY,
   },
+  salary: { type: String },
+  office: { type: String },
+  department: { type: String },
 })
-var accoundtsModal = mongoose.model('Accounts', Accounts)
 
-module.exports = accoundtsModal
+var accountsModel = mongoose.model('Accounts', Accounts)
+
+module.exports = accountsModel

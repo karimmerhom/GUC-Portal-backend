@@ -1,6 +1,6 @@
 const leavesModel = require('../../models/leaves.model')
 const moment = require('moment')
-const requestLeave = async (req, res) => {
+const createComprequest = async (req, res) => {
     try {
       const leaves = req.body
       const leaveFound = await leavesModel.findOne({

@@ -9,7 +9,7 @@ const department = new Schema({
   name : {type: String},
   courses: [coursesModel.schema],
   faculty: {type: String},
-//  head : [accountsModel.schema],
+  head : {type: String},
 })
 var departmentsModel = mongoose.model('department', department)
 

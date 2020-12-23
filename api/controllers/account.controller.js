@@ -3,6 +3,8 @@ const axios = require('axios')
 const jwt = require('jsonwebtoken')
 const AccountModel = require('../../models/account.model')
 const countersModel = require('../../models/counters.model')
+const locationsModel = require('../../models/locations.model')
+const departmentModel = require('../../models/department.model')
 
 const errorCodes = require('../constants/errorCodes')
 const {
@@ -18,13 +20,12 @@ const { userTypes, memberType, days } = require('../constants/GUC.enum')
 //const { generateOTP, addPoints } = require('../helpers/helpers')
 const { relativeTimeRounding } = require('moment')
 
-const register = async (req, res) => {
+const createAccount = async (req, res) => {
   try {
     const { Account } = req.body
     const findEmail = await AccountModel.findOne({
       email: Account.email.toString().toLowerCase(),
     })
-    console.log(findEmail)
     if (findEmail) {
       return res.json({
         statusCode: errorCodes.emailExists,
@@ -33,7 +34,7 @@ const register = async (req, res) => {
     }
     const id = await generateId(Account.type)
     const findPhone = await AccountModel.findOne({
-      phone: Account.phoneNumber,
+      phoneNumber: Account.phoneNumber,
     })
     if (findPhone) {
       return res.json({
@@ -42,19 +43,288 @@ const register = async (req, res) => {
       })
     }
 
+    const department = await departmentModel.findOne({
+      name: Account.department,
+    })
+    if (!department) {
+      return res.json({
+        statusCode: errorCodes.departmentDoesnotExist,
+        error: 'department Does not Exist',
+      })
+    }
+
     const saltKey = bcrypt.genSaltSync(10)
     const hashed_pass = bcrypt.hashSync('123456', saltKey)
-    const accountCreated = await AccountModel.create({
-      //username: Account.username.toString().toLowerCase(),
-      academicId: id,
-      password: hashed_pass,
-      firstName: Account.firstName,
-      lastName: Account.lastName,
-      phone: Account.phoneNumber,
-      email: Account.email.toString().toLowerCase(),
-      type: Account.type,
-      memberType: Account.memberType,
+
+    const x = await firstAssignLocation(Account.office, id)
+    if (x === 101) {
+      return res.json({
+        statusCode: 101,
+        error: 'location does not  exist',
+      })
+    }
+
+    if (x === 201) {
+      return res.json({
+        statusCode: 201,
+        error: 'office is full',
+      })
+    }
+
+    if (x === 400) {
+      return res.json({
+        statusCode: 5555,
+        error: 'No office',
+      })
+    } else {
+      const accountCreated = await AccountModel.create({
+        //username: Account.username.toString().toLowerCase(),
+        academicId: id,
+        password: hashed_pass,
+        firstName: Account.firstName,
+        lastName: Account.lastName,
+        phoneNumber: Account.phoneNumber,
+        email: Account.email.toString().toLowerCase(),
+        type: Account.type,
+        memberType: Account.memberType,
+        daysOff: Account.daysOff,
+        gender: Account.gender,
+        salary: Account.salary,
+        office: Account.office,
+        department: Account.department,
+      })
+
+      return res.json({ statusCode: errorCodes.success })
+    }
+  } catch (exception) {
+    console.log(exception)
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
     })
+  }
+}
+
+const update_profile = async (req, res) => {
+  try {
+    const { Account } = req.body
+
+    const { id } = Account
+
+    const account = await AccountModel.findById(id)
+    if (!account) {
+      return res.json({
+        statusCode: errorCodes.invalidCredentials,
+        error: 'User not found',
+      })
+    }
+    if (Account.email) {
+      const findEmail = await AccountModel.findOne({
+        email: Account.email.toString().toLowerCase(),
+      })
+      if (findEmail) {
+        return res.json({
+          statusCode: errorCodes.emailExists,
+          error: 'Email already exists',
+        })
+      }
+    }
+    if (Account.phoneNumber) {
+      const findPhone = await AccountModel.findOne({
+        phoneNumber: Account.phoneNumber,
+      })
+      if (findPhone) {
+        return res.json({
+          statusCode: errorCodes.phoneExists,
+          error: 'Phone number already exists',
+        })
+      }
+    }
+
+    const newacc = await AccountModel.findByIdAndUpdate(id, Account)
+    console.log(newacc)
+    console.log(Account)
+
+    return res.json({ statusCode: errorCodes.success })
+  } catch (exception) {
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
+  }
+}
+
+const login = async (req, res) => {
+  try {
+    const { Account } = req.body
+
+    const account = await AccountModel.findOne({
+      email: Account.email.toString().toLowerCase(),
+    })
+
+    if (!account) {
+      return res.json({
+        statusCode: errorCodes.invalidCredentials,
+        error: 'No such Email',
+      })
+    }
+
+    // if (account.status === accountStatus.PENDING) {
+    //   return res.json({ statusCode: errorCodes.unVerified })
+    // }
+    const match = bcrypt.compareSync(Account.password, account.password)
+    if (!match) {
+      return res.json({
+        statusCode: errorCodes.invalidCredentials,
+        error: 'Wrong Credentials',
+      })
+    }
+
+    const first = Account.password === '123456'
+    console.log(first)
+    if (first) {
+      return res.json({
+        statusCode: errorCodes.firstLogin,
+        error: 'Please change password first',
+      })
+    }
+
+    const payLoad = {
+      id: account.id,
+      academicId: account.academicId,
+      firstName: account.firstName,
+      lastName: account.lastName,
+      phoneNumber: account.phoneNumber,
+      email: account.email.toString().toLowerCase(),
+      type: account.type,
+      memberType: account.memberType,
+    }
+
+    const token = jwt.sign(payLoad, secretOrKey, {
+      expiresIn: '8h',
+    })
+
+    return res.json({
+      statusCode: errorCodes.success,
+      token,
+      id: account.id,
+      username: account.email,
+      type: account.type,
+    })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
+  }
+}
+
+const firstLogin = async (req, res) => {
+  try {
+    const { Account } = req.body
+    const newPassword = req.body.newPassword
+    const account = await AccountModel.findOne({
+      email: Account.email.toString().toLowerCase(),
+    })
+
+    if (!account) {
+      return res.json({
+        statusCode: errorCodes.invalidCredentials,
+        error: 'No such Email',
+      })
+    }
+
+    // if (account.status === accountStatus.PENDING) {
+    //   return res.json({ statusCode: errorCodes.unVerified })
+    // }
+    const match = bcrypt.compareSync(Account.password, account.password)
+    if (!match) {
+      return res.json({
+        statusCode: errorCodes.invalidCredentials,
+        error: 'Wrong Credentials',
+      })
+    }
+
+    if (newPassword === '123456') {
+      return res.json({
+        statusCode: errorCodes.invalidCredentials,
+        error: 'Password cannot be same as old password or 123456',
+      })
+    }
+
+    const saltKey = bcrypt.genSaltSync(10)
+    const hashed_pass = bcrypt.hashSync(newPassword, saltKey)
+    account.password = hashed_pass
+
+    await AccountModel.findByIdAndUpdate(account.id, account)
+
+    const payLoad = {
+      id: account.id,
+      academicId: account.academicId,
+      firstName: account.firstName,
+      lastName: account.lastName,
+      phoneNumber: account.phoneNumber,
+      email: account.email.toString().toLowerCase(),
+      type: account.type,
+      memberType: account.memberType,
+    }
+
+    const token = jwt.sign(payLoad, secretOrKey, {
+      expiresIn: '8h',
+    })
+
+    return res.json({
+      statusCode: errorCodes.success,
+      token,
+      id: account.id,
+      username: account.email,
+      type: account.type,
+    })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
+  }
+}
+
+const change_password = async (req, res) => {
+  try {
+    const { Credentials, Account } = req.body
+
+    const { academicId, id } = Account
+    const account = await AccountModel.findById(id)
+    if (!account) {
+      return res.json({
+        statusCode: errorCodes.usernameExists,
+        error: 'User does not exist',
+      })
+    }
+
+    if (account.password !== null) {
+      const match = bcrypt.compareSync(
+        Credentials.oldPassword,
+        account.password
+      )
+      if (!match) {
+        return res.json({
+          statusCode: errorCodes.invalidCredentials,
+          error: 'Old password is wrong',
+        })
+      }
+    }
+    if (Credentials.newPassword === Credentials.password) {
+      return res.json({
+        statusCode: errorCodes.SamePassword,
+        error: 'New password cannot be like old password',
+      })
+    }
+    const saltKey = bcrypt.genSaltSync(10)
+    const hashed_pass = bcrypt.hashSync(Credentials.newPassword, saltKey)
+
+    await AccountModel.findByIdAndUpdate(id, { password: hashed_pass })
 
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
@@ -66,833 +336,66 @@ const register = async (req, res) => {
   }
 }
 
-// const update_profile = async (req, res) => {
-//   try {
-//     const { Account } = req.body
+const get_profile = async (req, res) => {
+  //TODO
+  try {
+    const { Account } = req.body
 
-//     const { id } = req.data
-//     if (parseInt(id) !== parseInt(Account.id)) {
-//       return res.json({
-//         statusCode: errorCodes.authentication,
-//         error: 'breach',
-//       })
-//     }
-//     const account = await AccountModel.findOne({
-//       where: {
-//         id: parseInt(id),
-//       },
-//     })
-//     if (!account) {
-//       return res.json({
-//         statusCode: errorCodes.invalidCredentials,
-//         error: 'User not found',
-//       })
-//     }
+    const { id } = Account
 
-//     AccountModel.update(Account, { where: { id } })
-//     return res.json({ statusCode: errorCodes.success })
-//   } catch (exception) {
-//     return res.json({
-//       statusCode: errorCodes.unknown,
-//       error: 'Something went wrong',
-//     })
-//   }
-// }
+    const account = await AccountModel.findById(id)
+    if (!account) {
+      return res.json({
+        statusCode: errorCodes.invalidCredentials,
+        error: 'User not found',
+      })
+    }
+    const password = account.password
+    let profile = account
+    profile.password = '********'
 
-// const verify = async (req, res) => {
-//   try {
-//     const { Account } = req.body
+    return res.json({
+      statusCode: errorCodes.success,
+      profile: profile,
+      hasPassword: password !== null,
+    })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
+  }
+}
 
-//     const account = await AccountModel.findOne({
-//       where: {
-//         id: parseInt(Account.id),
-//       },
-//     })
-//     if (!account) {
-//       return res.json({
-//         statusCode: errorCodes.entityNotFound,
-//         error: 'User not found',
-//       })
-//     }
-//     if (account.status === accountStatus.VERIFIED) {
-//       return res.json({
-//         statusCode: errorCodes.alreadyVerified,
-//         error: 'Already verified',
-//       })
-//     }
-//     const code = await generateOTP()
-//     await VerificationCode.update(
-//       {
-//         smsCode: code,
-//         smsDate: new Date(),
-//       },
-//       { where: { accountId: Account.id } }
-//     )
+const deleteProfile = async (req, res) => {
+  //TODO
+  try {
+    const { Account } = req.body
 
-//     axios({
-//       method: 'post',
-//       url: powerSupportSMSLink, //TODO
-//       data: {
-//         header: {
-//           accessKey: smsAccessKey,
-//         },
-//         body: {
-//           receiverPhone: account.phone,
-//           body: code,
-//         },
-//       },
-//     })
-//       .then((res) => console.log(res))
-//       .catch((err) => console.log(err.response.data.body.err))
+    const { id } = Account
 
-//     return res.json({ statusCode: errorCodes.success })
-//   } catch (exception) {
-//     return res.json({
-//       statusCode: errorCodes.unknown,
-//       error: 'Something went wrong',
-//     })
-//   }
-// }
+    const account = await AccountModel.findById(id)
+    if (!account) {
+      return res.json({
+        statusCode: errorCodes.invalidCredentials,
+        error: 'User not found',
+      })
+    }
 
-// const verify_email = async (req, res) => {
-//   try {
-//     const { Account } = req.body
+    await AccountModel.findByIdAndDelete(id)
 
-//     const account = await AccountModel.findOne({ where: { id: Account.id } })
-//     if (!account) {
-//       return res.json({
-//         statusCode: errorCodes.entityNotFound,
-//         error: 'User not found',
-//       })
-//     }
-//     if (account.emailVerified) {
-//       return res.json({
-//         statusCode: errorCodes.alreadyVerified,
-//         error: 'Email already verified',
-//       })
-//     }
-//     const code = await generateOTP()
-//     await VerificationCode.update(
-//       {
-//         emailCode: code,
-//         emailDate: new Date(),
-//       },
-//       { where: { accountId: Account.id } }
-//     )
-//     console.log(frontEndLink)
-//     const link =
-//       `${frontEndLink}/emailVerification?code=` + code + '&id=' + account.id
-//     axios({
-//       method: 'post',
-//       url: powerSupportEmailLink, //TODO
-//       data: {
-//         header: {
-//           accessKey: emailAccessKey,
-//         },
-//         body: {
-//           receiverMail: account.email,
-//           body: link,
-//           subject: 'Verify your email',
-//         },
-//       },
-//     })
-//     return res.json({ statusCode: errorCodes.success })
-//   } catch (exception) {
-//     console.log(exception)
-//     return res.json({
-//       statusCode: errorCodes.unknown,
-//       error: 'Something went wrong',
-//     })
-//   }
-// }
-// const verify_confirm_email = async (req, res) => {
-//   try {
-//     const { Account } = req.body
-//     const account = await AccountModel.findOne({
-//       where: { id: Account.id },
-//     })
-//     if (!account) {
-//       return res.json({
-//         statusCode: errorCodes.entityNotFound,
-//         error: 'Account not found',
-//       })
-//     }
-//     const checkCodeExpired = await VerificationCode.findOne({
-//       where: { accountId: Account.id, emailCode: Account.code },
-//     })
-//     if (!checkCodeExpired) {
-//       return res.json({
-//         statusCode: errorCodes.wrongVerificationCode,
-//         error: 'Wrong verification code',
-//       })
-//     }
-//     const date1 = new Date(checkCodeExpired.emailDate)
-//     const date2 = new Date()
-//     console.log(date1)
-//     const diffTime = Math.abs(date2 - date1)
-//     if (diffTime > 86400000) {
-//       return res.json({
-//         statusCode: errorCodes.verificationCodeExpired,
-//         error: 'This is code has expired',
-//       })
-//     }
-//     if (account.emailVerified) {
-//       return res.json({
-//         statusCode: errorCodes.alreadyVerified,
-//         error: 'Already verified',
-//       })
-//     }
-//     await AccountModel.update(
-//       { emailVerified: true },
-//       { where: { id: Account.id } }
-//     )
-
-//     return res.json({ statusCode: errorCodes.success })
-//   } catch (exception) {
-//     console.log(exception)
-//     return res.json({
-//       statusCode: errorCodes.unknown,
-//       error: 'Something went wrong',
-//     })
-//   }
-// }
-
-// const login = async (req, res) => {
-//   try {
-//     const { Account } = req.body
-
-//     const account = await AccountModel.findOne({
-//       where: {
-//         [Op.or]: {
-//           username: Account.username.toString().toLowerCase(),
-//           email: Account.username.toString().toLowerCase(),
-//           phone: Account.username,
-//         },
-//       },
-//     })
-
-//     if (!account) {
-//       return res.json({
-//         statusCode: errorCodes.invalidCredentials,
-//         error: 'Wrong Credentials',
-//       })
-//     }
-
-//     if (account.status === accountStatus.SUSPENDED) {
-//       return res.json({
-//         statusCode: errorCodes.alreadySuspended,
-//         error: 'Account suspended',
-//       })
-//     }
-
-//     // if (account.status === accountStatus.PENDING) {
-//     //   return res.json({ statusCode: errorCodes.unVerified })
-//     // }
-//     const match = bcrypt.compareSync(Account.password, account.password)
-//     if (!match) {
-//       return res.json({
-//         statusCode: errorCodes.invalidCredentials,
-//         error: 'Wrong Credentials',
-//       })
-//     }
-
-//     const payLoad = {
-//       id: account.id,
-//       firstName: account.firstName,
-//       lastName: account.lastName,
-//       username: account.username,
-//       phone: account.phone,
-//       email: account.email,
-//       status: account.status,
-//       type: account.type,
-//       emailVerified: account.emailVerified,
-//     }
-
-//     const token = jwt.sign(payLoad, secretOrKey, {
-//       expiresIn: '8h',
-//     })
-
-//     return res.json({
-//       statusCode: errorCodes.success,
-//       token,
-//       id: account.id,
-//       username: account.username,
-//       state: account.status,
-//       emailVerified: account.emailVerified,
-//     })
-//   } catch (exception) {
-//     console.log(exception)
-//     return res.json({
-//       statusCode: errorCodes.unknown,
-//       error: 'Something went wrong',
-//     })
-//   }
-// }
-
-// const login_admin = async (req, res) => {
-//   try {
-//     const { Account } = req.body
-//     const account = await AccountModel.findOne({
-//       where: {
-//         [Op.or]: {
-//           username: Account.username.toString().toLowerCase(),
-//           email: Account.username.toString().toLowerCase(),
-//           phone: Account.username,
-//         },
-//       },
-//     })
-//     if (!account) {
-//       return res.json({
-//         statusCode: errorCodes.invalidCredentials,
-//         error: 'Wrong Credentials',
-//       })
-//     }
-//     if (account.type !== userTypes.ADMIN) {
-//       return res.json({
-//         statusCode: errorCodes.adminOnlyAccess,
-//         error: 'Wrong Credentials',
-//       })
-//     }
-
-//     if (account.status === accountStatus.SUSPENDED) {
-//       return res.json({
-//         statusCode: errorCodes.alreadySuspended,
-//         error: 'Account suspended',
-//       })
-//     }
-//     const match = bcrypt.compareSync(Account.password, account.password)
-//     if (!match) {
-//       return res.json({
-//         statusCode: errorCodes.invalidCredentials,
-//         error: 'Wrong Credentials',
-//       })
-//     }
-
-//     const payLoad = {
-//       id: account.id,
-//       firstName: account.firstName,
-//       lastName: account.lastName,
-//       username: account.username,
-//       phone: account.phone,
-//       email: account.email,
-//       status: account.status,
-//       type: account.type,
-//       emailVerified: account.emailVerified,
-//     }
-
-//     const token = jwt.sign(payLoad, secretOrKey, {
-//       expiresIn: '8h',
-//     })
-
-//     return res.json({
-//       statusCode: errorCodes.success,
-//       token,
-//       id: account.id,
-//       username: account.username,
-//       state: account.status,
-//       emailVerified: account.emailVerified,
-//     })
-//   } catch (exception) {
-//     console.log(exception)
-//     return res.json({
-//       statusCode: errorCodes.unknown,
-//       error: 'Something went wrong',
-//     })
-//   }
-// }
-
-// const confirm_verify = async (req, res) => {
-//   try {
-//     const { Account } = req.body
-
-//     const account = await AccountModel.findOne({
-//       where: {
-//         id: Account.id,
-//       },
-//     })
-//     if (!account) {
-//       return res.json({
-//         statusCode: errorCodes.invalidCredentials,
-//         error: 'User not found',
-//       })
-//     }
-//     if (account.status === accountStatus.VERIFIED) {
-//       return res.json({
-//         statusCode: errorCodes.alreadyVerified,
-//         error: 'Already verified',
-//       })
-//     }
-//     const checkCodeExpired = await VerificationCode.findOne({
-//       where: { accountId: Account.id, smsCode: Account.code },
-//     })
-//     if (!checkCodeExpired) {
-//       return res.json({
-//         statusCode: errorCodes.wrongVerificationCode,
-//         error: 'Wrong verification code',
-//       })
-//     }
-//     const date1 = new Date(checkCodeExpired.smsDate)
-//     const date2 = new Date()
-//     console.log(date1)
-//     const diffTime = Math.abs(date2 - date1)
-//     if (diffTime > 86400000) {
-//       return res.json({
-//         statusCode: errorCodes.verificationCodeExpired,
-//         error: 'This is code has expired',
-//       })
-//     }
-//     if (account.status === accountStatus.VERIFIED) {
-//       return res.json({
-//         statusCode: errorCodes.alreadyVerified,
-//         error: 'Already verified',
-//       })
-//     }
-
-//     await AccountModel.update(
-//       {
-//         status: accountStatus.VERIFIED,
-//       },
-//       {
-//         where: {
-//           id: Account.id,
-//         },
-//       }
-//     )
-//     return res.json({
-//       statusCode: errorCodes.success,
-//       state: accountStatus.VERIFIED,
-//     })
-//   } catch (exception) {
-//     return res.json({
-//       statusCode: errorCodes.unknown,
-//       error: 'Something went wrong',
-//     })
-//   }
-// }
-
-// const change_password = async (req, res) => {
-//   try {
-//     const { Credentials, Account } = req.body
-
-//     const { id } = Account
-//     const account = await AccountModel.findOne({
-//       where: {
-//         id: parseInt(id, 10),
-//       },
-//     })
-//     if (account.password !== null) {
-//       const match = bcrypt.compareSync(Credentials.password, account.password)
-//       if (!match) {
-//         return res.json({
-//           statusCode: errorCodes.invalidCredentials,
-//           error: 'Old password is wrong',
-//         })
-//       }
-//     }
-//     if (Credentials.newPassword === Credentials.password) {
-//       return res.json({
-//         statusCode: errorCodes.SamePassword,
-//         error: 'New password cannot be like old password',
-//       })
-//     }
-//     const saltKey = bcrypt.genSaltSync(10)
-//     const hashed_pass = bcrypt.hashSync(Credentials.newPassword, saltKey)
-//     await AccountModel.update(
-//       {
-//         password: hashed_pass,
-//       },
-//       {
-//         where: {
-//           id: parseInt(id),
-//         },
-//       }
-//     )
-//     return res.json({ statusCode: errorCodes.success })
-//   } catch (exception) {
-//     return res.json({
-//       statusCode: errorCodes.unknown,
-//       error: 'Something went wrong',
-//     })
-//   }
-// }
-
-// const change_email = async (req, res) => {
-//   try {
-//     const { Account } = req.body
-
-//     const { id } = Account
-//     const found = await AccountModel.findOne({
-//       where: { email: Account.email },
-//     })
-//     if (found) {
-//       if (found.id === parseInt(id)) {
-//         return res.json({ statusCode: errorCodes.success })
-//       }
-//       return res.json({
-//         statusCode: errorCodes.emailExists,
-//         error: 'Email Already exists',
-//       })
-//     }
-//     await AccountModel.update(
-//       {
-//         email: Account.email,
-//         emailVerified: false,
-//       },
-//       {
-//         where: {
-//           id: parseInt(id),
-//         },
-//       }
-//     )
-//     const emailCode = await generateOTP()
-//     await VerificationCode.update(
-//       { emailCode, emailDate: new Date() },
-//       {
-//         where: {
-//           accountId: Account.id,
-//         },
-//       }
-//     )
-//     const link =
-//       `${frontEndLink}/emailVerification?code=` +
-//       emailCode +
-//       '&id=' +
-//       Account.id
-//     axios({
-//       method: 'post',
-//       url: powerSupportEmailLink, //TODO
-//       data: {
-//         header: {
-//           accessKey: emailAccessKey,
-//         },
-//         body: {
-//           receiverMail: Account.email,
-//           body: link,
-//           subject: 'Verify your email',
-//         },
-//       },
-//     })
-//     return res.json({ statusCode: errorCodes.success })
-//   } catch (exception) {
-//     console.log(exception)
-//     return res.json({
-//       statusCode: errorCodes.unknown,
-//       error: 'Something went wrong',
-//     })
-//   }
-// }
-
-// const change_phone = async (req, res) => {
-//   try {
-//     const { Account } = req.body
-
-//     const { id } = Account
-//     const found = await AccountModel.findOne({
-//       where: { phone: Account.phoneNumber },
-//     })
-
-//     if (found) {
-//       if (found.id === parseInt(id)) {
-//         return res.json({ statusCode: errorCodes.success })
-//       }
-//       return res.json({
-//         statusCode: errorCodes.emailExists,
-//         error: 'Phone Already exists',
-//       })
-//     }
-//     const code = await generateOTP()
-//     await VerificationCode.update(
-//       {
-//         smsCode: code,
-//         smsDate: new Date(),
-//       },
-//       { where: { accountId: Account.id } }
-//     )
-//     axios({
-//       method: 'post',
-//       url: powerSupportSMSLink, //TODO
-//       data: {
-//         header: {
-//           accessKey: smsAccessKey,
-//         },
-//         body: {
-//           receiverPhone: Account.phoneNumber,
-//           body: code,
-//         },
-//       },
-//     })
-//     await AccountModel.update(
-//       {
-//         phone: Account.phoneNumber,
-//         status: accountStatus.PENDING,
-//       },
-//       {
-//         where: {
-//           id: parseInt(id),
-//         },
-//       }
-//     )
-
-//     return res.json({ statusCode: errorCodes.success })
-//   } catch (exception) {
-//     return res.json({
-//       statusCode: errorCodes.unknown,
-//       error: 'Something went wrong',
-//     })
-//   }
-// }
-
-// const forget_password = async (req, res) => {
-//   try {
-//     const { Account } = req.body
-
-//     const account = await AccountModel.findOne({
-//       where: {
-//         phone: Account.phoneNumber,
-//       },
-//     })
-//     if (!account) {
-//       return res.json({
-//         statusCode: errorCodes.invalidCredentials,
-//         error: 'Phone not found',
-//       })
-//     }
-
-//     const code = await generateOTP()
-//     await VerificationCode.create({
-//       code,
-//       date: new Date(),
-//     })
-
-//     const saltKey = bcrypt.genSaltSync(10)
-//     const hashed_pass = bcrypt.hashSync(code, saltKey)
-
-//     axios({
-//       method: 'post',
-//       url: powerSupportSMSLink, //TODO
-//       data: {
-//         header: {
-//           accessKey: smsAccessKey,
-//         },
-//         body: {
-//           receiverPhone: Account.phoneNumber,
-//           body: code,
-//         },
-//       },
-//     })
-
-//     await AccountModel.update(
-//       {
-//         password: hashed_pass,
-//       },
-//       {
-//         where: {
-//           phone: Account.phoneNumber,
-//         },
-//       }
-//     )
-//     return res.json({ statusCode: errorCodes.success })
-//   } catch (exception) {
-//     return res.json({
-//       statusCode: errorCodes.unknown,
-//       error: 'Something went wrong',
-//     })
-//   }
-// }
-
-// const get_profile = async (req, res) => {
-//   //TODO
-//   try {
-//     const { Account } = req.body
-
-//     const { id } = Account
-
-//     const account = await AccountModel.findOne({
-//       where: {
-//         id: parseInt(id),
-//       },
-//     })
-//     if (!account) {
-//       return res.json({
-//         statusCode: errorCodes.invalidCredentials,
-//         error: 'User not found',
-//       })
-//     }
-//     const password = account.password
-//     let profile = account
-//     delete profile.dataValues.password
-//     delete profile.dataValues.type
-//     console.log(profile)
-//     console.log(profile.dataValues.password, 'password')
-//     return res.json({
-//       statusCode: errorCodes.success,
-//       profile: account,
-//       hasPassword: password !== null,
-//     })
-//   } catch (exception) {
-//     console.log(exception)
-//     return res.json({
-//       statusCode: errorCodes.unknown,
-//       error: 'Something went wrong',
-//     })
-//   }
-// }
-
-// const get_profile_number = async (req, res) => {
-//   //TODO
-//   try {
-//     const { phone } = req.body
-
-//     const account = await AccountModel.findOne({
-//       where: {
-//         phone: phone,
-//       },
-//     })
-//     if (!account) {
-//       return res.json({
-//         statusCode: errorCodes.invalidCredentials,
-//         error: 'User not found',
-//       })
-//     }
-//     const password = account.password
-//     let profile = account
-//     delete profile.dataValues.password
-//     delete profile.dataValues.type
-//     console.log(profile)
-//     console.log(profile.dataValues.password, 'password')
-//     return res.json({
-//       statusCode: errorCodes.success,
-//       profile: account,
-//       hasPassword: password !== null,
-//     })
-//   } catch (exception) {
-//     console.log(exception)
-//     return res.json({
-//       statusCode: errorCodes.unknown,
-//       error: 'Something went wrong',
-//     })
-//   }
-// }
-
-// const suspend_account = async (req, res) => {
-//   try {
-//     const { Account } = req.body
-
-//     const account = await AccountModel.findOne({
-//       where: {
-//         id: parseInt(Account.id),
-//       },
-//     })
-//     if (!account) {
-//       return res.json({
-//         statusCode: errorCodes.entityNotFound,
-//         error: 'User not found',
-//       })
-//     }
-//     if (account.type === userTypes.ADMIN) {
-//       return res.json({
-//         statusCode: errorCodes.unauthorized,
-//         error: 'Cannot suspend an admin',
-//       })
-//     }
-
-//     if (account.status === accountStatus.SUSPENDED) {
-//       return res.json({
-//         statusCode: errorCodes.alreadySuspended,
-//         error: 'User already suspended',
-//       })
-//     }
-//     await AccountModel.update(
-//       { status: accountStatus.SUSPENDED },
-//       { where: { id: Account.id } }
-//     )
-//     return res.json({ statusCode: errorCodes.success })
-//   } catch (exception) {
-//     console.log(exception)
-//     return res.json({
-//       statusCode: errorCodes.unknown,
-//       error: 'Something went wrong',
-//     })
-//   }
-// }
-
-// const unsuspend_account = async (req, res) => {
-//   try {
-//     const { Account } = req.body
-
-//     const account = await AccountModel.findOne({
-//       where: {
-//         id: parseInt(Account.id),
-//       },
-//     })
-//     if (!account) {
-//       return res.json({
-//         statusCode: errorCodes.invalidCredentials,
-//         error: 'Wrong credentials',
-//       })
-//     }
-//     if (account.type === userTypes.ADMIN) {
-//       return res.json({
-//         statusCode: errorCodes.unauthorized,
-//         error: 'Cannot suspend an admin account',
-//       })
-//     }
-//     if (account.status === accountStatus.ACTIVE) {
-//       return res.json({
-//         statusCode: errorCodes.alreadySuspended,
-//         error: 'User already active',
-//       })
-//     }
-//     await AccountModel.update(
-//       { status: accountStatus.VERIFIED },
-//       { where: { id: Account.id } }
-//     )
-//     return res.json({ statusCode: errorCodes.success })
-//   } catch (exception) {
-//     console.log(exception)
-//     return res.json({
-//       statusCode: errorCodes.unknown,
-//       error: 'Something went wrong',
-//     })
-//   }
-// }
-
-// const make_user_verified = async (req, res) => {
-//   try {
-//     const { Account } = req.body
-//     const { id } = Account
-//     const account = await AccountModel.findOne({ where: { id } })
-//     if (!account) {
-//       return res.json({
-//         statusCode: errorCodes.entityNotFound,
-//         error: 'User not found',
-//       })
-//     }
-//     if (account.status === accountStatus.VERIFIED) {
-//       return res.json({
-//         statusCode: errorCodes.alreadyVerified,
-//         error: 'User already verified',
-//       })
-//     }
-//     await AccountModel.update(
-//       {
-//         status: accountStatus.VERIFIED,
-//       },
-//       {
-//         where: {
-//           id,
-//         },
-//       }
-//     )
-//     return res.json({ statusCode: errorCodes.success })
-//   } catch (exception) {
-//     return res.json({
-//       statusCode: errorCodes.unknown,
-//       error: 'Something went wrong',
-//     })
-//   }
-// }
-
+    return res.json({
+      statusCode: errorCodes.success,
+    })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
+  }
+}
 // const resend_token = async (req, res) => {
 //   try {
 //     const { token } = req.body
@@ -974,33 +477,37 @@ const generateId = async (type) => {
   return null
 }
 
+const firstAssignLocation = async (location, academicId) => {
+  try {
+    const locationFound = await locationsModel.findOne({
+      name: location,
+    })
+    console.log(locationFound)
+
+    if (!locationFound) {
+      return 101
+    }
+
+    if (locationFound.MaxCapacity == locationFound.capacity) {
+      return 201
+    }
+    locationFound.capacity = locationFound.capacity + 1
+    locationFound.list.push(academicId)
+    await locationsModel.findByIdAndUpdate(locationFound.id, locationFound)
+
+    return 0
+  } catch (exception) {
+    console.log(exception)
+    return 400
+  }
+}
+
 module.exports = {
-  register,
-  // login,
-  // verify,
-  // change_password,
-  // change_email,
-  // change_phone,
-  // forget_password,
-  // confirm_verify,
-  // update_profile,
-  // get_profile,
-  // suspend_account,
-  // unsuspend_account,
-  // verify_confirm_email,
-  // verify_email,
-  // register_google,
-  // login_google,
-  // make_user_verified,
-  // register_facebook,
-  // login_facebook,
-  // unlink_facebook,
-  // unlink_google,
-  // signUpWithLirtenHub,
-  // callBackLirtenHub,
-  // resend_token,
-  // link_google_facebook,
-  // generateUsername,
-  // login_admin,
-  // get_profile_number,
+  createAccount,
+  login,
+  firstLogin,
+  change_password,
+  deleteProfile,
+  update_profile,
+  get_profile,
 }

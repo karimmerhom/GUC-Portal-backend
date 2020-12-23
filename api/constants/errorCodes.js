@@ -8,7 +8,7 @@ const unknown = 103
 
 const invalidCredentials = 104
 
-const unVerified = 105
+const firstLogin = 105
 
 const wrongVerificationCode = 106
 
@@ -22,7 +22,7 @@ const forgotPassword = 110
 
 const notAccessibleNow = 111
 
-const verificationCodeExpired = 112
+const departmentDoesnotExist = 112
 
 const dateInThePast = 113
 
@@ -111,7 +111,33 @@ const noAvailableRoomSlots = 167
 const hasNoPassword = 168
 const adminOnlyAccess = 169
 
+const courseNotFound = 200
+const notYourCourse = 201
+const LocationNotFound = 202
+const slotTaken = 203
+const slotNotFound = 204
+const slotAssigned = 205
+const wrongUserType = 206
+const notYourDepartment = 207
+const coordinatorAlreadyExists = 208
+const instructorAlreadyExists = 209
+const memberAlreadyAssigned = 210
+const assignmentDoesNotExist = 211
+
 module.exports = {
+  memberAlreadyAssigned,
+  assignmentDoesNotExist,
+  coordinatorAlreadyExists,
+  instructorAlreadyExists,
+  notYourDepartment,
+  wrongUserType,
+  slotAssigned,
+  slotNotFound,
+  slotTaken,
+  LocationNotFound,
+  notYourCourse,
+  courseNotFound,
+  firstLogin,
   noAvailableRoomSlots,
   accountAlreadyLinkedSuccessfully,
   couldntCreateAccount,
@@ -139,14 +165,13 @@ module.exports = {
   emailExists,
   unknown,
   invalidCredentials,
-  unVerified,
   wrongVerificationCode,
   alreadyVerified,
   SamePassword,
   authentication,
   forgotPassword,
   notAccessibleNow,
-  verificationCodeExpired,
+  departmentDoesnotExist,
   dateInThePast,
   entityNotFound,
   bookingCanceled,

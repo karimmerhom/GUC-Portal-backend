@@ -11,6 +11,8 @@ const faculties = require('./api/routers/faculties.router')
 const locations = require('./api/routers/locations.router')
 const account = require('./api/routers/account.router')
 const leaves = require('./api/routers/leaves.router')
+const slots = require('./api/routers/slots.router')
+
 const { connectDB } = require('./config/dbConfig')
 app.use(cors())
 app.use(bodyParser.json())
@@ -33,6 +35,7 @@ const explore = (req, res) => {
 }
 
 
+app.use('/slots', slots)
 app.use('/courses', courses)
 app.use('/departments', departments)
 app.use('/faculties', faculties)
