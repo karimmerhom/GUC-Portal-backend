@@ -1,18 +1,16 @@
 const express = require('express')
-
 const router = express.Router()
-
-const accountController = require('../controllers/account.controller')
-
 const {
-  createAccount,
-  login,
-  firstLogin,
-  change_password,
-  update_profile,
-  get_profile,
-  deleteProfile,
-} = accountController
+  createSlot,
+  deleteSlot,
+  assignSlot,
+  reAssignSlot,
+} = require('../controllers/slots.controller')
+const {
+  validateCreateSlot,
+  validateDeleteSlot,
+  validateAssignSlot,
+} = require('../helpers/validations/slotsValidation')
 
 const { verifyAC } = require('../helpers/authentication/ACAuthentication') // verifies that he is AC
 const { verifyHR } = require('../helpers/authentication/HRAuthentication') // verifies that he is HR
@@ -27,46 +25,50 @@ const {
 } = require('../helpers/authentication/AuthenticationMiddleWare') // verifies token helper (needed before verify user)
 const { verifyUser } = require('../helpers/authentication/authUser') //verifies that user in token is same as in Account:{}
 
-const {
-  validateGetProfile,
-  validateCreateAccount,
-  validateLogin,
-  validateFirstLogin,
-  validateChangePassword,
-  validateUpdateProfile,
-  validateDeleteProfile,
-} = require('../helpers/validations/accountValidations')
+router.post(
+  '/createSlot',
+  validateCreateSlot,
+  verifyToken,
+  verifyUser,
+  verifyCOOR,
+
+  createSlot
+)
 
 router.post(
-  '/createAccount',
-  validateCreateAccount,
-  //verifyToken,
-  // verifyHR,
-  createAccount
-)
-router.post('/login', validateLogin, login)
-router.post('/firstLogin', validateFirstLogin, firstLogin)
-router.post(
-  '/changePassword',
-  validateChangePassword,
+  '/deleteSlot',
+  validateDeleteSlot,
   verifyToken,
   verifyUser,
-  change_password
+  verifyCOOR,
+  deleteSlot
 )
+
+// router.post(
+//   '/updateSlot',
+//   validateUpdateSlot,
+//   verifyToken,
+//   verifyUser,
+//   verifyCOOR,
+//   updateSlot
+// )
+
 router.post(
-  '/updateprofile',
-  validateUpdateProfile,
+  '/assignSlot',
+  validateAssignSlot,
   verifyToken,
   verifyUser,
-  update_profile
+  verifyINST,
+  assignSlot
 )
+
 router.post(
-  '/getprofile',
-  validateGetProfile,
+  '/reAssignSlot',
+  validateAssignSlot,
   verifyToken,
   verifyUser,
-  get_profile
+  verifyINST,
+  reAssignSlot
 )
-router.post('/deleteProfile', validateDeleteProfile, verifyHR, deleteProfile)
 
 module.exports = router

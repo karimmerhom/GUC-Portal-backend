@@ -58,6 +58,6 @@ const Accounts = new Schema({
   department: { type: String },
 })
 
-var accoundtsModal = mongoose.model('Accounts', Accounts)
+var accountsModel = mongoose.model('Accounts', Accounts)
 
-module.exports = accoundtsModal
+module.exports = accountsModel
