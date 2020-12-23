@@ -5,11 +5,13 @@ const {
   deleteSlot,
   assignSlot,
   reAssignSlot,
+  updateSlot,
 } = require('../controllers/slots.controller')
 const {
   validateCreateSlot,
   validateDeleteSlot,
   validateAssignSlot,
+  validateUpdateSlot,
 } = require('../helpers/validations/slotsValidation')
 
 const { verifyAC } = require('../helpers/authentication/ACAuthentication') // verifies that he is AC
@@ -31,7 +33,6 @@ router.post(
   verifyToken,
   verifyUser,
   verifyCOOR,
-
   createSlot
 )
 
@@ -44,14 +45,14 @@ router.post(
   deleteSlot
 )
 
-// router.post(
-//   '/updateSlot',
-//   validateUpdateSlot,
-//   verifyToken,
-//   verifyUser,
-//   verifyCOOR,
-//   updateSlot
-// )
+router.post(
+  '/updateSlot',
+  validateUpdateSlot,
+  verifyToken,
+  verifyUser,
+  verifyCOOR,
+  updateSlot
+)
 
 router.post(
   '/assignSlot',

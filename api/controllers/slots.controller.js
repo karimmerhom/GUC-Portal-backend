@@ -27,17 +27,17 @@ const createSlot = async (req, res) => {
       })
     }
 
-    // const staffCourse = await staffCoursesModel.findOne({
-    //   courseName: course.name,
-    //   academicId: Account.academicId,
-    // })
+    const staffCourse = await staffCoursesModel.findOne({
+      courseName: course.name,
+      academicId: Account.academicId,
+    })
 
-    // if (!staffCourse) {
-    //   return res.json({
-    //     statusCode: errorCodes.notYourCourse,
-    //     error: 'This is not your course ya coordinator',
-    //   })
-    // }
+    if (!staffCourse) {
+      return res.json({
+        statusCode: errorCodes.notYourCourse,
+        error: 'This is not your course ya coordinator',
+      })
+    }
 
     const location = await locationModel.findOne({ name: slot.locationName })
     console.log(slot)
@@ -47,6 +47,8 @@ const createSlot = async (req, res) => {
         error: 'location not found',
       })
     }
+
+    //check location is not an office!!!!!!!!
 
     const sameSlotFound = await slotsModel.findOne({
       day: slot.day,
@@ -61,7 +63,7 @@ const createSlot = async (req, res) => {
       })
     }
 
-    slotsModel.create(slot, function (err, result) {
+    const newslot = await slotsModel.create(slot, function (err, result) {
       console.log(err)
       console.log(result)
     })
@@ -77,6 +79,7 @@ const updateSlot = async (req, res) => {
   try {
     const Account = req.body.Account
     const slot = req.body.slot
+
     const sameSlotFound = await slotsModel.findById(slot.id)
 
     if (!sameSlotFound) {
@@ -99,17 +102,18 @@ const updateSlot = async (req, res) => {
       }
       sameSlotFound.course = slot.course
     }
-    // const staffCourse = await staffCoursesModel.findOne({
-    //   courseName: course.name,
-    //   academicId: Account.academicId,
-    // })
 
-    // if (!staffCourse) {
-    //   return res.json({
-    //     statusCode: errorCodes.notYourCourse,
-    //     error: 'This is not your course ya coordinator',
-    //   })
-    // }
+    const staffCourse = await staffCoursesModel.findOne({
+      courseName: course.name,
+      academicId: Account.academicId,
+    })
+
+    if (!staffCourse) {
+      return res.json({
+        statusCode: errorCodes.notYourCourse,
+        error: 'This is not your course ya coordinator',
+      })
+    }
     if (slot.location) {
       const location = await locationModel.findOne({ name: slot.locationName })
       console.log(slot)
@@ -358,4 +362,5 @@ module.exports = {
   deleteSlot,
   assignSlot,
   reAssignSlot,
+  updateSlot,
 }
