@@ -11,6 +11,7 @@ const faculties = require('./api/routers/faculties.router')
 const locations = require('./api/routers/locations.router')
 const account = require('./api/routers/account.router')
 const slots = require('./api/routers/slots.router')
+const hodFunctionalities = require('./api/routers/hodFunctionalities.router')
 
 const { connectDB } = require('./config/dbConfig')
 app.use(cors())
@@ -38,6 +39,7 @@ app.use('/departments', departments)
 app.use('/faculties', faculties)
 app.use('/locations', locations)
 app.use('/account', account)
+app.use('/hodFunctionalities', hodFunctionalities)
 
 app.use('/explore', explore)
 app.get('/hello', (req, res) => {

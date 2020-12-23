@@ -29,6 +29,11 @@ const slotNames = {
   FOURTH: 'fourth',
   FIFTH: 'fifth',
 }
+const locationNames = {
+  LECTUREHALL: ' lectureHall',
+  OFFICE: 'office',
+  ROOM: 'room',
+}
 
 module.exports = {
   position,
@@ -36,4 +41,5 @@ module.exports = {
   memberType,
   days,
   slotNames,
+  locationNames
 }
