@@ -10,7 +10,7 @@ const departments = require('./api/routers/departments.router')
 const faculties = require('./api/routers/faculties.router')
 const locations = require('./api/routers/locations.router')
 const account = require('./api/routers/account.router')
-
+const leaves = require('./api/routers/leaves.router')
 const { connectDB } = require('./config/dbConfig')
 app.use(cors())
 app.use(bodyParser.json())
@@ -32,11 +32,14 @@ const explore = (req, res) => {
   return res.json(result)
 }
 
+
 app.use('/courses', courses)
 app.use('/departments', departments)
 app.use('/faculties', faculties)
 app.use('/locations', locations)
 app.use('/account', account)
+app.use('/leaves',leaves)
+
 
 app.use('/explore', explore)
 app.get('/hello', (req, res) => {
