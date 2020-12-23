@@ -1,10 +1,21 @@
 const Joi = require('joi')
+const {
+  locationNames
+} = require('../../constants/GUC.enum')
 
 const validateCreateLocations = (req, res, next) => {
     const schema = Joi.object({
+      Account: Joi.object({
+        id: Joi.string().required(),
+        academicId: Joi.string().required(),
+      }).required(),
       name: Joi.string().required(),
       MaxCapacity: Joi.number().required(),
-      type: Joi.string().required(),
+      type: Joi.string().required().valid(
+       locationNames.LECTUREHALL,
+       locationNames.ROOM,
+       locationNames.OFFICE
+      ),
     })
   
     const isValid = Joi.validate(req.body, schema)
@@ -19,8 +30,14 @@ const validateCreateLocations = (req, res, next) => {
 
   const validateAssignLocations = (req, res, next) => {
     const schema = Joi.object({
+      Account: Joi.object({
+        id: Joi.string().required(),
+        academicId: Joi.string().required(),
+      }).required(),
       academicId: Joi.string().required(),
-      office: Joi.string().required(),
+      office: Joi.string().required().valid(
+        locationNames.OFFICE
+       ),
     })
   
     const isValid = Joi.validate(req.body, schema)
@@ -35,6 +52,10 @@ const validateCreateLocations = (req, res, next) => {
 
   const validateDeleteLocation = (req, res, next) => {
     const schema = Joi.object({
+      Account: Joi.object({
+        id: Joi.string().required(),
+        academicId: Joi.string().required(),
+      }).required(),
       name: Joi.string().required(),
     })
   
@@ -50,6 +71,10 @@ const validateCreateLocations = (req, res, next) => {
 
   const validateUpdateLocation = (req, res, next) => {
     const schema = Joi.object({
+      Account: Joi.object({
+        id: Joi.string().required(),
+        academicId: Joi.string().required(),
+      }).required(),
       name: Joi.string().required(),
       newName: Joi.string(),
       MaxCapacity: Joi.number(),
