@@ -30,7 +30,7 @@ const slotNames = {
   FIFTH: 'fifth',
 }
 const locationNames = {
-  LECTUREHALL: ' lectureHall',
+  LECTUREHALL: 'lectureHall',
   OFFICE: 'office',
   ROOM: 'room',
 }

@@ -31,7 +31,7 @@ const viewStaff = async (req, res) => {
     return res.json({
         statusCode: 0,
         staff : staff ,
-        error: 'staff list in the same department',
+        message: 'staff list in the same department',
       })
     }
     else
@@ -42,7 +42,7 @@ const viewStaff = async (req, res) => {
                 courseId: details.courseId
             }
         )
-        var staff ;
+        var staff = [] ;
         var staffMember;
         for (var i = 0 ; i<courses.length ; i++)
         {
@@ -83,7 +83,7 @@ const viewDaysOff = async (req, res) => {
       if(details.academicId == null)
       {
       const departmentFound = accountFound.department
-      var staffDaysOff
+      var staffDaysOff = []
       const staff = await accountsModel.find
       (
           {
@@ -98,7 +98,7 @@ const viewDaysOff = async (req, res) => {
       return res.json({
           statusCode: 0,
           staff : staffDaysOff ,
-          error: 'staff list with their days off',
+          message: 'staff list with their days off',
         })
       }
       else
@@ -106,11 +106,20 @@ const viewDaysOff = async (req, res) => {
         const staff = await accountsModel.find
         (
             {
-                academicId: details.academicId
+                academicId: details.academicId,
+                department: accountFound.department
             }
         )
-        const staffMemberDayOff = { academicId: staff.academicId , firstName: staff.firstName , lastName: staff.lastName ,  dayOff: staff.dayOff  }
-
+    
+        if(staff.length === 0)
+        {
+            return res.json({
+                statusCode: 101,
+                message: 'staff member is not in your department',
+              }) 
+        }
+        const staffMemberDayOff = { academicId: staff[0].academicId , firstName: staff[0].firstName , lastName: staff[0].lastName ,  dayOff: staff[0].dayOff  }
+        
        return res.json({
           statusCode: 0,
           staff : staffMemberDayOff ,
@@ -126,7 +135,87 @@ const viewDaysOff = async (req, res) => {
   const viewCoursesCoverage = async (req, res) => {
     try {
       const account = req.body.Account
+      const courseId = req.body.courseId
+      const accountFound = await AccountModel.findOne({
+        academicId: account.academicId
+    })
+
+    
+      if (!accountFound) {
+        return res.json({
+          statusCode: 101,
+          error: 'this account does not exist',
+        })
+      }
+     
+      const departmentFound = accountFound.department
+      const courses = await coursesModel.find
+      (
+          {
+                courseId:courseId,
+              department: departmentFound
+          }
+      )
+
+      var coursesSlots=[];
+      for(var i = 0  ; i<courses.length;i++)
+      {
+       
+            const courseSlots= await slotsModel.find
+            (
+                {
+                    courseId: courses[i].courseId
+                }
+            )
+            coursesSlots.push(courseSlots)  
+      }
+   
+      var listReturned= [];
+      var count = 0;
+      var innerList
+      for (var i = 0 ; i<coursesSlots.length;i++ )
+      {
+        innerList = coursesSlots[i]
+     
+          for(var j = 0 ; j <coursesSlots[i].length;j++)
+          {
+           if (innerList[j].assignedAcademicId)
+           {
+               count +=1;
+           }
+          }
+         
+          var obj = {couseId: courses[i].courseId,coverage: coursesSlots[i].length===0?100:count/coursesSlots[i].length*100 }
+          count = 0 ;
+          listReturned.push(obj)
+      }
+      if(courseId){
+        return res.json({
+            statusCode: 0,
+            coverage : listReturned[0] ,
+            message: 'courses coverage',
+          })
+      }
+      return res.json({
+          statusCode: 0,
+          coverage : listReturned ,
+          message: 'courses coverage',
+        })
       
+     
+    } catch (exception) {
+      console.log(exception)
+      return res.json({ statusCode: 400, error: 'Something went wrong' })
+    }
+  }
+
+  const viewTeachingAssignments = async (req, res) => {
+    try {
+      const account = req.body.Account
+      const accountFound = await AccountModel.findOne({
+        academicId: account.academicId
+    })
+
     
       if (!accountFound) {
         return res.json({
@@ -142,37 +231,27 @@ const viewDaysOff = async (req, res) => {
               department: departmentFound
           }
       )
-      var coursesSlots;
-      for(var i ; i<courses.length;i++)
+
+      var coursesSlots=[];
+      for(var i = 0  ; i<courses.length;i++)
       {
+       
             const courseSlots= await slotsModel.find
             (
                 {
                     courseId: courses[i].courseId
                 }
             )
-            coursesSlots.push(courseSlots)  
+            var obj = {courseId : courses[i].courseId , List:courseSlots }
+            coursesSlots.push(obj)  
       }
-      var listReturned;
-      var count = 0;
-      for (var i = 0 ; i<coursesSlots.length;i++ )
-      {
-        var innerList = coursesSlots[i]
-          for(var j = 0 ; j <coursesSlots[i].length;j++)
-          {
-           if (innerList[j].assignedAcademicId === null)
-           {
-               count +=1;
-           }
-          }
-          var obj = {couseId:innerList[j].courseId,coverage: count/coursesSlots[i].length }
-          count = 0 ;
-          listReturned.push(obj)
-      }
+   
+     
+     
       return res.json({
           statusCode: 0,
-          coverage : listReturned ,
-          error: 'courses coverage',
+          list: coursesSlots ,
+          message: 'course slots',
         })
       
      
@@ -186,5 +265,6 @@ const viewDaysOff = async (req, res) => {
 module.exports = {
     viewStaff,
     viewDaysOff,
-    viewCoursesCoverage
+    viewCoursesCoverage,
+    viewTeachingAssignments
 }

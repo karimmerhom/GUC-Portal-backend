@@ -1,14 +1,16 @@
 const express = require('express')
 const router = express.Router()
 const {
-  viewStaff,
+viewStaff,
 viewDaysOff,
-viewCoursesCoverage
+viewCoursesCoverage,
+viewTeachingAssignments
 } = require('../controllers/hodFunctionalities')
 const {
  validateViewStaff,
  validateViewDaysOff,
- validateViewCoursesCoverage
+ validateViewCoursesCoverage,
+ validateViewTeachingAssignments
 } = require('../helpers/validations/hodFunctionalitiesValidations')
 
 const { verifyAC } = require('../helpers/authentication/ACAuthentication') // verifies that he is AC
@@ -27,4 +29,5 @@ const { verifyUser } = require('../helpers/authentication/authUser') //verifies 
 router.post('/viewStaff', validateViewStaff , viewStaff)
 router.post('/viewDaysOff', validateViewDaysOff , viewDaysOff)
 router.post('/viewCoursesCoverage', validateViewCoursesCoverage , viewCoursesCoverage)
+router.post('/viewTeachingAssignments', validateViewTeachingAssignments , viewTeachingAssignments)
 module.exports = router
