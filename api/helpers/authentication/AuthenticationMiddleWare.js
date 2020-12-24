@@ -1,8 +1,8 @@
 const jwt = require('jsonwebtoken')
 
-const { secretOrKey } = require('./keys')
+const { secretOrKey } = require('../../../config/keys')
 
-const { authentication } = require('../api/constants/errorCodes')
+const { authentication } = require('../../../api/constants/errorCodes')
 
 module.exports = {
   verifyToken: (req, res, next) => {

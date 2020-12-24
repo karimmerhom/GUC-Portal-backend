@@ -28,6 +28,10 @@ const createDepartment = async (req, res) => {
         error: 'department already exists',
       })
     }
+    // const headOfDepartment = await departmentModel.findOne({
+    //   name: department.name,
+    //   faculty: department.faculty,
+    // })
     await departmentModel.create(department, function (err, result) {
       console.log(err)
       console.log(result)

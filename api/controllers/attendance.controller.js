@@ -532,9 +532,10 @@ const viewMissingDays = async (req, res) => {
       `startDate: ${startDate},,,, endDate: ${endDate},,,,, tempDate: ${tempDate}`
     )
 
-    // const accountFound = await accountsModel.findById(accountId)
+    //const accountFound = await accountsModel.findById(accountId)
 
     const accountFound = await accountsModel.find({ _id: accountId })
+    console.log('AAAAA', accountFound)
     if (!accountFound) {
       return res.json({
         statusCode: accountNotFound,

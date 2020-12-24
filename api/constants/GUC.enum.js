@@ -1,12 +1,17 @@
 const userTypes = {
   HR: 'HR',
-  ACADEMICMEMBER: 'Academic Member',
+  ACADEMICMEMBER: 'academic member',
 }
 const memberType = {
-  HOD: 'Head of department',
-  INSTRUCTOR: 'Course instructor',
-  COORDINATOR: 'Course coordinator',
-  MEMBER: 'Academic member',
+  HOD: 'head of department',
+  INSTRUCTOR: 'course instructor',
+  COORDINATOR: 'course coordinator',
+  MEMBER: 'academic member',
+}
+const position = {
+  INSTRUCTOR: 'course instructor',
+  COORDINATOR: 'course coordinator',
+  MEMBER: 'academic member',
 }
 const days = {
   SATURDAY: 'saturday',
@@ -17,9 +22,24 @@ const days = {
   THURSDAY: 'thursday',
   FRIDAY: 'friday',
 }
+const slotNames = {
+  FIRST: 'first',
+  SECOND: 'second',
+  THIRD: 'third',
+  FOURTH: 'fourth',
+  FIFTH: 'fifth',
+}
+const locationNames = {
+  LECTUREHALL: 'lectureHall',
+  OFFICE: 'office',
+  ROOM: 'room',
+}
 
 module.exports = {
+  position,
   userTypes,
   memberType,
   days,
+  slotNames,
+  locationNames,
 }

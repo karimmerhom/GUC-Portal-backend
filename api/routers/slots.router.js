@@ -1,24 +1,20 @@
 const express = require('express')
 const router = express.Router()
 const {
-  createCourse,
-  updateCourse,
-  deleteCourse,
-  assignCourseInstructor,
-  assignCourseMember,
-  assignCourseCoordinator,
-  unassignCourseMember,
-  unassignCourseCoordinator,
-  unassignCourseInstructor,
-  updateCourseInstructor,
-} = require('../controllers/courses.controller')
+  createSlot,
+  deleteSlot,
+  assignSlot,
+  reAssignSlot,
+  updateSlot,
+  unAssignSlot,
+} = require('../controllers/slots.controller')
 const {
-  validateCreateCourse,
-  validateUpdateCourse,
-  validateDeleteCourse,
-  validateAssign,
-  validateUnassign,
-} = require('../helpers/validations/coursesValidations')
+  validateCreateSlot,
+  validateDeleteSlot,
+  validateAssignSlot,
+  validateUpdateSlot,
+  validateUnAssignSlot,
+} = require('../helpers/validations/slotsValidation')
 
 const { verifyAC } = require('../helpers/authentication/ACAuthentication') // verifies that he is AC
 const { verifyHR } = require('../helpers/authentication/HRAuthentication') // verifies that he is HR
@@ -33,73 +29,57 @@ const {
 } = require('../helpers/authentication/AuthenticationMiddleWare') // verifies token helper (needed before verify user)
 const { verifyUser } = require('../helpers/authentication/authUser') //verifies that user in token is same as in Account:{}
 
-router.post('/createCourse', validateCreateCourse, createCourse)
-
-router.post('/updateCourse', validateUpdateCourse, updateCourse)
-
-router.post('/deleteCourse', validateDeleteCourse, deleteCourse)
-
 router.post(
-  '/assignCourseInstructor',
+  '/createSlot',
+  validateCreateSlot,
   // verifyToken,
   // verifyUser,
-  // verifyHOD,
-  validateAssign,
-  assignCourseInstructor
+  // verifyCOOR,
+  createSlot
 )
 
 router.post(
-  '/updateCourseInstructor',
+  '/deleteSlot',
+  validateDeleteSlot,
   // verifyToken,
   // verifyUser,
-  // verifyHOD,
-  validateAssign,
-  updateCourseInstructor
+  // verifyCOOR,
+  deleteSlot
 )
 
 router.post(
-  '/assignCourseCoordinator',
+  '/updateSlot',
+  validateUpdateSlot,
+  // verifyToken,
+  // verifyUser,
+  // verifyCOOR,
+  updateSlot
+)
+
+router.post(
+  '/assignSlot',
+  validateAssignSlot,
   // verifyToken,
   // verifyUser,
   // verifyINST,
-  validateAssign,
-  assignCourseCoordinator
+  assignSlot
 )
 
 router.post(
-  '/assignCourseMember',
+  '/reAssignSlot',
+  validateAssignSlot,
   // verifyToken,
   // verifyUser,
   // verifyINST,
-  validateAssign,
-  assignCourseMember
+  reAssignSlot
 )
-
 router.post(
-  '/unassignCourseCoordinator',
+  '/reAssignSlot',
+  validateUnAssignSlot,
   // verifyToken,
   // verifyUser,
   // verifyINST,
-  validateUnassign,
-  unassignCourseCoordinator
-)
-
-router.post(
-  '/unassignCourseInstructor',
-  // verifyToken,
-  // verifyUser,
-  // verifyHOD,
-  validateUnassign,
-  unassignCourseInstructor
-)
-
-router.post(
-  '/unassignCourseMember',
-  // verifyToken,
-  // verifyUser,
-  // verifyINST,
-  validateUnassign,
-  unassignCourseMember
+  unAssignSlot
 )
 
 module.exports = router
