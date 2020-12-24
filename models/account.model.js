@@ -56,6 +56,9 @@ const Accounts = new Schema({
   salary: { type: String },
   office: { type: String },
   department: { type: String },
+
+  annualLeavesBalance: { type: Number, default: 5 },
+  accidentalBalance: { type: Number, default: 6 },
 })
 
 var accountsModel = mongoose.model('Accounts', Accounts)
