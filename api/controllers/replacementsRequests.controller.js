@@ -1,4 +1,4 @@
-const replacementsRequestsModel = require('../../models/replacementRequests.model')
+const replacementsRequestsModel = require('../../../GUC/models/replacementsRequests.model')
 const staffCoursesModel = require('../../models/staffCourses.model')
 const accountModel = require('../../models/account.model')
 const slotsModel = require('../../models/slots.modal')
