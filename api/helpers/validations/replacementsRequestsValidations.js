@@ -10,15 +10,15 @@ const validateCreateReplacementRequest = (req, res, next) => {
       academicIdReciever: Joi.string().required(),
       day: Joi.string()
         .regex(/^(3[01]|[12][0-9]|[1-9])$/)
-        .min(2)
+        .min(1)
         .max(2)
         .required(),
       month: Joi.string()
         .regex(/^[2-9]|1[0-2]?$/)
-        .min(2)
+        .min(1)
         .max(2)
         .required(),
-      year: Joi.string().min(4).max(4).required(),
+      year: Joi.string().min(4).required(),
       slotId: Joi.string().required(),
     })
   

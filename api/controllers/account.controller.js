@@ -16,7 +16,7 @@ const {
   powerSupportSMSLink,
   powerSupportEmailLink,
 } = require('../../config/keys')
-const { userTypes, memberType, days } = require('../constants/GUC.enum')
+const { userTypes, memberType, days ,locationNames } = require('../constants/GUC.enum')
 //const { generateOTP, addPoints } = require('../helpers/helpers')
 const { relativeTimeRounding } = require('moment')
 
@@ -60,7 +60,7 @@ const createAccount = async (req, res) => {
     if (x === 101) {
       return res.json({
         statusCode: 101,
-        error: 'location does not  exist',
+        error: 'this office does not  exist',
       })
     }
 
@@ -510,6 +510,7 @@ const firstAssignLocation = async (location, academicId) => {
   try {
     const locationFound = await locationsModel.findOne({
       name: location,
+      type: locationNames.OFFICE,
     })
     console.log(locationFound)
 
