@@ -1,6 +1,6 @@
 var mongoose = require('mongoose')
 const coursesModel = require('./courses.model')
-//const accountsModel = require('./account.model')
+const accountsModel = require('./account.model')
 
 //Define a schema
 var Schema = mongoose.Schema

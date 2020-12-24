@@ -78,5 +78,5 @@ module.exports = {
   validateViewStaff,
   validateViewDaysOff,
   validateViewCoursesCoverage,
-  validateViewTeachingAssignments
+  validateViewTeachingAssignments,
 }
