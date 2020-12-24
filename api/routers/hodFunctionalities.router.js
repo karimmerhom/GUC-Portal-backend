@@ -4,11 +4,13 @@ const {
   viewStaff,
   viewDaysOff,
   viewCoursesCoverage,
+  viewTeachingAssignments,
 } = require('../controllers/hodFunctionalities.controller')
 const {
   validateViewStaff,
   validateViewDaysOff,
   validateViewCoursesCoverage,
+  validateViewTeachingAssignments,
 } = require('../helpers/validations/hodFunctionalitiesValidations')
 
 const { verifyAC } = require('../helpers/authentication/ACAuthentication') // verifies that he is AC
@@ -30,5 +32,10 @@ router.post(
   '/viewCoursesCoverage',
   validateViewCoursesCoverage,
   viewCoursesCoverage
+)
+router.post(
+  '/viewTeachingAssignments',
+  validateViewTeachingAssignments,
+  viewTeachingAssignments
 )
 module.exports = router
