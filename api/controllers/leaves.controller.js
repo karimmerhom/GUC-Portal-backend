@@ -14,18 +14,15 @@ const requestLeave = async (req, res) => {
           error: 'leave already requested',
         })
       }
-      console.log(parseInt(leaves.date.substr(0,4)))
       if(leaves.type=='annual'){
         const month = leaves.date.substr(5,2)
         const day = leaves.date.substr(8,2)
         const year = leaves.date.substr(0,4)
         const d = moment(`${year}-${month}-${day}T00:00:00.0000`)
-        console.log(day+' '+month+' '+year)
         const today = moment()
                 console.log(today)
 
               if(today.isAfter(d)){
-                console.log("saas")
                 return res.json({
                   statusCode: 101,
                   error: 'the annual leave must be submitted before the requested day',

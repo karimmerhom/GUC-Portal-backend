@@ -12,6 +12,7 @@ const locations = require('./api/routers/locations.router')
 const account = require('./api/routers/account.router')
 const leaves = require('./api/routers/leaves.router')
 const slots = require('./api/routers/slots.router')
+const hodFunctionalities = require('./api/routers/hodFunctionalities.router')
 
 const { connectDB } = require('./config/dbConfig')
 app.use(cors())
@@ -43,6 +44,7 @@ app.use('/locations', locations)
 app.use('/account', account)
 app.use('/leaves',leaves)
 
+app.use('/hodFunctionalities', hodFunctionalities)
 
 app.use('/explore', explore)
 app.get('/hello', (req, res) => {

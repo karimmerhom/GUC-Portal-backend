@@ -14,4 +14,4 @@ const compensationRequests = new Schema({
 })
 var compensationRequestsModel = mongoose.model('compensationRequests', compensationRequests)
 
-module.exports = compensationRequests
+module.exports = compensationRequestsModel
