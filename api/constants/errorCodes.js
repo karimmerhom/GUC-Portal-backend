@@ -111,8 +111,17 @@ const noAvailableRoomSlots = 167
 const hasNoPassword = 168
 const adminOnlyAccess = 169
 
+//attendance module
+
+const accountNotFound = 201
+const alreadySignedIn = 202
+const haventSignedIn = 203
+const alreadySignedOut = 204
+
 module.exports = {
   noAvailableRoomSlots,
+  alreadySignedIn,
+  accountNotFound,
   accountAlreadyLinkedSuccessfully,
   couldntCreateAccount,
   lirtenHubLinkedToAnotherAcount,
@@ -182,4 +191,6 @@ module.exports = {
   linkedWithAnotherAccount,
   hasNoPassword,
   adminOnlyAccess,
+  haventSignedIn,
+  alreadySignedOut,
 }
