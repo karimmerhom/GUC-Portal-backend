@@ -124,6 +124,12 @@ const instructorAlreadyExists = 209
 const memberAlreadyAssigned = 210
 const assignmentDoesNotExist = 211
 const linkAccepted = 212
+//attendance module
+
+const accountNotFound = 213
+const alreadySignedIn = 214
+const haventSignedIn = 215
+const alreadySignedOut = 216
 
 module.exports = {
   linkAccepted,
@@ -141,6 +147,8 @@ module.exports = {
   courseNotFound,
   firstLogin,
   noAvailableRoomSlots,
+  alreadySignedIn,
+  accountNotFound,
   accountAlreadyLinkedSuccessfully,
   couldntCreateAccount,
   lirtenHubLinkedToAnotherAcount,
@@ -209,4 +217,6 @@ module.exports = {
   linkedWithAnotherAccount,
   hasNoPassword,
   adminOnlyAccess,
+  haventSignedIn,
+  alreadySignedOut,
 }
