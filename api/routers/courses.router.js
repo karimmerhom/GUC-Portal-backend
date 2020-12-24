@@ -41,63 +41,63 @@ router.post('/deleteCourse', validateDeleteCourse, deleteCourse)
 
 router.post(
   '/assignCourseInstructor',
-  verifyToken,
-  verifyUser,
-  verifyHOD,
+  // verifyToken,
+  // verifyUser,
+  // verifyHOD,
   validateAssign,
   assignCourseInstructor
 )
 
 router.post(
   '/updateCourseInstructor',
-  verifyToken,
-  verifyUser,
-  verifyHOD,
+  // verifyToken,
+  // verifyUser,
+  // verifyHOD,
   validateAssign,
   updateCourseInstructor
 )
 
 router.post(
   '/assignCourseCoordinator',
-  verifyToken,
-  verifyUser,
-  verifyINST,
+  // verifyToken,
+  // verifyUser,
+  // verifyINST,
   validateAssign,
   assignCourseCoordinator
 )
 
 router.post(
   '/assignCourseMember',
-  verifyToken,
-  verifyUser,
-  verifyINST,
+  // verifyToken,
+  // verifyUser,
+  // verifyINST,
   validateAssign,
   assignCourseMember
 )
 
 router.post(
   '/unassignCourseCoordinator',
-  verifyToken,
-  verifyUser,
-  verifyINST,
+  // verifyToken,
+  // verifyUser,
+  // verifyINST,
   validateUnassign,
   unassignCourseCoordinator
 )
 
 router.post(
   '/unassignCourseInstructor',
-  verifyToken,
-  verifyUser,
-  verifyHOD,
+  // verifyToken,
+  // verifyUser,
+  // verifyHOD,
   validateUnassign,
   unassignCourseInstructor
 )
 
 router.post(
   '/unassignCourseMember',
-  verifyToken,
-  verifyUser,
-  verifyINST,
+  // verifyToken,
+  // verifyUser,
+  // verifyINST,
   validateUnassign,
   unassignCourseMember
 )

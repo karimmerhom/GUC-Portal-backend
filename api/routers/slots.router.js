@@ -6,12 +6,14 @@ const {
   assignSlot,
   reAssignSlot,
   updateSlot,
+  unAssignSlot,
 } = require('../controllers/slots.controller')
 const {
   validateCreateSlot,
   validateDeleteSlot,
   validateAssignSlot,
   validateUpdateSlot,
+  validateUnAssignSlot,
 } = require('../helpers/validations/slotsValidation')
 
 const { verifyAC } = require('../helpers/authentication/ACAuthentication') // verifies that he is AC
@@ -30,46 +32,54 @@ const { verifyUser } = require('../helpers/authentication/authUser') //verifies 
 router.post(
   '/createSlot',
   validateCreateSlot,
-  verifyToken,
-  verifyUser,
-  verifyCOOR,
+  // verifyToken,
+  // verifyUser,
+  // verifyCOOR,
   createSlot
 )
 
 router.post(
   '/deleteSlot',
   validateDeleteSlot,
-  verifyToken,
-  verifyUser,
-  verifyCOOR,
+  // verifyToken,
+  // verifyUser,
+  // verifyCOOR,
   deleteSlot
 )
 
 router.post(
   '/updateSlot',
   validateUpdateSlot,
-  verifyToken,
-  verifyUser,
-  verifyCOOR,
+  // verifyToken,
+  // verifyUser,
+  // verifyCOOR,
   updateSlot
 )
 
 router.post(
   '/assignSlot',
   validateAssignSlot,
-  verifyToken,
-  verifyUser,
-  verifyINST,
+  // verifyToken,
+  // verifyUser,
+  // verifyINST,
   assignSlot
 )
 
 router.post(
   '/reAssignSlot',
   validateAssignSlot,
-  verifyToken,
-  verifyUser,
-  verifyINST,
+  // verifyToken,
+  // verifyUser,
+  // verifyINST,
   reAssignSlot
+)
+router.post(
+  '/reAssignSlot',
+  validateUnAssignSlot,
+  // verifyToken,
+  // verifyUser,
+  // verifyINST,
+  unAssignSlot
 )
 
 module.exports = router

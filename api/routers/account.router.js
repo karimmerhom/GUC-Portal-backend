@@ -12,6 +12,7 @@ const {
   update_profile,
   get_profile,
   deleteProfile,
+  updateSalary,
 } = accountController
 
 const { verifyAC } = require('../helpers/authentication/ACAuthentication') // verifies that he is AC
@@ -35,6 +36,7 @@ const {
   validateChangePassword,
   validateUpdateProfile,
   validateDeleteProfile,
+  validateUpdateSalary,
 } = require('../helpers/validations/accountValidations')
 
 router.post(
@@ -67,6 +69,7 @@ router.post(
   verifyUser,
   get_profile
 )
+router.post('/updateSalary', validateUpdateSalary, verifyHR, updateSalary)
 router.post('/deleteProfile', validateDeleteProfile, verifyHR, deleteProfile)
 
 module.exports = router

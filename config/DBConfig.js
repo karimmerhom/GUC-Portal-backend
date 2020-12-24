@@ -2,6 +2,7 @@
 const { default: Axios } = require('axios')
 const mongoose = require('mongoose')
 const { mongoURI } = require('./keys')
+const { populateAccounts } = require('../config/populate')
 
 const connectDB = async () => {
   const uri = mongoURI
@@ -12,6 +13,8 @@ const connectDB = async () => {
     })
     .then(() => {
       console.log('MongoDB Connected…')
+      //populateAccounts()
+      console.log('MongoDB populated...')
     })
     .catch((err) => console.log(err))
 }

@@ -2,13 +2,13 @@ const express = require('express')
 const router = express.Router()
 const {
   viewStaff,
-viewDaysOff,
-viewCoursesCoverage
-} = require('../controllers/hodFunctionalities')
+  viewDaysOff,
+  viewCoursesCoverage,
+} = require('../controllers/hodFunctionalities.controller')
 const {
- validateViewStaff,
- validateViewDaysOff,
- validateViewCoursesCoverage
+  validateViewStaff,
+  validateViewDaysOff,
+  validateViewCoursesCoverage,
 } = require('../helpers/validations/hodFunctionalitiesValidations')
 
 const { verifyAC } = require('../helpers/authentication/ACAuthentication') // verifies that he is AC
@@ -24,7 +24,11 @@ const {
 } = require('../helpers/authentication/AuthenticationMiddleWare') // verifies token helper (needed before verify user)
 const { verifyUser } = require('../helpers/authentication/authUser') //verifies that user in token is same as in Account:{}
 
-router.post('/viewStaff', validateViewStaff , viewStaff)
-router.post('/viewDaysOff', validateViewDaysOff , viewDaysOff)
-router.post('/viewCoursesCoverage', validateViewCoursesCoverage , viewCoursesCoverage)
+router.post('/viewStaff', validateViewStaff, viewStaff)
+router.post('/viewDaysOff', validateViewDaysOff, viewDaysOff)
+router.post(
+  '/viewCoursesCoverage',
+  validateViewCoursesCoverage,
+  viewCoursesCoverage
+)
 module.exports = router

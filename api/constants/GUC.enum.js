@@ -1,6 +1,6 @@
 const userTypes = {
   HR: 'HR',
-  ACADEMICMEMBER: 'Academic Member',
+  ACADEMICMEMBER: 'academic member',
 }
 const memberType = {
   HOD: 'head of department',
@@ -30,7 +30,7 @@ const slotNames = {
   FIFTH: 'fifth',
 }
 const locationNames = {
-  LECTUREHALL: ' lectureHall',
+  LECTUREHALL: 'lectureHall',
   OFFICE: 'office',
   ROOM: 'room',
 }
@@ -41,5 +41,5 @@ module.exports = {
   memberType,
   days,
   slotNames,
-  locationNames
+  locationNames,
 }

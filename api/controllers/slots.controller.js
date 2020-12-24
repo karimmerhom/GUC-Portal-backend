@@ -17,7 +17,7 @@ const createSlot = async (req, res) => {
     const slot = req.body.slot
 
     const course = await coursesModel.findOne({
-      name: slot.courseName,
+      courseId: slot.courseId,
     })
 
     if (!course) {
@@ -28,9 +28,11 @@ const createSlot = async (req, res) => {
     }
 
     const staffCourse = await staffCoursesModel.findOne({
-      courseName: course.name,
+      courseId: course.courseId,
       academicId: Account.academicId,
     })
+
+    console.log(staffCourse)
 
     if (!staffCourse) {
       return res.json({
@@ -40,7 +42,6 @@ const createSlot = async (req, res) => {
     }
 
     const location = await locationModel.findOne({ name: slot.locationName })
-    console.log(slot)
     if (!location) {
       return res.json({
         statusCode: errorCodes.LocationNotFound,
@@ -63,14 +64,10 @@ const createSlot = async (req, res) => {
       })
     }
 
-    const newslot = await slotsModel.create(slot, function (err, result) {
-      console.log(err)
-      console.log(result)
-    })
+    const newslot = await slotsModel.create(slot)
 
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
-    console.log(exception)
     return res.json({ statusCode: 400, error: 'Something went wrong' })
   }
 }
@@ -91,7 +88,7 @@ const updateSlot = async (req, res) => {
 
     if (slot.course) {
       const course = await coursesModel.findOne({
-        name: slot.courseName,
+        courseId: slot.courseId,
       })
 
       if (!course) {
@@ -104,7 +101,7 @@ const updateSlot = async (req, res) => {
     }
 
     const staffCourse = await staffCoursesModel.findOne({
-      courseName: course.name,
+      courseId: course.courseId,
       academicId: Account.academicId,
     })
 
@@ -116,7 +113,6 @@ const updateSlot = async (req, res) => {
     }
     if (slot.location) {
       const location = await locationModel.findOne({ name: slot.locationName })
-      console.log(slot)
       if (!location) {
         return res.json({
           statusCode: errorCodes.LocationNotFound,
@@ -143,7 +139,6 @@ const updateSlot = async (req, res) => {
 
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
-    console.log(exception)
     return res.json({ statusCode: 400, error: 'Something went wrong' })
   }
 }
@@ -157,17 +152,6 @@ const assignSlot = async (req, res) => {
     const academicMem = await accountsModel.findOne({
       academicId: assignedAcademicId,
     })
-    // const instructorsCourse = await staffCoursesModel.findOne({//check if that instructor is assigned to that course
-    //   courseName: course.name,
-    //   academicId: Account.academicId,
-    // })
-
-    // if (!instructorsCourse) {
-    //   return res.json({
-    //     statusCode: errorCodes.notYourCourse,
-    //     error: 'This is not your course ya instructor',
-    //   })
-    // }
 
     //check if account exists
     if (!academicMem) {
@@ -200,18 +184,31 @@ const assignSlot = async (req, res) => {
         error: 'Slot not found',
       })
     }
-    // //check if that ataff is assigned to that course
-    // const staffCourse = await staffCoursesModel.findOne({
-    //   courseName: sameSlotFound.courseName,
-    //   academicId: Account.academicId,
-    // })
 
-    // if (!staffCourse) {
-    //   return res.json({
-    //     statusCode: errorCodes.notYourCourse,
-    //     error: 'This is not the staff members course',
-    //   })
-    // }
+    const instructorsCourse = await staffCoursesModel.findOne({
+      //check if that instructor is assigned to that course
+      courseId: sameSlotFound.courseId,
+      academicId: Account.academicId,
+    })
+
+    if (!instructorsCourse) {
+      return res.json({
+        statusCode: errorCodes.notYourCourse,
+        error: 'This is not your course ya instructor',
+      })
+    }
+    //check if that ataff is assigned to that course
+    const staffCourse = await staffCoursesModel.findOne({
+      courseId: sameSlotFound.courseId,
+      academicId: Account.academicId,
+    })
+
+    if (!staffCourse) {
+      return res.json({
+        statusCode: errorCodes.notYourCourse,
+        error: 'This is not the staff members course',
+      })
+    }
 
     //check if slot is already assigned to someone
     if (sameSlotFound.assignedAcademicId) {
@@ -222,7 +219,59 @@ const assignSlot = async (req, res) => {
     }
 
     sameSlotFound.assignedAcademicId = assignedAcademicId
-    console.log(sameSlotFound)
+
+    const updated = await slotsModel.findByIdAndUpdate(
+      sameSlotFound._id,
+      sameSlotFound
+    )
+
+    return res.json({ statusCode: errorCodes.success })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ statusCode: 400, error: 'Something went wrong' })
+  }
+}
+
+const unAssignSlot = async (req, res) => {
+  try {
+    const Account = req.body.Account
+    const slot = req.body.slot
+
+    const sameSlotFound = await slotsModel.findOne({
+      day: slot.day,
+      slot: slot.slot,
+      locationName: slot.locationName,
+    })
+
+    //check if that instructor is assigned to that course
+    const instructorsCourse = await staffCoursesModel.findOne({
+      courseId: sameSlotFound.courseId,
+      academicId: Account.academicId,
+    })
+
+    if (!instructorsCourse) {
+      return res.json({
+        statusCode: errorCodes.notYourCourse,
+        error: 'This is not your course ya instructor',
+      })
+    }
+    //check if slot exists
+    if (!sameSlotFound) {
+      return res.json({
+        statusCode: errorCodes.slotTaken,
+        error: 'Slot not found',
+      })
+    }
+    //check if that ataff is assigned to that course
+
+    //check if slot is already assigned to someone
+    if (!sameSlotFound.assignedAcademicId) {
+      return res.json({
+        statusCode: errorCodes.slotNotFound,
+        error: 'Slot not assigned',
+      })
+    }
+    delete sameSlotFound.academicId
 
     const updated = await slotsModel.findByIdAndUpdate(
       sameSlotFound._id,
@@ -245,17 +294,6 @@ const reAssignSlot = async (req, res) => {
     const academicMem = await accountsModel.findOne({
       academicId: assignedAcademicId,
     })
-    // const instructorsCourse = await staffCoursesModel.findOne({//check if that instructor is assigned to that course
-    //   courseName: course.name,
-    //   academicId: Account.academicId,
-    // })
-
-    // if (!instructorsCourse) {
-    //   return res.json({
-    //     statusCode: errorCodes.notYourCourse,
-    //     error: 'This is not your course ya instructor',
-    //   })
-    // }
 
     //check if account exists
     if (!academicMem) {
@@ -288,18 +326,31 @@ const reAssignSlot = async (req, res) => {
         error: 'Slot not found',
       })
     }
-    // //check if that ataff is assigned to that course
-    // const staffCourse = await staffCoursesModel.findOne({
-    //   courseName: sameSlotFound.courseName,
-    //   academicId: Account.academicId,
-    // })
+    //check if that ataff is assigned to that course
+    const staffCourse = await staffCoursesModel.findOne({
+      courseId: sameSlotFound.courseId,
+      academicId: Account.academicId,
+    })
 
-    // if (!staffCourse) {
-    //   return res.json({
-    //     statusCode: errorCodes.notYourCourse,
-    //     error: 'This is not the staff members course',
-    //   })
-    // }
+    if (!staffCourse) {
+      return res.json({
+        statusCode: errorCodes.notYourCourse,
+        error: 'This is not the staff members course',
+      })
+    }
+
+    const instructorsCourse = await staffCoursesModel.findOne({
+      //check if that instructor is assigned to that course
+      courseId: sameSlotFound.courseId,
+      academicId: Account.academicId,
+    })
+
+    if (!instructorsCourse) {
+      return res.json({
+        statusCode: errorCodes.notYourCourse,
+        error: 'This is not your course ya instructor',
+      })
+    }
 
     sameSlotFound.assignedAcademicId = assignedAcademicId
 
@@ -311,6 +362,7 @@ const reAssignSlot = async (req, res) => {
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
     console.log(exception)
+
     return res.json({ statusCode: 400, error: 'Something went wrong' })
   }
 }
@@ -319,18 +371,6 @@ const deleteSlot = async (req, res) => {
   try {
     const Account = req.body.Account
     const slot = req.body.slot
-
-    // const staffCourse = await staffCoursesModel.findOne({
-    //   courseName: course.name,
-    //   academicId: Account.academicId,
-    // })
-
-    // if (!staffCourse) {
-    //   return res.json({
-    //     statusCode: errorCodes.notYourCourse,
-    //     error: 'This is not your course ya coordinator',
-    //   })
-    // }
 
     const sameSlotFound = await slotsModel.findOne({
       day: slot.day,
@@ -345,11 +385,19 @@ const deleteSlot = async (req, res) => {
       })
     }
 
-    slotsModel.deleteOne(sameSlotFound, function (err, result) {
-      console.log(err)
-      console.log(result)
+    const staffCourse = await staffCoursesModel.findOne({
+      courseId: sameSlotFound.courseId,
+      academicId: Account.academicId,
     })
 
+    if (!staffCourse) {
+      return res.json({
+        statusCode: errorCodes.notYourCourse,
+        error: 'This is not your course ya coordinator',
+      })
+    }
+
+    const deleted = await slotsModel.findByIdAndDelete(sameSlotFound.id)
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
     console.log(exception)
@@ -363,4 +411,5 @@ module.exports = {
   assignSlot,
   reAssignSlot,
   updateSlot,
+  unAssignSlot,
 }
