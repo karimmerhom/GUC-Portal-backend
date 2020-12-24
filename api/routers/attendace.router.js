@@ -6,6 +6,8 @@ const {
   manualSignIn,
   manualSignOut,
   viewMissingDays,
+  viewMyAttendanceRecord,
+  viewExtraMissingWorkedHours,
 } = require('../controllers/attendance.controller')
 const {
   validateSignInOut,
@@ -17,5 +19,17 @@ router.post('/signIn', validateSignInOut, signIn)
 router.post('/signOut', validateSignInOut, signOut)
 router.post('/manualSignIn', validateManualSignInOut, manualSignIn)
 router.post('/manualSignOut', validateManualSignInOut, manualSignOut)
+router.post(
+  '/viewMyAttendanceRecord',
+  validateViewMissingDays,
+  viewMyAttendanceRecord
+)
+router.post(
+  '/viewExtraMissingWorkedHours',
+  validateViewMissingDays,
+  viewExtraMissingWorkedHours
+)
+
 router.post('/viewMissingDays', validateViewMissingDays, viewMissingDays)
+
 module.exports = router

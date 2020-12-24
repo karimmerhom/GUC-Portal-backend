@@ -207,7 +207,7 @@ const manualSignIn = async (req, res) => {
 
     //Any signin before 7 is considered 7 and ZERO minutes
     minute = `${
-      parseInt(hour) > 19
+      parseInt(hour) < 7
         ? '00'
         : parseInt(minute) < 10
         ? '0' + parseInt(minute)
@@ -284,8 +284,9 @@ const manualSignOut = async (req, res) => {
     let accountId = req.body.Account.id
 
     //Any signin before 7 is considered 7 and ZERO minutes
+    console.log(parseInt(hour))
     minute = `${
-      parseInt(hour) > 19
+      parseInt(hour) >= 19
         ? '00'
         : parseInt(minute) < 10
         ? '0' + parseInt(minute)
@@ -294,7 +295,7 @@ const manualSignOut = async (req, res) => {
     //Any signin after 19 is considered 19
     //making sure single digits are written 01,02 --> 09 for consitency
     hour = `${
-      parseInt(hour) > 19
+      parseInt(hour) >= 19
         ? '19'
         : parseInt(hour) >= 7 && parseInt(hour) < 10
         ? '0' + parseInt(hour)
@@ -473,7 +474,6 @@ const viewMyAttendanceRecord = async (req, res) => {
     let accountId = req.body.Account.id
     //make sure an account exits
     const accountFound = await accountsModel.find({ _id: accountId })
-    console.log(accountFound)
     if (!accountFound) {
       return res.json({
         statusCode: accountNotFound,
@@ -618,6 +618,7 @@ const viewExtraMissingWorkedHours = async (req, res) => {
       error: 'Account not found!',
     })
   }
+  console.log(accountFound)
 
   const attendanceFound = await attendanceModel.find({
     accountId: accountId,
@@ -630,9 +631,11 @@ const viewExtraMissingWorkedHours = async (req, res) => {
         ? attendance.year
         : moment().year(),
   })
+  console.log(attendanceFound)
 
   let myHours =
     attendanceFound.totalWorkedHours - attendanceFound.totalWorkedDays * 24
+
   if (myHours > 0) {
     return res.json({
       statusCode: success,
