@@ -14,6 +14,7 @@ const slots = require('./api/routers/slots.router')
 const hodFunctionalities = require('./api/routers/hodFunctionalities.router')
 const courseInstructorFunctionalities = require('./api/routers/courseInstructorFunctionalities.router')
 
+const slotLinking = require('./api/routers/slotLinking.router')
 const { connectDB } = require('./config/dbConfig')
 app.use(cors())
 app.use(bodyParser.json())
@@ -42,6 +43,7 @@ app.use('/locations', locations)
 app.use('/account', account)
 app.use('/hodFunctionalities', hodFunctionalities)
 app.use('/courseInstructorFunctionalities', courseInstructorFunctionalities)
+app.use('/slotLinking', slotLinking)
 
 app.use('/explore', explore)
 app.get('/hello', (req, res) => {
