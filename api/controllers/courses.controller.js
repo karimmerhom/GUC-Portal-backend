@@ -1,9 +1,12 @@
 //const updateDepartment = async (req, res) => lama ussef ye5alas beoble
 // creating courses , departments tables 3shan homa gwa faculty
+const accountsModel = require('../../models/account.model')
 const coursesModel = require('../../models/courses.model')
 const departmentModel = require('../../models/department.model')
 const slotsModel = require('../../models/slots.modal')
 const staffCoursesModel = require('../../models/staffCourses.model')
+const errorCodes = require('../constants/errorCodes')
+
 const {
   userTypes,
   memberType,
@@ -171,10 +174,16 @@ const assignCourseCoordinator = async (req, res) => {
       })
     }
     //check if inst's course
-    if (course.department === INST.department) {
+    const staffCourseINST = await staffCoursesModel.findOne({
+      courseId: courseId,
+      position: position.INSTRUCTOR,
+      academicId: Account.academicId,
+    })
+
+    if (!staffCourseINST) {
       return res.json({
-        statusCode: errorCodes.notYourDepartment,
-        error: 'not the instructors department',
+        statusCode: errorCodes.notYourCourse,
+        error: 'not the instructors course',
       })
     }
 
@@ -204,6 +213,98 @@ const assignCourseCoordinator = async (req, res) => {
   }
 }
 
+const assignCourseMember = async (req, res) => {
+  try {
+    const Account = req.body.Account
+    const courseId = req.body.courseId
+    const assignedAcademicId = req.body.assignedAcademicId
+
+    const INST = await accountsModel.findOne({
+      academicId: Account.academicId,
+    })
+
+    const academicMem = await accountsModel.findOne({
+      academicId: assignedAcademicId,
+    })
+    //check if account exists
+    if (!academicMem) {
+      return res.json({
+        statusCode: errorCodes.accountDoesNotExist,
+        error: 'This academic member doesnt exist',
+      })
+    }
+    //check if academic coordinator
+    if (
+      !(
+        academicMem.type === userTypes.ACADEMICMEMBER &&
+        academicMem.memberType === memberType.MEMBER
+      )
+    ) {
+      return res.json({
+        statusCode: errorCodes.wrongUserType,
+        error: 'This is not an academic member',
+      })
+    }
+
+    const course = await coursesModel.findOne({
+      courseId: courseId,
+    })
+    //check if course exists
+    if (!course) {
+      return res.json({
+        statusCode: errorCodes.courseNotFound,
+        error: 'course not found',
+      })
+    }
+    //check if inst's course
+    if (course.department !== INST.department) {
+      return res.json({
+        statusCode: errorCodes.notYourDepartment,
+        error: 'not the instructors department',
+      })
+    }
+
+    //check if instructor's course already exists
+    const staffCourseINST = await staffCoursesModel.findOne({
+      courseId: courseId,
+      position: position.INSTRUCTOR,
+      academicId: Account.academicId,
+    })
+
+    if (!staffCourseINST) {
+      return res.json({
+        statusCode: errorCodes.notYourCourse,
+        error: 'not the instructors course',
+      })
+    }
+
+    //check if coordinator already exists
+    const staffCourse = await staffCoursesModel.findOne({
+      courseId: courseId,
+      position: position.MEMBER,
+      academicId: assignedAcademicId,
+    })
+
+    if (staffCourse) {
+      return res.json({
+        statusCode: errorCodes.memberAlreadyAssigned,
+        error: 'Member already exists',
+      })
+    }
+
+    const newStaffCourse = await staffCoursesModel.create({
+      academicId: assignedAcademicId,
+      courseId: courseId,
+      position: position.MEMBER,
+    })
+
+    return res.json({ statusCode: 0000 })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ statusCode: 400, error: 'Something went wrong' })
+  }
+}
+
 const assignCourseInstructor = async (req, res) => {
   try {
     const Account = req.body.Account
@@ -224,7 +325,7 @@ const assignCourseInstructor = async (req, res) => {
         error: 'This academic Instructor doesnt exist',
       })
     }
-    //check if academic coordinator
+    //check if academic instructor
     if (
       !(
         academicMem.type === userTypes.ACADEMICMEMBER &&
@@ -254,7 +355,7 @@ const assignCourseInstructor = async (req, res) => {
         error: 'not the HODs department',
       })
     }
-    //check if coordinator already exists
+    //check if INSTRUCTOR already exists
     const staffCourse = await staffCoursesModel.findOne({
       courseId: courseId,
       position: position.INSTRUCTOR,
@@ -352,84 +453,7 @@ const updateCourseInstructor = async (req, res) => {
   }
 }
 
-const assignCourseMember = async (req, res) => {
-  try {
-    const Account = req.body.Account
-    const courseId = req.body.courseId
-    const assignedAcademicId = req.body.assignedAcademicId
-
-    const HOD = await accountsModel.findOne({
-      academicId: Account.academicId,
-    })
-
-    const academicMem = await accountsModel.findOne({
-      academicId: assignedAcademicId,
-    })
-    //check if account exists
-    if (!academicMem) {
-      return res.json({
-        statusCode: errorCodes.accountDoesNotExist,
-        error: 'This academic member doesnt exist',
-      })
-    }
-    //check if academic coordinator
-    if (
-      !(
-        academicMem.type === userTypes.ACADEMICMEMBER &&
-        academicMem.memberType === memberType.MEMBER
-      )
-    ) {
-      return res.json({
-        statusCode: errorCodes.wrongUserType,
-        error: 'This is not an academic member',
-      })
-    }
-
-    const course = await coursesModel.findOne({
-      courseId: courseId,
-    })
-    //check if course exists
-    if (!course) {
-      return res.json({
-        statusCode: errorCodes.courseNotFound,
-        error: 'course not found',
-      })
-    }
-    //check if HOD's department
-    if (course.department !== HOD.department) {
-      return res.json({
-        statusCode: errorCodes.notYourDepartment,
-        error: 'not the HODs department',
-      })
-    }
-    //check if coordinator already exists
-    const staffCourse = await staffCoursesModel.findOne({
-      courseId: courseId,
-      academicId: assignedAcademicId,
-      position: position.MEMBER,
-    })
-
-    if (staffCourse) {
-      return res.json({
-        statusCode: errorCodes.memberAlreadyAssigned,
-        error: 'This member is already assigned to this course',
-      })
-    }
-
-    const newStaffCourse = await staffCoursesModel.create({
-      academicId: assignedAcademicId,
-      courseId: courseId,
-      position: position.MEMBER,
-    })
-
-    return res.json({ statusCode: 0000 })
-  } catch (exception) {
-    console.log(exception)
-    return res.json({ statusCode: 400, error: 'Something went wrong' })
-  }
-}
-
-const unassignCourse = async (req, res) => {
+const unassignCourseInstructor = async (req, res) => {
   try {
     const Account = req.body.Account
     const courseId = req.body.courseId
@@ -450,10 +474,15 @@ const unassignCourse = async (req, res) => {
       })
     }
     //check if academic member
-    if (!(academicMem.type === userTypes.ACADEMICMEMBER)) {
+    if (
+      !(
+        academicMem.type === userTypes.ACADEMICMEMBER &&
+        academicMem.memberType === memberType.INSTRUCTOR
+      )
+    ) {
       return res.json({
         statusCode: errorCodes.wrongUserType,
-        error: 'This is not an academic member',
+        error: 'This is not an academic instructor',
       })
     }
 
@@ -467,6 +496,7 @@ const unassignCourse = async (req, res) => {
         error: 'course not found',
       })
     }
+
     //check if HOD's department
     if (course.department !== HOD.department) {
       return res.json({
@@ -498,8 +528,185 @@ const unassignCourse = async (req, res) => {
   }
 }
 
+const unassignCourseCoordinator = async (req, res) => {
+  try {
+    const Account = req.body.Account
+    const courseId = req.body.courseId
+    const assignedAcademicId = req.body.assignedAcademicId
+
+    const INST = await accountsModel.findOne({
+      academicId: Account.academicId,
+    })
+
+    const academicMem = await accountsModel.findOne({
+      academicId: assignedAcademicId,
+    })
+    //check if account exists
+    if (!academicMem) {
+      return res.json({
+        statusCode: errorCodes.accountDoesNotExist,
+        error: 'This academic member doesnt exist',
+      })
+    }
+    //check if academic member
+    if (
+      !(
+        academicMem.type === userTypes.ACADEMICMEMBER &&
+        academicMem.memberType === memberType.COORDINATOR
+      )
+    ) {
+      return res.json({
+        statusCode: errorCodes.wrongUserType,
+        error: 'This is not an academic coordinator',
+      })
+    }
+
+    const course = await coursesModel.findOne({
+      courseId: courseId,
+    })
+    //check if course exists
+    if (!course) {
+      return res.json({
+        statusCode: errorCodes.courseNotFound,
+        error: 'course not found',
+      })
+    }
+
+    //check if HOD's department
+    if (course.department !== INST.department) {
+      return res.json({
+        statusCode: errorCodes.notYourDepartment,
+        error: 'not the INST department',
+      })
+    }
+
+    const staffCourseINST = await staffCoursesModel.findOne({
+      courseId: courseId,
+      position: position.INSTRUCTOR,
+      academicId: Account.academicId,
+    })
+
+    if (!staffCourseINST) {
+      return res.json({
+        statusCode: errorCodes.notYourCourse,
+        error: 'not the instructors course',
+      })
+    }
+    //check if assignment exists
+    const staffCourse = await staffCoursesModel.create({
+      courseId: courseId,
+      academicId: assignedAcademicId,
+    })
+
+    if (!staffCourse) {
+      return res.json({
+        statusCode: errorCodes.assignmentDoesNotExist,
+        error: 'This asignment does not exist',
+      })
+    }
+
+    const newStaffCourse = await staffCoursesModel.findByIdAndDelete(
+      staffCourse.id
+    )
+
+    return res.json({ statusCode: 0000 })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ statusCode: 400, error: 'Something went wrong' })
+  }
+}
+
+const unassignCourseMember = async (req, res) => {
+  try {
+    const Account = req.body.Account
+    const courseId = req.body.courseId
+    const assignedAcademicId = req.body.assignedAcademicId
+
+    const INST = await accountsModel.findOne({
+      academicId: Account.academicId,
+    })
+
+    const academicMem = await accountsModel.findOne({
+      academicId: assignedAcademicId,
+    })
+    //check if account exists
+    if (!academicMem) {
+      return res.json({
+        statusCode: errorCodes.accountDoesNotExist,
+        error: 'This academic member doesnt exist',
+      })
+    }
+    //check if academic member
+    if (
+      !(
+        academicMem.type === userTypes.ACADEMICMEMBER &&
+        academicMem.memberType === memberType.MEMBER
+      )
+    ) {
+      return res.json({
+        statusCode: errorCodes.wrongUserType,
+        error: 'This is not an academic member',
+      })
+    }
+    const staffCourseINST = await staffCoursesModel.findOne({
+      courseId: courseId,
+      position: position.INSTRUCTOR,
+      academicId: Account.academicId,
+    })
+
+    if (!staffCourseINST) {
+      return res.json({
+        statusCode: errorCodes.notYourCourse,
+        error: 'not the instructors course',
+      })
+    }
+
+    const course = await coursesModel.findOne({
+      courseId: courseId,
+    })
+    //check if course exists
+    if (!course) {
+      return res.json({
+        statusCode: errorCodes.courseNotFound,
+        error: 'course not found',
+      })
+    }
+
+    //check if INST's department
+    if (course.department !== INST.department) {
+      return res.json({
+        statusCode: errorCodes.notYourDepartment,
+        error: 'not the INST department',
+      })
+    }
+    //check if assignment exists
+    const staffCourse = await staffCoursesModel.create({
+      courseId: courseId,
+      academicId: assignedAcademicId,
+    })
+
+    if (!staffCourse) {
+      return res.json({
+        statusCode: errorCodes.assignmentDoesNotExist,
+        error: 'This asignment does not exist',
+      })
+    }
+
+    const newStaffCourse = await staffCoursesModel.findByIdAndDelete(
+      staffCourse.id
+    )
+
+    return res.json({ statusCode: 0000 })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ statusCode: 400, error: 'Something went wrong' })
+  }
+}
+
 module.exports = {
-  unassignCourse,
+  unassignCourseMember,
+  unassignCourseCoordinator,
+  unassignCourseInstructor,
   assignCourseCoordinator,
   assignCourseInstructor,
   assignCourseMember,

@@ -149,14 +149,30 @@ const viewDaysOff = async (req, res) => {
       }
      
       const departmentFound = accountFound.department
-      const courses = await coursesModel.find
+    var courses;
+      if( courseId !== undefined)
+      {
+    courses = await coursesModel.find
       (
+        
           {
-                courseId:courseId,
+               courseId:courseId,
               department: departmentFound
           }
       )
-
+    
+        }
+        else{
+         
+         courses = await coursesModel.find
+          (
+              {
+                  
+                  department: departmentFound
+              }
+          )
+        }
+     
       var coursesSlots=[];
       for(var i = 0  ; i<courses.length;i++)
       {

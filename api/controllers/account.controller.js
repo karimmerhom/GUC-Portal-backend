@@ -368,6 +368,35 @@ const get_profile = async (req, res) => {
   }
 }
 
+const updateSalary = async (req, res) => {
+  //TODO
+  try {
+    const { Account } = req.body
+
+    const { academicId } = Account
+    const salary = req.body.salary
+
+    const account = await AccountModel.find({ academicId: academicId })
+    if (!account) {
+      return res.json({
+        statusCode: errorCodes.invalidCredentials,
+        error: 'User not found',
+      })
+    }
+    account.salary = salary
+    const newA = await AccountModel.findByIdAndUpdate(accountId, account)
+    return res.json({
+      statusCode: errorCodes.success,
+    })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({
+      statusCode: errorCodes.unknown,
+      error: 'Something went wrong',
+    })
+  }
+}
+
 const deleteProfile = async (req, res) => {
   //TODO
   try {
@@ -503,6 +532,7 @@ const firstAssignLocation = async (location, academicId) => {
 }
 
 module.exports = {
+  updateSalary,
   createAccount,
   login,
   firstLogin,

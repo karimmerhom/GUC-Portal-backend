@@ -7,7 +7,9 @@ const {
   assignCourseInstructor,
   assignCourseMember,
   assignCourseCoordinator,
-  unassignCourse,
+  unassignCourseMember,
+  unassignCourseCoordinator,
+  unassignCourseInstructor,
   updateCourseInstructor,
 } = require('../controllers/courses.controller')
 const {
@@ -15,6 +17,7 @@ const {
   validateUpdateCourse,
   validateDeleteCourse,
   validateAssign,
+  validateUnassign,
 } = require('../helpers/validations/coursesValidations')
 
 const { verifyAC } = require('../helpers/authentication/ACAuthentication') // verifies that he is AC
@@ -38,47 +41,65 @@ router.post('/deleteCourse', validateDeleteCourse, deleteCourse)
 
 router.post(
   '/assignCourseInstructor',
-  verifyToken,
-  verifyUser,
-  verifyHOD,
+  // verifyToken,
+  // verifyUser,
+  // verifyHOD,
   validateAssign,
   assignCourseInstructor
 )
 
 router.post(
   '/updateCourseInstructor',
-  verifyToken,
-  verifyUser,
-  verifyHOD,
+  // verifyToken,
+  // verifyUser,
+  // verifyHOD,
   validateAssign,
   updateCourseInstructor
 )
 
 router.post(
   '/assignCourseCoordinator',
-  verifyToken,
-  verifyUser,
-  verifyINST,
+  // verifyToken,
+  // verifyUser,
+  // verifyINST,
   validateAssign,
   assignCourseCoordinator
 )
 
 router.post(
   '/assignCourseMember',
-  verifyToken,
-  verifyUser,
-  verifyHOD,
+  // verifyToken,
+  // verifyUser,
+  // verifyINST,
   validateAssign,
   assignCourseMember
 )
 
 router.post(
-  '/unassignCourse',
-  verifyToken,
-  verifyUser,
-  verifyHOD,
-  validateAssign,
-  unassignCourse
+  '/unassignCourseCoordinator',
+  // verifyToken,
+  // verifyUser,
+  // verifyINST,
+  validateUnassign,
+  unassignCourseCoordinator
+)
+
+router.post(
+  '/unassignCourseInstructor',
+  // verifyToken,
+  // verifyUser,
+  // verifyHOD,
+  validateUnassign,
+  unassignCourseInstructor
+)
+
+router.post(
+  '/unassignCourseMember',
+  // verifyToken,
+  // verifyUser,
+  // verifyINST,
+  validateUnassign,
+  unassignCourseMember
 )
 
 module.exports = router
