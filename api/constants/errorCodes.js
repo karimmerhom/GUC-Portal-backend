@@ -123,8 +123,10 @@ const coordinatorAlreadyExists = 208
 const instructorAlreadyExists = 209
 const memberAlreadyAssigned = 210
 const assignmentDoesNotExist = 211
+const linkAccepted = 212
 
 module.exports = {
+  linkAccepted,
   memberAlreadyAssigned,
   assignmentDoesNotExist,
   coordinatorAlreadyExists,
