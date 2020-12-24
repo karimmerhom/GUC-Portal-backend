@@ -35,7 +35,22 @@ const locationNames = {
   ROOM: 'room',
 }
 
+const leaveStatus = {
+  ACCEPTED: 'accepted',
+  REJECTED: 'rejected',
+  PENDING: 'pending',
+}
+
+const leaveTypes = {
+  ANNUAL: 'annual',
+  SICK: 'sick',
+  MATERNITY: 'maternity',
+  ACCIDENTAL: 'accidental',
+}
+
 module.exports = {
+  leaveTypes,
+  leaveStatus,
   position,
   userTypes,
   memberType,
