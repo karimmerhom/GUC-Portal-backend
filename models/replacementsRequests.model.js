@@ -19,9 +19,9 @@ const replacementsRequests = new Schema({
     enum: [leaveStatus.ACCEPTED, leaveStatus.PENDING, leaveStatus.REJECTED],
   },
 })
-var compensationRequestsModel = mongoose.model(
-  'compensationRequests',
-  compensationRequests
+var replacementsRequestsModel = mongoose.model(
+  'replacementsRequests',
+  replacementsRequests
 )
 
-module.exports = compensationRequestsModel
+module.exports = replacementsRequestsModel
