@@ -4,7 +4,7 @@ const { leaveStatus, leaveTypes } = require('../api/constants/GUC.enum')
 //Define a schema
 var Schema = mongoose.Schema
 
-const compensationRequests = new Schema({
+const replacementsRequests = new Schema({
   academicId: { type: String },
   academicIdReciever: { type: String },
   date: { type: String },
