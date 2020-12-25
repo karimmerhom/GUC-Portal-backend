@@ -76,7 +76,7 @@ router.post(
   reAssignSlot
 )
 router.post(
-  '/reAssignSlot',
+  '/unAssignSlot',
   validateUnAssignSlot,
   // verifyToken,
   // verifyUser,

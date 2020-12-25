@@ -49,6 +49,6 @@ router.post('/acceptMaternityLeave', validateacceptLeave, acceptMaternityLeave)
 router.post('/acceptSickLeave', validateacceptLeave, acceptSickLeave)
 router.post('/rejectLeave', validateacceptLeave, rejectLeave)
 router.post('/viewLeaves', validateViewLeaves, viewLeaves)
-router.post('/cancelLeave', validateacceptLeave, cancelLeaveReq)
+router.post('/cancelLeaveReq', validateacceptLeave, cancelLeaveReq)
 
 module.exports = router

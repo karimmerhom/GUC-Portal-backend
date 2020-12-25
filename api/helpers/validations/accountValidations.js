@@ -68,7 +68,6 @@ const validateCreateAccount = (req, res, next) => {
 const validateUpdateProfile = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       firstName: Joi.string().min(3),
       lastName: Joi.string().min(3),
       phoneNumber: Joi.string().min(11).max(11),
@@ -174,7 +173,6 @@ const validateChangePassword = (req, res, next) => {
 
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
     Credentials: Joi.object({
@@ -194,7 +192,6 @@ const validateChangePassword = (req, res, next) => {
 const validateGetProfile = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
   })
@@ -210,7 +207,6 @@ const validateGetProfile = (req, res, next) => {
 const validateDeleteProfile = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
   })
@@ -226,10 +222,9 @@ const validateDeleteProfile = (req, res, next) => {
 const validateUpdateSalary = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
-    salary: Joi.string().required(),
+    salary: Joi.number().required(),
   })
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {

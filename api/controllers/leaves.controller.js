@@ -430,7 +430,7 @@ const acceptAnnualLeave = async (req, res) => {
         error: 'not Enough Annual Leaves',
       })
     }
-    if (leaveFound.hodStatus === leaveFound.leaveStatus.ACCEPTED) {
+    if (leaveFound.status === leaveStatus.ACCEPTED) {
       return res.json({
         statusCode: errorCodes.alreadyAccepted,
         error: 'H.O.D already accepted this request',
@@ -494,6 +494,13 @@ const acceptAccidentalLeave = async (req, res) => {
       return res.json({
         statusCode: errorCodes.notRightLeaveType,
         error: 'leave not the right type',
+      })
+    }
+
+    if (leaveFound.status === leaveStatus.ACCEPTED) {
+      return res.json({
+        statusCode: errorCodes.alreadyAccepted,
+        error: 'H.O.D already accepted this request',
       })
     }
 
@@ -571,6 +578,13 @@ const acceptSickLeave = async (req, res) => {
       })
     }
 
+    if (leaveFound.status === leaveStatus.ACCEPTED) {
+      return res.json({
+        statusCode: errorCodes.alreadyAccepted,
+        error: 'H.O.D already accepted this request',
+      })
+    }
+
     const account = await accountsModel.findOne({
       academicId: leaveFound.academicId,
     })
@@ -629,7 +643,12 @@ const acceptMaternityLeave = async (req, res) => {
         error: 'leave not the right type',
       })
     }
-
+    if (leaveFound.status === leaveStatus.ACCEPTED) {
+      return res.json({
+        statusCode: errorCodes.alreadyAccepted,
+        error: 'H.O.D already accepted this request',
+      })
+    }
     const account = await accountsModel.findOne({
       academicId: leaveFound.academicId,
     })
