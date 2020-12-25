@@ -15,15 +15,17 @@ const leaves = new Schema({
       leaveTypes.ACCIDENTAL,
       leaveTypes.ANNUAL,
       leaveTypes.SICK,
+      leaveTypes.COMPENSATION,
     ],
   },
   reasonForCompensation: { type: String },
   status: {
     type: String,
     enum: [leaveStatus.ACCEPTED, leaveStatus.PENDING, leaveStatus.REJECTED],
+    default: leaveStatus.PENDING,
   },
-  repReqId: [{ type: String }],
-  allRepReq: { type: Boolean },
+  repReqIds: [{ type: String }],
+  allRepReqAccepted: { type: Boolean },
   comments: { type: String },
 })
 var leavesModel = mongoose.model('leaves', leaves)

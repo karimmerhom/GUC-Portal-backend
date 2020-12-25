@@ -130,8 +130,20 @@ const accountNotFound = 213
 const alreadySignedIn = 214
 const haventSignedIn = 215
 const alreadySignedOut = 216
+const yourDayOff = 217
+const dateAfterAllowed = 218
+const leaveNotFound = 219
+const notEnoughAnnualLeaves = 220
+const notRightLeaveType = 221
+const signOutExists = 222
 
 module.exports = {
+  signOutExists,
+  notRightLeaveType,
+  notEnoughAnnualLeaves,
+  leaveNotFound,
+  dateAfterAllowed,
+  yourDayOff,
   linkAccepted,
   memberAlreadyAssigned,
   assignmentDoesNotExist,

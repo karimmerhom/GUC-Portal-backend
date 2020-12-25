@@ -1,16 +1,46 @@
-const express = require("express")
+const express = require('express')
 const router = express.Router()
 const {
-requestLeave
-} = require("../controllers/leaves.controller")
+  requestAnnualLeave,
+  requestMaternityLeave,
+  requestSickLeave,
+  requestAccidentalLeave,
+  requestCompensationLeave,
+  acceptAccidentalLeave,
+  acceptAnnualLeave,
+  acceptMaternityLeave,
+  acceptSickLeave,
+} = require('../controllers/leaves.controller')
+
 const {
-   validateRequestLeave
+  validateRequestLeave,
+  validateacceptLeave,
 } = require('../helpers/validations/leavesValidations')
-const {
-   viewLeaveRequests
-} = require("../controllers/leaves.controller")
 
+router.post('/requestAnnualLeave', validateRequestLeave, requestAnnualLeave)
+router.post(
+  '/requestMaternityLeave',
+  validateRequestLeave,
+  requestMaternityLeave
+)
+router.post('/requestSickLeave', validateRequestLeave, requestSickLeave)
+router.post(
+  '/requestAccidentalLeave',
+  validateRequestLeave,
+  requestAccidentalLeave
+)
+router.post(
+  '/requestCompensationLeave',
+  validateRequestLeave,
+  requestCompensationLeave
+)
+router.post(
+  '/acceptAccidentalLeave',
+  validateacceptLeave,
+  acceptAccidentalLeave
+)
+router.post('/acceptAnnualLeave', validateacceptLeave, acceptAnnualLeave)
+router.post('/acceptMaternityLeave', validateacceptLeave, acceptMaternityLeave)
+router.post('/acceptSickLeave', validateacceptLeave, acceptSickLeave)
 
-
-router.post("/requestLeave",validateRequestLeave ,requestLeave)
 module.exports = router

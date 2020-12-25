@@ -46,6 +46,7 @@ const leaveTypes = {
   SICK: 'sick',
   MATERNITY: 'maternity',
   ACCIDENTAL: 'accidental',
+  COMPENSATION: 'compensation',
 }
 
 module.exports = {

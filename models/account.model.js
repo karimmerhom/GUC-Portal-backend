@@ -57,7 +57,7 @@ const Accounts = new Schema({
   office: { type: String },
   department: { type: String },
 
-  annualLeavesBalance: { type: Number, default: 5 },
+  annualLeavesBalance: { type: Number, default: 2.5 },
   accidentalBalance: { type: Number, default: 6 },
 })
 
