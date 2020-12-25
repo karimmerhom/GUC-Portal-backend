@@ -13,6 +13,7 @@ const validateRequestChangeDayOff = (req, res, next) => {
             days.THURSDAY
           )
           .required(),
+      reason: Joi.string()
       })
     
     const isValid = Joi.validate(req.body, schema)
@@ -27,15 +28,15 @@ const validateRequestChangeDayOff = (req, res, next) => {
 
 const validateUpdateRequest = (req, res, next) => {
     const schema = Joi.object({
-     // Account: Joi.object({
-       // id: Joi.string().required(),
-        //academicId: Joi.string().required(),
-      //}).required(),
+      account: Joi.object({
+        academicId: Joi.string().required(),
+      }).required(),
       reqId: Joi.string().min(24).required(),
       status: Joi.string().required().valid(
         leaveStatus.ACCEPTED,
         leaveStatus.REJECTED
        ),
+       hodComment: Joi.string()
     })
   
     const isValid = Joi.validate(req.body, schema)

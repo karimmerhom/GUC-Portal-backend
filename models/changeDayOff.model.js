@@ -9,9 +9,12 @@ const changeDayOff = new Schema({
     type: String,
     enum: [leaveStatus.ACCEPTED, leaveStatus.PENDING, leaveStatus.REJECTED],
     default: 'pending'
+    
   },
   newDayOff: {type: String, 
-  enum:[ days.SATURDAY, days.SUNDAY,days.MONDAY,days.TUESDAY,days.WEDNESDAY, days.THURSDAY]}
+  enum:[ days.SATURDAY, days.SUNDAY,days.MONDAY,days.TUESDAY,days.WEDNESDAY, days.THURSDAY]},
+  reason: {type: String},
+  hodComment: {type: String}
 })
 var changeDayOffModel = mongoose.model(
   'changeDayOff',changeDayOff)
