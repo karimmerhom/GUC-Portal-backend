@@ -54,7 +54,7 @@ const createFaculty = async (req, res) => {
        })
        for( var i =0 ; i<departmentsFound.length ; i ++)
        {
-        departmentModel.findByIdAndDelete(departmentsFound[i].id, function (err, result) {
+        departmentModel.findByIdAndUpdate(departmentsFound[i].id, {faculty: null} ,function (err, result) {
           console.log(err)
           console.log(result)
         })
