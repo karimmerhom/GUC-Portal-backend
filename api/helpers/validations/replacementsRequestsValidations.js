@@ -4,7 +4,6 @@ const { leaveStatus, leaveTypes } = require('../../../api/constants/GUC.enum')
 const validateCreateReplacementRequest = (req, res, next) => {
     const schema = Joi.object({
       Account: Joi.object({
-        id: Joi.string().required(),
         academicId: Joi.string().required(),
       }).required(),
       academicIdReciever: Joi.string().required(),
