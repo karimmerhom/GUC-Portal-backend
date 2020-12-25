@@ -137,7 +137,8 @@ const notEnoughAnnualLeaves = 220
 const notRightLeaveType = 221
 const signOutExists = 222
 const leaveAccepted = 223
-
+const cantSignInAfter19 = 224
+const cantManualSignIn = 225
 module.exports = {
   leaveAccepted,
   signOutExists,
@@ -146,6 +147,8 @@ module.exports = {
   leaveNotFound,
   dateAfterAllowed,
   yourDayOff,
+  cantSignInAfter19,
+  cantManualSignIn,
   linkAccepted,
   memberAlreadyAssigned,
   assignmentDoesNotExist,

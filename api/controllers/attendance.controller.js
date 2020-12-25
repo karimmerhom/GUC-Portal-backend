@@ -1,7 +1,7 @@
 const accountsModel = require('../../models/account.model')
 const attendanceModel = require('../../models/attendance.model')
 const workAttendanceModel = require('../../models/workAttendance.model')
-const { days } = require('../constants/GUC.enum')
+const { days, leaveStatus, leaveTypes } = require('../constants/GUC.enum')
 const moment = require('moment')
 
 const {
@@ -11,21 +11,25 @@ const {
   alreadySignedIn,
   haventSignedIn,
   alreadySignedOut,
+  cantSignInAfter19,
+  cantManualSignIn,
 } = require('../constants/errorCodes')
+const leavesModel = require('../../models/leaves.model')
 
 //no signin abl el sa3a 7 law 3amlt signin ba3d 7 tetkteb 7 same for signout
 const signIn = async (req, res) => {
   try {
     let accountId = req.body.Account.id
-    //make sure an account exits
-    const accountFound = await accountsModel.find({ _id: accountId })
-    console.log(accountFound)
-    if (!accountFound) {
-      return res.json({
-        statusCode: accountNotFound,
-        error: 'Account not found!',
-      })
-    }
+    let academicId = req.body.Account.academicId
+    //make sure an account exits, not needed
+    // const accountFound = await accountsModel.find({ _id: accountId })
+    // console.log(accountFound)
+    // if (!accountFound) {
+    //   return res.json({
+    //     statusCode: accountNotFound,
+    //     error: 'Account not found!',
+    //   })
+    // }
 
     //Any signin before 7 is considered 7
     //making sure single digits are written 01,02 --> 09 for consitency
@@ -37,6 +41,13 @@ const signIn = async (req, res) => {
         : moment().hour()
     }`
 
+    if (parseInt(hour) >= 19) {
+      return res.json({
+        statusCode: cantSignInAfter19,
+        message: 'You cant sign in after 7 pm',
+      })
+    }
+
     //Any signin before 7 is considered 7 and ZERO minutes
     let min = `${
       moment().hour() < 7
@@ -45,6 +56,7 @@ const signIn = async (req, res) => {
         ? '0' + moment().minute()
         : moment().minute()
     }`
+
     let day = `${
       parseInt(moment().date()) < 10
         ? '0' + parseInt(moment().date())
@@ -55,7 +67,9 @@ const signIn = async (req, res) => {
     month = `${parseInt(month) < 10 ? '0' + parseInt(month) : parseInt(month)}`
     let year = `${moment().year()}`
 
-    const attendanceFound = await attendanceModel.find({ accountId: accountId })
+    const attendanceFound = await attendanceModel.find({
+      academicId: academicId,
+    })
 
     //signin once per day
     const filteredAttendance = attendanceFound.filter(
@@ -71,8 +85,6 @@ const signIn = async (req, res) => {
     for (i in filteredAttendance) {
       let attendance = filteredAttendance[i]
       //if you haven't signed out today
-      console.log('qoq')
-      console.log(attendance.signOutTime)
       if (attendance.signOutTime === '-1') {
         canSignIn = false
         break
@@ -83,6 +95,7 @@ const signIn = async (req, res) => {
     if (filteredAttendance.length === 0 || canSignIn) {
       await attendanceModel.create({
         accountId: accountId,
+        academicId: academicId,
         signInTime: `${year}-${month}-${day}T${hour}:${min}:00.0000`,
         signOutTime: '-1',
       })
@@ -102,16 +115,20 @@ const signIn = async (req, res) => {
 const signOut = async (req, res) => {
   try {
     let accountId = req.body.Account.id
+    let academicId = req.body.Account.academicId
 
     //make sure an account exits
-    const accountFound = await accountsModel.find({ _id: accountId })
-    if (!accountFound) {
-      return res.json({
-        statusCode: accountNotFound,
-        error: 'Account not found!',
-      })
-    }
-    const attendanceFound = await attendanceModel.find({ accountId: accountId })
+    // const accountFound = await accountsModel.find({ _id: accountId })
+    // if (!accountFound) {
+    //   return res.json({
+    //     statusCode: accountNotFound,
+    //     error: 'Account not found!',
+    //   })
+    // }
+
+    const attendanceFound = await attendanceModel.find({
+      academicId: academicId,
+    })
 
     //Any signin after 19 is considered 19
     //making sure single digits are written 01,02 --> 09 for consitency
@@ -122,10 +139,17 @@ const signOut = async (req, res) => {
         ? '0' + moment().hour()
         : moment().hour()
     }`
+    console.log(parseInt(hour))
+    if (parseInt(hour) < 7) {
+      return res.json({
+        statusCode: cantSignInAfter19,
+        message: 'You cant sign out before 7 am',
+      })
+    }
 
     //Any signin before 7 is considered 7 and ZERO minutes
     let min = `${
-      moment().hour() > 19
+      moment().hour() >= 19
         ? '00'
         : moment().minute() < 10
         ? '0' + moment().minute()
@@ -178,7 +202,7 @@ const signOut = async (req, res) => {
 
       const signOutTime = `${year}-${month}-${day}T${hour}:${min}:00.0000`
       workAttendance(
-        accountId,
+        academicId,
         moment().day(),
         month,
         year,
@@ -191,7 +215,7 @@ const signOut = async (req, res) => {
     } else {
       return res.json({
         statusCode: alreadySignedOut,
-        error: 'You can only sign out once per day',
+        error: 'You need to sign in first',
       })
     }
   } catch (e) {
@@ -203,11 +227,19 @@ const signOut = async (req, res) => {
 const manualSignIn = async (req, res) => {
   try {
     let { hour, minute, day, month, year } = req.body.Attendance
-    let accountId = req.body.Account.id
+    let myAcademicId = req.body.Account.academicId
+    let academicId = req.body.Attendance.academicId
+
+    if (myAcademicId === academicId) {
+      return res.json({
+        statusCode: cantManualSignIn,
+        message: 'You cant manual sign in to yourself',
+      })
+    }
 
     //Any signin before 7 is considered 7 and ZERO minutes
     minute = `${
-      parseInt(hour) > 19
+      parseInt(hour) < 7
         ? '00'
         : parseInt(minute) < 10
         ? '0' + parseInt(minute)
@@ -222,6 +254,13 @@ const manualSignIn = async (req, res) => {
         : parseInt(hour)
     }`
 
+    if (parseInt(hour) >= 19) {
+      return res.json({
+        statusCode: cantSignInAfter19,
+        message: 'You cant sign in after 7 pm',
+      })
+    }
+
     let min = minute
 
     day = `${parseInt(day) < 10 ? '0' + parseInt(day) : parseInt(day)}`
@@ -230,7 +269,7 @@ const manualSignIn = async (req, res) => {
     month = `${parseInt(month) < 10 ? '0' + parseInt(month) : parseInt(month)}`
 
     //make sure an account exits
-    const accountFound = await accountsModel.find({ _id: accountId })
+    const accountFound = await accountsModel.find({ academicId: academicId })
     console.log(accountFound)
     if (!accountFound) {
       return res.json({
@@ -238,7 +277,9 @@ const manualSignIn = async (req, res) => {
         error: 'Account not found!',
       })
     }
-    const attendanceFound = await attendanceModel.find({ accountId: accountId })
+    const attendanceFound = await attendanceModel.find({
+      academicId: academicId,
+    })
 
     let canSignIn = true
     //You can only signin again, iff the it is your first time to signin today or if you have signed out today
@@ -261,7 +302,7 @@ const manualSignIn = async (req, res) => {
     }
     if (filteredAttendance.length === 0 || canSignIn) {
       await attendanceModel.create({
-        accountId: accountId,
+        academicId: academicId,
         signInTime: `${year}-${month}-${day}T${hour}:${min}:00.0000`,
         signOutTime: '-1',
       })
@@ -281,40 +322,58 @@ const manualSignIn = async (req, res) => {
 const manualSignOut = async (req, res) => {
   try {
     let { hour, minute, day, month, year } = req.body.Attendance
-    let accountId = req.body.Account.id
+    let myAcademicId = req.body.Account.academicId
+    let academicId = req.body.Attendance.academicId
+
+    if (myAcademicId === academicId) {
+      return res.json({
+        statusCode: cantManualSignIn,
+        message: 'You cant manual sign in to yourself',
+      })
+    }
 
     //Any signin before 7 is considered 7 and ZERO minutes
-    minute = `${
-      parseInt(hour) > 19
-        ? '00'
-        : parseInt(minute) < 10
-        ? '0' + parseInt(minute)
-        : parseInt(minute)
-    }`
+    // console.log(parseInt(hour))
+    // minute = `${
+    //   parseInt(hour) >= 19
+    //     ? '00'
+    //     : parseInt(minute) < 10
+    //     ? '0' + parseInt(minute)
+    //     : parseInt(minute)
+    // }`
+
     //Any signin after 19 is considered 19
     //making sure single digits are written 01,02 --> 09 for consitency
     hour = `${
-      parseInt(hour) > 19
+      parseInt(hour) >= 19
         ? '19'
         : parseInt(hour) >= 7 && parseInt(hour) < 10
         ? '0' + parseInt(hour)
         : parseInt(hour)
     }`
 
+    if (parseInt(hour) < 7) {
+      return res.json({
+        statusCode: cantSignInAfter19,
+        message: 'You cant sign out before 7 am',
+      })
+    }
     let min = minute
     day = `${parseInt(day) < 10 ? '0' + parseInt(day) : parseInt(day)}`
     //.month() function returns the month-1
     month = `${parseInt(month) < 10 ? '0' + parseInt(month) : parseInt(month)}`
 
     //make sure an account exits
-    const accountFound = await accountsModel.find({ _id: accountId })
+    const accountFound = await accountsModel.find({ academicId: academicId })
     if (!accountFound) {
       return res.json({
         statusCode: accountNotFound,
         error: 'Account not found!',
       })
     }
-    const attendanceFound = await attendanceModel.find({ accountId: accountId })
+    const attendanceFound = await attendanceModel.find({
+      academicId: academicId,
+    })
 
     let signOutTime = `${year}-${month}-${day}T${hour}:${min}:00.0000`
 
@@ -356,7 +415,7 @@ const manualSignOut = async (req, res) => {
       const addDay = filteredAttendance.length > 1 ? false : true
       console.log(addDay)
       workAttendance(
-        accountId,
+        academicId,
         moment().day(),
         month,
         year,
@@ -369,7 +428,7 @@ const manualSignOut = async (req, res) => {
     } else {
       return res.json({
         statusCode: alreadySignedOut,
-        error: 'You can only sign out once per day',
+        error: 'You need to sign out first!',
       })
     }
   } catch (e) {
@@ -379,7 +438,7 @@ const manualSignOut = async (req, res) => {
 }
 
 const workAttendance = async (
-  eid,
+  academicId,
   day,
   month,
   year,
@@ -399,46 +458,86 @@ const workAttendance = async (
   let hoursWorked = moment(signOutTime).diff(moment(signInTime), 'minutes') / 60
 
   const workAttendanceFound = await workAttendanceModel.find({
-    eid,
+    academicId,
     month,
     year,
   })
 
   console.log(workAttendanceFound)
+  //get days off
+  let accountFound = await accountsModel.find({ academicId: academicId })
+  console.log(accountFound)
+  let dayOff = accountFound[0].dayOff
+  console.log('day off', dayOff)
 
   //if record exists update else create
   if (workAttendanceFound.length !== 0) {
     //if today is a working day,+1 day and hours worked for that day
     //else only add worked hours
 
-    //get days off
-    let accountFound = await accountsModel.find({ _id: eid })
-    let dayOff = accountFound.dayOff
-    if (dayOff === weekday[5] || dayOff == weekday[day]) {
-      //calculate the worked hours
-      //'minutes' were used instead of 'hours' because in hours it round downs the minutes
-      //update the record
-      await workAttendanceModel.update(
-        { eid, month, year },
-        {
-          totalWorkedHours:
-            workAttendanceFound[0].totalWorkedHours + hoursWorked,
+    if (
+      dayOff === weekday[moment(signInTime).day()] ||
+      weekday[5] === weekday[moment(signInTime).day()]
+    ) {
+      const compensationLeaveFound = await leavesModel.find({
+        academicId: academicId,
+        status: leaveStatus.PENDING,
+        type: leaveTypes.COMPENSATION,
+      })
+      console.log('?')
+      console.log(compensationLeaveFound)
+      if (compensationLeaveFound.length === 0) {
+        await workAttendanceModel.update(
+          { academicId, month, year },
+          {
+            totalWorkedHours:
+              workAttendanceFound[0].totalWorkedHours + hoursWorked,
+          }
+        )
+      } else {
+        //if compensation add day and hours
+
+        let isCompensation = false
+        for (let i = 0; i < compensationLeaveFound.length; i++) {
+          const compLeave = compensationLeaveFound[i]
+          console.log(month)
+          console.log(moment(compLeave.date).month() + 1)
+          console.log(moment(compLeave.date).year() === year)
+          if (
+            `${moment(compLeave.date).month() + 1}` === month &&
+            `${moment(compLeave.date).year()}` === year
+          ) {
+            isCompensation = true
+          }
         }
-      )
+        if (isCompensation) {
+          console.log('comppp')
+          console.log(compensationLeaveFound)
+          await leavesModel.updateOne(
+            {
+              _id: compensationLeaveFound,
+            },
+            { status: leaveStatus.ACCEPTED }
+          )
+
+          await workAttendanceModel.update(
+            { academicId: academicId, month: `${month}`, year: `${year}` },
+            {
+              totalWorkedDays: workAttendanceFound[0].totalWorkedDays + 1,
+              totalWorkedHours:
+                workAttendanceFound[0].totalWorkedHours + hoursWorked,
+            }
+          )
+        }
+      }
     } else {
-      //TODO: ACCEPTED LEAVES
-      console.log('hhhhh')
-      console.log(month)
-      console.log(year)
-      console.log(addDay)
-      console.log(eid)
       //Not a day off, add working hours and if more than sign in add to day only once
       if (addDay) {
         console.log(workAttendanceFound[0].totalWorkedDays + 1)
         console.log(workAttendanceFound[0].totalWorkedHours + hoursWorked)
 
         await workAttendanceModel.update(
-          { eid: eid, month: `${month}`, year: `${year}` },
+          { academicId: academicId, month: `${month}`, year: `${year}` },
           {
             totalWorkedDays: workAttendanceFound[0].totalWorkedDays + 1,
             totalWorkedHours:
@@ -447,7 +546,7 @@ const workAttendance = async (
         )
       } else {
         await workAttendanceModel.update(
-          { eid: eid, month: month, year: year },
+          { academicId: academicId, month: month, year: year },
           {
             totalWorkedHours:
               workAttendanceFound[0].totalWorkedHours + hoursWorked,
@@ -456,58 +555,258 @@ const workAttendance = async (
       }
     }
   } else {
-    await workAttendanceModel.create({
-      eid,
-      month,
-      year,
-      totalWorkedDays: 1,
-      totalWorkedHours: hoursWorked,
-    })
-    return success
+    if (
+      dayOff === weekday[moment(signInTime).day()] ||
+      weekday[5] === weekday[moment(signInTime).day()]
+    ) {
+      const compensationLeaveFound = await leavesModel.find({
+        academicId: academicId,
+        status: leaveStatus.PENDING,
+        type: leaveTypes.COMPENSATION,
+      })
+      console.log('?')
+      console.log(compensationLeaveFound)
+      if (compensationLeaveFound.length !== 0) {
+        let isCompensation = false
+        for (let i = 0; i < compensationLeaveFound.length; i++) {
+          const compLeave = compensationLeaveFound[i]
+          console.log(month)
+          console.log(moment(compLeave.date).month() + 1)
+          console.log(moment(compLeave.date).year() === year)
+          if (
+            `${moment(compLeave.date).month() + 1}` === month &&
+            `${moment(compLeave.date).year()}` === year
+          ) {
+            isCompensation = true
+          }
+        }
+
+        if (isCompensation) {
+          console.log('comppp')
+          console.log(compensationLeaveFound)
+          await leavesModel.updateOne(
+            {
+              _id: compensationLeaveFound,
+            },
+            { status: leaveStatus.ACCEPTED }
+          )
+
+          await workAttendanceModel.create({
+            academicId,
+            month,
+            year,
+            totalWorkedDays: 0,
+            totalWorkedHours: hoursWorked,
+          })
+        }
+      } else {
+        await workAttendanceModel.create({
+          academicId,
+          month,
+          year,
+          totalWorkedDays: 0,
+          totalWorkedHours: hoursWorked,
+        })
+      }
+    } else {
+      await workAttendanceModel.create({
+        academicId,
+        month,
+        year,
+        totalWorkedDays: 1,
+        totalWorkedHours: hoursWorked,
+      })
+    }
   }
 }
+
 const viewMyAttendanceRecord = async (req, res) => {
   try {
     const attendance = req.body.Attendance
-    const account = req.body.Account
+    const academicId = req.body.Account.academicId
     let accountId = req.body.Account.id
-    //make sure an account exits
-    const accountFound = await accountsModel.find({ _id: accountId })
-    console.log(accountFound)
-    if (!accountFound) {
-      return res.json({
-        statusCode: accountNotFound,
-        error: 'Account not found!',
-      })
-    }
+
+    //make sure an account exits, not needed
+    // const accountFound = await accountsModel.find({ academicId: academicId })
+    // if (!accountFound) {
+    //   return res.json({
+    //     statusCode: accountNotFound,
+    //     error: 'Account not found!',
+    //   })
+    // }
+    const startDate =
+      attendance.hasOwnProperty('month') && attendance.hasOwnProperty('year')
+        ? moment(`${attendance.year}-${attendance.month}-11T00:00:00.0000`)
+        : moment().set('date', 11).set('hours', 0).set('minutes', 0)
+
+    //end date is either a month+startDate or if we haven't reached the end of the month
+    //we will do our business days calculations and getting attendance docs
+    //using the current date as the endDate
+    const endDate = startDate.clone()
+    endDate.add(1, 'month')
+
     if (
       attendance.hasOwnProperty('month') &&
       attendance.hasOwnProperty('year')
     ) {
       const attendanceFound = await attendanceModel.find({
-        accountId: accountId,
-        month: attendance.month,
-        year: attendance.year,
+        academicId: academicId,
       })
 
-      return res.json({ statusCode: success, Attendance: attendanceFound })
+      const filteredAttendanceFound = attendanceFound.filter((attendance) =>
+        moment(attendance.signInTime).isBetween(startDate, endDate)
+      )
+      // console.log(moment(attendance.signInTime))
+      // console.log(startDate, 'start')
+      // console.log(endDate, 'end')
+      // console.log(moment(attendance.signInTime).isBetween(startDate, endDate))
+
+      return res.json({
+        statusCode: success,
+        Attendance: filteredAttendanceFound,
+      })
     } else {
       const attendanceFound = await attendanceModel.find({
-        accountId: accountId,
+        academicId: academicId,
       })
-      return res.json({ statusCode: success, Attendance: attendanceFound })
+
+      let month = moment().month()
+      let year = moment().year()
+
+      const filteredAttendanceFound = attendanceFound.filter(
+        (attendance) =>
+          moment(attendance.signInTime).month() === month &&
+          moment(attendance.signInTime).year() === year
+      )
+
+      return res.json({
+        statusCode: success,
+        Attendance: filteredAttendanceFound,
+      })
     }
   } catch (e) {
     return res.json({ statusCode: unknown, error: 'Something went wrong!' })
   }
 }
+const viewAllMyAttendanceRecord = async (req, res) => {
+  try {
+    const academicId = req.body.Account.academicId
+    const attendanceFound = await attendanceModel.find({
+      academicId: academicId,
+    })
+
+    if (attendanceFound.length !== 0) {
+      return res.json({
+        statusCode: success,
+        Attendance: attendanceFound,
+      })
+    } else {
+      return res.json({
+        statusCode: 1000,
+        message: 'No attendance record for this user',
+      })
+    }
+  } catch (e) {
+    return res.json({ statusCode: unknown, error: 'Something went wrong!' })
+  }
+}
+
+const viewStaffAttendanceRecord = async (req, res) => {
+  try {
+    const attendance = req.body.Attendance
+    const academicId = req.body.Attendance.academicId
+    let accountId = req.body.Account.id
+
+    //make sure an account exits, not needed
+    // const accountFound = await accountsModel.find({ academicId: academicId })
+    // if (!accountFound) {
+    //   return res.json({
+    //     statusCode: accountNotFound,
+    //     error: 'Account not found!',
+    //   })
+    // }
+    const startDate =
+      attendance.hasOwnProperty('month') && attendance.hasOwnProperty('year')
+        ? moment(`${attendance.year}-${attendance.month}-11T00:00:00.0000`)
+        : moment().set('date', 11).set('hours', 0).set('minutes', 0)
+
+    //end date is either a month+startDate or if we haven't reached the end of the month
+    //we will do our business days calculations and getting attendance docs
+    //using the current date as the endDate
+    const endDate = startDate.clone()
+    endDate.add(1, 'month')
+
+    if (
+      attendance.hasOwnProperty('month') &&
+      attendance.hasOwnProperty('year')
+    ) {
+      const attendanceFound = await attendanceModel.find({
+        academicId: academicId,
+      })
+
+      const filteredAttendanceFound = attendanceFound.filter((attendance) =>
+        moment(attendance.signInTime).isBetween(startDate, endDate)
+      )
+      // console.log(moment(attendance.signInTime))
+      // console.log(startDate, 'start')
+      // console.log(endDate, 'end')
+      // console.log(moment(attendance.signInTime).isBetween(startDate, endDate))
+
+      return res.json({
+        statusCode: success,
+        Attendance: filteredAttendanceFound,
+      })
+    } else {
+      const attendanceFound = await attendanceModel.find({
+        academicId: academicId,
+      })
+
+      let month = moment().month()
+      let year = moment().year()
+
+      const filteredAttendanceFound = attendanceFound.filter(
+        (attendance) =>
+          moment(attendance.signInTime).month() === month &&
+          moment(attendance.signInTime).year() === year
+      )
+
+      return res.json({
+        statusCode: success,
+        Attendance: filteredAttendanceFound,
+      })
+    }
+  } catch (e) {
+    return res.json({ statusCode: unknown, error: 'Something went wrong!' })
+  }
+}
+const viewAllStaffAttendanceRecord = async (req, res) => {
+  try {
+    const academicId = req.body.Attendance.academicId
+    const attendanceFound = await attendanceModel.find({
+      academicId: academicId,
+    })
+
+    if (attendanceFound.length !== 0) {
+      return res.json({
+        statusCode: success,
+        Attendance: attendanceFound,
+      })
+    } else {
+      return res.json({
+        statusCode: 1000,
+        message: 'No attendance record for this user',
+      })
+    }
+  } catch (e) {
+    return res.json({ statusCode: unknown, error: 'Something went wrong!' })
+  }
+}
+
 //starts 11 and ends 10 of the month
 //missing days=business working days in month - totalworkeddays-leavs
 const viewMissingDays = async (req, res) => {
   try {
-    const account = req.body.Account
-    let accountId = req.body.Account.id
-
+    let academicId = req.body.Attendance.academicId
     const attendance = req.body.Attendance
 
     //The start date and end date depend on the user input
@@ -517,7 +816,7 @@ const viewMissingDays = async (req, res) => {
     const startDate =
       attendance.hasOwnProperty('month') && attendance.hasOwnProperty('year')
         ? moment(`${attendance.year}-${attendance.month}-11T00:00:00.0000`)
-        : moment().set('date', 11)
+        : moment().set('date', 11).set('hours', 0).set('minutes', 0)
 
     //end date is either a month+startDate or if we haven't reached the end of the month
     //we will do our business days calculations and getting attendance docs
@@ -532,10 +831,10 @@ const viewMissingDays = async (req, res) => {
       `startDate: ${startDate},,,, endDate: ${endDate},,,,, tempDate: ${tempDate}`
     )
 
-    //const accountFound = await accountsModel.findById(accountId)
+    // const accountFound = await accountsModel.findById(accountId)
 
-    const accountFound = await accountsModel.find({ _id: accountId })
-    console.log('AAAAA', accountFound)
+    const accountFound = await accountsModel.find({ academicId: academicId })
+
     if (!accountFound) {
       return res.json({
         statusCode: accountNotFound,
@@ -543,10 +842,8 @@ const viewMissingDays = async (req, res) => {
       })
     }
 
-    console.log(accountFound)
-
     const attendanceFound = await workAttendanceModel.find({
-      eid: accountId,
+      academicId: academicId,
       month:
         attendance.hasOwnProperty('month') && attendance.hasOwnProperty('year')
           ? `${attendance.month}`
@@ -566,11 +863,11 @@ const viewMissingDays = async (req, res) => {
     const businessDays = getBusinessWorkingDays(
       startDate,
       endDate,
-      accountFound.dayOff
+      accountFound[0].dayOff
     )
-
-    console.log(startDate, endDate, accountFound.dayOff)
-
+    console.log('woww')
+    console.log(businessDays)
+    console.log(workedDays)
     return res.json({
       statusCode: success,
       missingDays: businessDays - workedDays - leavesDays,
@@ -604,15 +901,14 @@ const getBusinessWorkingDays = (startDate, endDate, dayOff) => {
     }
     startDate.add(1, 'days')
   }
+  return businessDays
 }
 
 const viewExtraMissingWorkedHours = async (req, res) => {
-  const account = req.body.Account
-  let accountId = req.body.Account.id
-
   const attendance = req.body.Attendance
+  let academicId = req.body.Account.academicId
 
-  const accountFound = await accountsModel.find({ _id: accountId })
+  const accountFound = await accountsModel.find({ academicId: academicId })
   if (!accountFound) {
     return res.json({
       statusCode: accountNotFound,
@@ -620,8 +916,10 @@ const viewExtraMissingWorkedHours = async (req, res) => {
     })
   }
 
-  const attendanceFound = await attendanceModel.find({
-    accountId: accountId,
+  // console.log(accountFound)
+
+  const attendanceFound = await workAttendanceModel.find({
+    academicId: academicId,
     month:
       attendance.hasOwnProperty('month') && attendance.hasOwnProperty('year')
         ? attendance.month
@@ -632,8 +930,12 @@ const viewExtraMissingWorkedHours = async (req, res) => {
         : moment().year(),
   })
 
+  console.log(attendanceFound)
+
   let myHours =
-    attendanceFound.totalWorkedHours - attendanceFound.totalWorkedDays * 24
+    attendanceFound[0].totalWorkedHours -
+    attendanceFound[0].totalWorkedDays * 8.4
+
   if (myHours > 0) {
     return res.json({
       statusCode: success,
@@ -649,12 +951,224 @@ const viewExtraMissingWorkedHours = async (req, res) => {
   }
 }
 
+const viewStaffWithMissingDaysHours = async (req, res) => {
+  let attendance = req.body.Attendance
+
+  let month =
+    attendance.hasOwnProperty('month') && attendance.hasOwnProperty('year')
+      ? attendance.month
+      : moment().month() + 1
+
+  let year =
+    attendance.hasOwnProperty('month') && attendance.hasOwnProperty('year')
+      ? attendance.year
+      : moment().year()
+
+  let accountsFound = await accountsModel.find()
+
+  let listOfStaff = []
+
+  accountsFound.map((account, index) => {
+    const academicId = account.academicId
+    const accountId = account._id
+    //has missing days?
+    if (hasMissingDays(academicId, { month: month, year: year }) > 0) {
+      listOfStaff.push(accountsFound[index])
+    }
+
+    //has missing hours
+
+    if (hasMissingHours(academicId, { month: month, year: year })) {
+      listOfStaff.push(accountsFound[index])
+    }
+  })
+  return res.json({ statusCode: success, listOfStaff })
+}
+const viewStaffWithMissingDays = async (req, res) => {
+  let attendance = req.body.Attendance
+
+  let month =
+    attendance.hasOwnProperty('month') && attendance.hasOwnProperty('year')
+      ? attendance.month
+      : moment().month() + 1
+
+  let year =
+    attendance.hasOwnProperty('month') && attendance.hasOwnProperty('year')
+      ? attendance.year
+      : moment().year()
+
+  let accountsFound = await accountsModel.find()
+
+  let listOfStaff = []
+
+  for (let i = 0; i < accountsFound.length; i++) {
+    const account = accountsFound[i]
+    const academicId = account.academicId
+    const accountId = account._id
+    //has missing days?
+    const isMissing = await hasMissingDays(academicId, {
+      month: month,
+      year: year,
+    })
+
+    if (isMissing > 0) {
+      console.log('here')
+      console.log(accountsFound[i])
+      listOfStaff.push(accountsFound[i])
+    }
+  }
+
+  console.log(listOfStaff)
+  return res.json({ statusCode: success, listOfStaff })
+}
+const viewStaffWithMissingHours = async (req, res) => {
+  try {
+    let attendance = req.body.Attendance
+
+    let month =
+      attendance.hasOwnProperty('month') && attendance.hasOwnProperty('year')
+        ? attendance.month
+        : moment().month() + 1
+
+    let year =
+      attendance.hasOwnProperty('month') && attendance.hasOwnProperty('year')
+        ? attendance.year
+        : moment().year()
+
+    let accountsFound = await accountsModel.find()
+
+    let listOfStaff = []
+
+    for (let i = 0; i < accountsFound.length; i++) {
+      const account = accountsFound[i]
+      const academicId = account.academicId
+      const accountId = account._id
+
+      //has missing hours
+      const isMissing = await hasMissingHours(academicId, {
+        month: month,
+        year: year,
+      })
+
+      console.log('academic', academicId, '  ', isMissing)
+
+      if (isMissing) {
+        listOfStaff.push(accountsFound[i])
+      }
+    }
+    return res.json({ statusCode: success, listOfStaff })
+  } catch (e) {
+    console.log(e.message)
+    return res.json({ statusCode: unknown, error: 'Something went wrong!' })
+  }
+}
+
+const hasMissingDays = async (academicId, attendance) => {
+  //The start date and end date depend on the user input
+  //if a user enters a month and a year, it is gonna be
+  //used for our start date otherwise we will use the current month and year
+  console.log(attendance.month)
+  const startDate = moment(
+    `${attendance.year}-${attendance.month}-11T00:00:00.0000`
+  )
+
+  //end date is either a month+startDate or if we haven't reached the end of the month
+  //we will do our business days calculations and getting attendance docs
+  //using the current date as the endDate
+  const tempDate = startDate.clone()
+
+  tempDate.add(1, 'month')
+
+  const endDate = moment().isBefore(tempDate) ? moment() : tempDate
+
+  console.log(
+    `startDate: ${startDate},,,, endDate: ${endDate},,,,, tempDate: ${tempDate}`
+  )
+  const accountFound = await accountsModel.find({ academicId: academicId })
+
+  if (!accountFound) {
+    return res.json({
+      statusCode: accountNotFound,
+      error: 'Account not found!',
+    })
+  }
+
+  const attendanceFound = await workAttendanceModel.find({
+    academicId: academicId,
+    month:
+      attendance.hasOwnProperty('month') && attendance.hasOwnProperty('year')
+        ? `${attendance.month}`
+        : `${moment().month() + 1}`,
+    year:
+      attendance.hasOwnProperty('month') && attendance.hasOwnProperty('year')
+        ? `${attendance.year}`
+        : `${moment().year()}`,
+  })
+
+  if (attendanceFound.length === 0) {
+    return 22
+  }
+
+  //TODO
+  const leavesDays = 0
+  const workedDays = attendanceFound[0].totalWorkedDays
+  const businessDays = getBusinessWorkingDays(
+    startDate,
+    endDate,
+    accountFound[0].dayOff
+  )
+
+  console.log(businessDays)
+
+  return businessDays - workedDays - leavesDays
+}
+const hasMissingHours = async (academicId, attendance) => {
+  const accountFound = await accountsModel.find({ academicId: academicId })
+  if (!accountFound) {
+    return res.json({
+      statusCode: accountNotFound,
+      error: 'Account not found!',
+    })
+  }
+
+  const attendanceFound = await workAttendanceModel.find({
+    academicId: academicId,
+    month:
+      attendance.hasOwnProperty('month') && attendance.hasOwnProperty('year')
+        ? attendance.month
+        : moment().month() + 1,
+    year:
+      attendance.hasOwnProperty('month') && attendance.hasOwnProperty('year')
+        ? attendance.year
+        : moment().year(),
+  })
+  console.log('hereeee')
+  console.log(attendanceFound)
+  if (attendanceFound.length === 0) return true
+
+  let myHours =
+    attendanceFound[0].totalWorkedHours -
+    attendanceFound[0].totalWorkedDays * 8.4
+  console.log('hrs', myHours)
+  if (myHours > 0) {
+    return false
+  } else {
+    return true
+  }
+}
+
 module.exports = {
   signIn,
   signOut,
   manualSignIn,
   manualSignOut,
   viewMyAttendanceRecord,
+  viewStaffAttendanceRecord,
+  viewStaffWithMissingDaysHours,
   viewMissingDays,
   viewExtraMissingWorkedHours,
+  viewStaffWithMissingHours,
+  viewStaffWithMissingDays,
+  viewAllMyAttendanceRecord,
+  viewAllStaffAttendanceRecord,
 }
