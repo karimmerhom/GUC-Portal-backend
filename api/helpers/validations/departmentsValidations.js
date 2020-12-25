@@ -3,7 +3,6 @@ const Joi = require('joi')
 const validateCreateDepartment = (req, res, next) => {
     const schema = Joi.object({
       Account: Joi.object({
-        id: Joi.string().required(),
         academicId: Joi.string().required(),
       }).required(),
       name: Joi.string().required(),
@@ -23,7 +22,6 @@ const validateCreateDepartment = (req, res, next) => {
 const validateDeleteDepartment = (req, res, next) => {
     const schema = Joi.object({
       Account: Joi.object({
-        id: Joi.string().required(),
         academicId: Joi.string().required(),
       }).required(),
       name: Joi.string().required(),
@@ -44,7 +42,7 @@ const validateDeleteDepartment = (req, res, next) => {
   const validateUpdateDepartment = (req, res, next) => {
     const schema = Joi.object({
       Account: Joi.object({
-        id: Joi.string().required(),
+        
         academicId: Joi.string().required(),
       }).required(),
       name: Joi.string().required(),

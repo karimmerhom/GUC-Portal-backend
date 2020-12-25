@@ -14,7 +14,6 @@ const {
 const validateCreateSlot = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
 
@@ -58,7 +57,6 @@ const validateCreateSlot = (req, res, next) => {
 const validateUpdateSlot = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
 
@@ -95,7 +93,6 @@ const validateUpdateSlot = (req, res, next) => {
 const validateDeleteSlot = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
 
@@ -134,7 +131,6 @@ const validateDeleteSlot = (req, res, next) => {
 const validateAssignSlot = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
 
@@ -175,7 +171,6 @@ const validateAssignSlot = (req, res, next) => {
 const validateUnAssignSlot = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
 

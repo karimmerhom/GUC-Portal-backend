@@ -145,7 +145,7 @@ const slotsModel = require('../../models/slots.modal')
                )
                courses.push(x[0])
                  }
-        
+        console.log(assignedCourses )
      if(courses.length === 0)
      {
       return res.json({
@@ -237,6 +237,19 @@ const slotsModel = require('../../models/slots.modal')
       }
       else
       {
+        const courseFound = await coursesModel.findOne
+      ({
+         courseId :  details.courseId
+      }
+      )
+      if(!courseFound)
+      {
+        return res.json({
+          statusCode: 101,
+          message: 'course does not exist',
+        })
+        
+      }
           const courses = await staffCoursesModel.find
           (
               {

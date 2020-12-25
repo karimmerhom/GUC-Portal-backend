@@ -3,6 +3,7 @@
 const departmentModel = require('../../models/department.model')
 const facultyModel = require('../../models/faculty.model')
 const coursesModel = require('../../models/courses.model')
+const accountsModel = require('../../models/account.model')
 
 const createDepartment = async (req, res) => {
   try {
@@ -79,8 +80,8 @@ const deleteDepartment = async (req, res) => {
       department: department.name,
     })
     for (var i = 0; i < coursesFound.length; i++) {
-      coursesModel.findByIdAndDelete(
-        coursesFound[i].id,
+      coursesModel.findByIdAndUpdate(coursesFound[i].id,
+        {department: null},
         function (err, result) {
           console.log(err)
           console.log(result)
@@ -103,6 +104,9 @@ const updateDepartment = async (req, res) => {
     })
     const facultyNewFound = await facultyModel.findOne({
       name: department.department.faculty,
+    })
+    const accountsWithDepartment =await accountsModel.find({
+      department: department.name
     })
 
     if (!facultyFound) {
@@ -150,6 +154,13 @@ const updateDepartment = async (req, res) => {
       const coursesFound = await coursesModel.find({
         department: department.name,
       })
+      for (var i = 0; i < accountsWithDepartment.length; i++) {
+       
+       await accountsModel.findByIdAndUpdate(
+          accountsWithDepartment[i].id,
+         {department: department.department.name}
+        )
+      }
       for (var i = 0; i < coursesFound.length; i++) {
         const newCourse = coursesFound[i]
         newCourse.department = department.department.name
