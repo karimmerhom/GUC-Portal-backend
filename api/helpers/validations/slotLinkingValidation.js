@@ -12,7 +12,6 @@ const {
 const validateSlotLinkingRequest = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
     slot: Joi.object({
@@ -33,7 +32,6 @@ const validateSlotLinkingRequest = (req, res, next) => {
 const validateAcceptSlotLinkingRequest = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
 
@@ -53,7 +51,6 @@ const validateAcceptSlotLinkingRequest = (req, res, next) => {
 const validateViewSlotLinkingRequest = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
   })

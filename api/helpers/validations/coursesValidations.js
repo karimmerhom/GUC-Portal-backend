@@ -3,7 +3,6 @@ const Joi = require('joi')
 const validateCreateCourse = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
     courseId: Joi.string().required(),
@@ -25,7 +24,6 @@ const validateCreateCourse = (req, res, next) => {
 const validateUpdateCourse = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
     courseId: Joi.string().required(),
@@ -48,7 +46,6 @@ const validateUpdateCourse = (req, res, next) => {
 const validateDeleteCourse = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
     courseId: Joi.string().required(),
@@ -68,7 +65,6 @@ const validateDeleteCourse = (req, res, next) => {
 const validateAssign = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
     courseId: Joi.string().required(),
@@ -87,7 +83,6 @@ const validateAssign = (req, res, next) => {
 const validateUnassign = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
     courseId: Joi.string().required(),
