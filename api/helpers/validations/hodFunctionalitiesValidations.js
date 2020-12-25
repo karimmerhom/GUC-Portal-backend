@@ -3,7 +3,6 @@ const Joi = require('joi')
 const validateViewStaff = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
     courseId: Joi.string(),
@@ -22,7 +21,6 @@ const validateViewStaff = (req, res, next) => {
 const validateViewDaysOff = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
     academicId: Joi.string(),
@@ -40,7 +38,6 @@ const validateViewDaysOff = (req, res, next) => {
 const validateViewCoursesCoverage = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
     courseId: Joi.string(),
@@ -59,7 +56,6 @@ const validateViewCoursesCoverage = (req, res, next) => {
 const validateViewTeachingAssignments = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
   })
