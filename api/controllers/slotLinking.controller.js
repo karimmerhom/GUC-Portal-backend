@@ -35,7 +35,7 @@ const slotLinkingRequest = async (req, res) => {
       })
     }
 
-    const link = slotLinkingModel.create({
+    const link = await slotLinkingModel.create({
       slotId: slotfound.id,
       academicId: Account.academicId,
     })

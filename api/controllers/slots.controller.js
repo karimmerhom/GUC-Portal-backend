@@ -55,7 +55,7 @@ const createSlot = async (req, res) => {
       day: slot.day,
       slot: slot.slot,
       locationName: slot.locationName,
-      slotType: slot.slotType
+      slotType: slot.slotType,
     })
 
     if (sameSlotFound) {
@@ -183,6 +183,17 @@ const assignSlot = async (req, res) => {
       return res.json({
         statusCode: errorCodes.slotTaken,
         error: 'Slot not found',
+      })
+    }
+    const instructorsCourseAssigned = await staffCoursesModel.findOne({
+      //check if that instructor is assigned to that course
+      courseId: sameSlotFound.courseId,
+      academicId: req.body.assignedAcademicId,
+    })
+    if (!instructorsCourseAssigned) {
+      return res.json({
+        statusCode: errorCodes.notYourCourse,
+        error: 'This is course is not assigned to this academic member',
       })
     }
 
