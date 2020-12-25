@@ -35,9 +35,7 @@ const validateCreateLocations = (req, res, next) => {
         academicId: Joi.string().required(),
       }).required(),
       academicId: Joi.string().required(),
-      office: Joi.string().required().valid(
-        locationNames.OFFICE
-       ),
+      office: Joi.string().required()
     })
   
     const isValid = Joi.validate(req.body, schema)

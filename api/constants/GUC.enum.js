@@ -49,6 +49,13 @@ const leaveTypes = {
   COMPENSATION: 'compensation',
 }
 
+const slotTypes = {
+  LAB: 'lab',
+  TUTORIAL: 'tutorial',
+  LECTURE: 'lecture',
+}
+
+
 module.exports = {
   leaveTypes,
   leaveStatus,
@@ -58,4 +65,5 @@ module.exports = {
   days,
   slotNames,
   locationNames,
+  slotTypes
 }

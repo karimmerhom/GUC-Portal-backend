@@ -55,6 +55,7 @@ const createSlot = async (req, res) => {
       day: slot.day,
       slot: slot.slot,
       locationName: slot.locationName,
+      slotType: slot.slotType
     })
 
     if (sameSlotFound) {
