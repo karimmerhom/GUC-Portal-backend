@@ -23,33 +23,40 @@ const {
   validateViewWithMissingDaysHours,
   validateViewAllMyAttendanceRecord,
   validateViewAllStaffAttendanceRecord,
+  validateViewMyAttendanceRecord,
 } = require('../helpers/validations/attendanceValidations')
 
 router.post('/signIn', validateSignInOut, signIn)
 router.post('/signOut', validateSignInOut, signOut)
 router.post('/manualSignIn', validateManualSignInOut, manualSignIn)
 router.post('/manualSignOut', validateManualSignInOut, manualSignOut)
+
 router.post(
   '/viewMyAttendanceRecord',
-  validateViewMissingDays,
+  validateViewMyAttendanceRecord,
   viewMyAttendanceRecord
 )
+
 router.post(
   '/viewExtraMissingWorkedHours',
-  validateViewMissingDays,
+  validateViewMyAttendanceRecord,
   viewExtraMissingWorkedHours
 )
+
 router.post(
   '/viewStaffAttendanceRecord',
   validateViewStaffAttendanceRecord,
   viewStaffAttendanceRecord
 )
+
 router.post('/viewMissingDays', validateViewMissingDays, viewMissingDays)
+
 router.post(
   '/viewStaffWithMissingHours',
   validateViewWithMissingDaysHours,
   viewStaffWithMissingHours
 )
+
 router.post(
   '/viewStaffWithMissingDays',
   validateViewWithMissingDaysHours,

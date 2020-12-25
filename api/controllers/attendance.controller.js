@@ -1,7 +1,7 @@
 const accountsModel = require('../../models/account.model')
 const attendanceModel = require('../../models/attendance.model')
 const workAttendanceModel = require('../../models/workAttendance.model')
-const { days } = require('../constants/GUC.enum')
+const { days, leaveStatus, leaveTypes } = require('../constants/GUC.enum')
 const moment = require('moment')
 
 const {
@@ -14,6 +14,7 @@ const {
   cantSignInAfter19,
   cantManualSignIn,
 } = require('../constants/errorCodes')
+const leavesModel = require('../../models/leaves.model')
 
 //no signin abl el sa3a 7 law 3amlt signin ba3d 7 tetkteb 7 same for signout
 const signIn = async (req, res) => {
@@ -463,31 +464,72 @@ const workAttendance = async (
   })
 
   console.log(workAttendanceFound)
+  //get days off
+  let accountFound = await accountsModel.find({ academicId: academicId })
+  console.log(accountFound)
+  let dayOff = accountFound[0].dayOff
+  console.log('day off', dayOff)
 
   //if record exists update else create
   if (workAttendanceFound.length !== 0) {
     //if today is a working day,+1 day and hours worked for that day
     //else only add worked hours
 
-    //get days off
-    let accountFound = await accountsModel.find({ academicId: academicId })
+    if (
+      dayOff === weekday[moment(signInTime).day()] ||
+      weekday[5] === weekday[moment(signInTime).day()]
+    ) {
+      const compensationLeaveFound = await leavesModel.find({
+        academicId: academicId,
+        status: leaveStatus.PENDING,
+        type: leaveTypes.COMPENSATION,
+      })
+      console.log('?')
+      console.log(compensationLeaveFound)
+      if (compensationLeaveFound.length === 0) {
+        await workAttendanceModel.update(
+          { academicId, month, year },
+          {
+            totalWorkedHours:
+              workAttendanceFound[0].totalWorkedHours + hoursWorked,
+          }
+        )
+      } else {
+        //if compensation add day and hours
 
-    let dayOff = accountFound.dayOff
-    if (dayOff === weekday[5] || dayOff == weekday[day]) {
-      const compensationLeaveFound = await leavesModel
-
-      //calculate the worked hours
-      //'minutes' were used instead of 'hours' because in hours it round downs the minutes
-      //update the record
-
-      await workAttendanceModel.update(
-        { academicId, month, year },
-        {
-          totalWorkedHours:
-            workAttendanceFound[0].totalWorkedHours + hoursWorked,
+        let isCompensation = false
+        for (let i = 0; i < compensationLeaveFound.length; i++) {
+          const compLeave = compensationLeaveFound[i]
+          console.log(month)
+          console.log(moment(compLeave.date).month() + 1)
+          console.log(moment(compLeave.date).year() === year)
+          if (
+            `${moment(compLeave.date).month() + 1}` === month &&
+            `${moment(compLeave.date).year()}` === year
+          ) {
+            isCompensation = true
+          }
         }
-      )
-      //if compensation add day and hours
+        if (isCompensation) {
+          console.log('comppp')
+          console.log(compensationLeaveFound)
+          await leavesModel.updateOne(
+            {
+              _id: compensationLeaveFound,
+            },
+            { status: leaveStatus.ACCEPTED }
+          )
+
+          await workAttendanceModel.update(
+            { academicId: academicId, month: `${month}`, year: `${year}` },
+            {
+              totalWorkedDays: workAttendanceFound[0].totalWorkedDays + 1,
+              totalWorkedHours:
+                workAttendanceFound[0].totalWorkedHours + hoursWorked,
+            }
+          )
+        }
+      }
     } else {
       //Not a day off, add working hours and if more than sign in add to day only once
       if (addDay) {
@@ -513,14 +555,68 @@ const workAttendance = async (
       }
     }
   } else {
-    await workAttendanceModel.create({
-      academicId,
-      month,
-      year,
-      totalWorkedDays: 1,
-      totalWorkedHours: hoursWorked,
-    })
-    return success
+    if (
+      dayOff === weekday[moment(signInTime).day()] ||
+      weekday[5] === weekday[moment(signInTime).day()]
+    ) {
+      const compensationLeaveFound = await leavesModel.find({
+        academicId: academicId,
+        status: leaveStatus.PENDING,
+        type: leaveTypes.COMPENSATION,
+      })
+      console.log('?')
+      console.log(compensationLeaveFound)
+      if (compensationLeaveFound.length !== 0) {
+        let isCompensation = false
+        for (let i = 0; i < compensationLeaveFound.length; i++) {
+          const compLeave = compensationLeaveFound[i]
+          console.log(month)
+          console.log(moment(compLeave.date).month() + 1)
+          console.log(moment(compLeave.date).year() === year)
+          if (
+            `${moment(compLeave.date).month() + 1}` === month &&
+            `${moment(compLeave.date).year()}` === year
+          ) {
+            isCompensation = true
+          }
+        }
+
+        if (isCompensation) {
+          console.log('comppp')
+          console.log(compensationLeaveFound)
+          await leavesModel.updateOne(
+            {
+              _id: compensationLeaveFound,
+            },
+            { status: leaveStatus.ACCEPTED }
+          )
+
+          await workAttendanceModel.create({
+            academicId,
+            month,
+            year,
+            totalWorkedDays: 0,
+            totalWorkedHours: hoursWorked,
+          })
+        }
+      } else {
+        await workAttendanceModel.create({
+          academicId,
+          month,
+          year,
+          totalWorkedDays: 0,
+          totalWorkedHours: hoursWorked,
+        })
+      }
+    } else {
+      await workAttendanceModel.create({
+        academicId,
+        month,
+        year,
+        totalWorkedDays: 1,
+        totalWorkedHours: hoursWorked,
+      })
+    }
   }
 }
 
