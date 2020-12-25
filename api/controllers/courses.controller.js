@@ -5,6 +5,8 @@ const coursesModel = require('../../models/courses.model')
 const departmentModel = require('../../models/department.model')
 const slotsModel = require('../../models/slots.modal')
 const staffCoursesModel = require('../../models/staffCourses.model')
+const slotLinkingModel = require('../../models/slotLinking.model')
+const replacementsRequestsModel = require('../../models/replacementsRequests.model')
 const errorCodes = require('../constants/errorCodes')
 
 const {
@@ -30,7 +32,7 @@ const createCourse = async (req, res) => {
     }
     const courseFound = await coursesModel.findOne({
       courseId: course.courseId,
-      department: course.department,
+    
     })
 
     if (courseFound) {
@@ -55,19 +57,9 @@ const createCourse = async (req, res) => {
 const deleteCourse = async (req, res) => {
   try {
     const course = req.body
-    const departmentFound = await departmentModel.findOne({
-      name: course.department,
-    })
-
-    if (!departmentFound) {
-      return res.json({
-        statusCode: 101,
-        error: 'department not found',
-      })
-    }
+ 
     const courseFound = await coursesModel.findOne({
       courseId: course.courseId,
-      department: course.department,
     })
 
     if (!courseFound) {
@@ -76,8 +68,19 @@ const deleteCourse = async (req, res) => {
         error: 'course not found',
       })
     }
-    staffCoursesModel.deleteMany({ course: course.id }) //delete all related course linkage
-    coursesModel.findByIdAndDelete(course.courseId, function (err, result) {
+    console.log(course.courseId)
+    await staffCoursesModel.deleteMany({ courseId: course.courseId }) //delete all related course linkage
+    const slotsDeleted = await slotsModel.find({ courseId: course.courseId }) 
+    await slotsModel.deleteMany({  courseId: course.courseId }) 
+    console.log(slotsDeleted)
+    console.log("here")
+    console.log(course.courseId)
+    for(var i = 0 ; i< slotsDeleted.length ; i++)
+    {
+      await slotLinkingModel.deleteMany({ slotId: slotsDeleted[i].id })
+      await replacementsRequestsModel.deleteMany({ slotId: slotsDeleted[i].id })
+    }
+   await coursesModel.findByIdAndDelete(courseFound.id, function (err, result) {
       console.log(err)
       console.log(result)
     })
@@ -92,28 +95,18 @@ const deleteCourse = async (req, res) => {
 const updateCourse = async (req, res) => {
   try {
     const course = req.body
-    const departmentFound = await departmentModel.findOne({
-      name: course.department,
-    })
-
-    if (!departmentFound) {
-      return res.json({
-        statusCode: 101,
-        error: 'department not found',
-      })
-    }
     const courseFound = await coursesModel.findOne({
       courseId: course.courseId,
-      department: course.department,
+    
     })
-
+    
     if (!courseFound) {
       return res.json({
         statusCode: 101,
         error: 'course not found',
       })
     }
-
+   
     coursesModel.findByIdAndUpdate(
       courseFound.id,
       course,
@@ -361,13 +354,6 @@ const assignCourseInstructor = async (req, res) => {
       position: position.INSTRUCTOR,
     })
 
-    if (staffCourse) {
-      return res.json({
-        statusCode: errorCodes.instructorAlreadyExists,
-        error: 'instructor already exists',
-      })
-    }
-
     const newStaffCourse = await staffCoursesModel.create({
       academicId: assignedAcademicId,
       courseId: courseId,
@@ -408,6 +394,7 @@ const updateCourseInstructor = async (req, res) => {
         academicMem.memberType === memberType.INSTRUCTOR
       )
     ) {
+      console.log(academicMem.memberType)
       return res.json({
         statusCode: errorCodes.wrongUserType,
         error: 'This is not an academic instructor',
@@ -438,7 +425,7 @@ const updateCourseInstructor = async (req, res) => {
     })
 
     const newStaffCourse = await staffCoursesModel.findByIdAndUpdate(
-      staffCourse.id,
+      staffCourse._id,
       {
         academicId: assignedAcademicId,
         courseId: courseId,

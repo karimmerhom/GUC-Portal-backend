@@ -67,9 +67,10 @@ const validateCreateAccount = (req, res, next) => {
 
 const validateUpdateProfile = (req, res, next) => {
   const schema = Joi.object({
-    Account: Joi.object({
-      firstName: Joi.string().min(3),
-      lastName: Joi.string().min(3),
+    Account: Joi.object({ academicId: Joi.string().required() }),
+    academicIdToUpdate: Joi.string().required(),
+    AccountUpdated: Joi.object({
+      email: Joi.string().email(),
       phoneNumber: Joi.string().min(11).max(11),
       type: Joi.string().valid(userTypes.HR, userTypes.ACADEMICMEMBER),
       memberType: Joi.string().when('type', {
@@ -81,29 +82,10 @@ const validateUpdateProfile = (req, res, next) => {
           memberType.COORDINATOR
         ),
       }),
-      daysOff: Joi.string()
-        .when('type', {
-          is: Joi.string().valid([userTypes.ACADEMICMEMBER]),
-          then: Joi.string().valid(
-            days.SATURDAY,
-            days.SUNDAY,
-            days.MONDAY,
-            days.TUESDAY,
-            days.WEDNESDAY,
-            days.THURSDAY
-          ),
-        })
-        .when('type', {
-          is: Joi.string().valid([userTypes.HR]),
-          then: Joi.string().valid(days.SATURDAY),
-        }),
-
-      email: Joi.string().email(),
       gender: Joi.string().valid('male', 'female'),
-      salary: Joi.number(),
       office: Joi.string(),
       department: Joi.string(),
-    }),
+    }).required(),
   })
 
   const isValid = Joi.validate(req.body, schema)
@@ -244,10 +226,9 @@ const validateCalculateSalary = (req, res, next) => {
       month: Joi.string()
         .regex(/^[2-9]|1[0-2]?$/)
         .min(1)
-        .max(2)
-        .required(),
-      year: Joi.string().min(4).required(),
-    }),
+        .max(2),
+      year: Joi.string().min(4),
+    }).required(),
     academicId: Joi.string().required(),
   })
 
@@ -269,10 +250,9 @@ const validateCalculateMySalary = (req, res, next) => {
       month: Joi.string()
         .regex(/^[2-9]|1[0-2]?$/)
         .min(1)
-        .max(2)
-        .required(),
-      year: Joi.string().min(4).required(),
-    }),
+        .max(2),
+      year: Joi.string().min(4),
+    }).required(),
   })
 
   const isValid = Joi.validate(req.body, schema)

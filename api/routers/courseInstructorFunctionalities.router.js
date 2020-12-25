@@ -1,13 +1,13 @@
 const express = require('express')
 const router = express.Router()
 const {
-viewMyCoursesCoverage,
-viewMyCoursesAssignment,
-viewStaff
+  viewMyCoursesCoverage,
+  viewMyCoursesAssignment,
+  viewStaff,
 } = require('../controllers/courseInstructorFunctionalities.controller')
 const {
-validateViewMyCoursesCoverage,
-validateViewStaff
+  validateViewMyCoursesCoverage,
+  validateViewStaff,
 } = require('../helpers/validations/courseInstructorFunctionalitiesValidations')
 
 const { verifyAC } = require('../helpers/authentication/ACAuthentication') // verifies that he is AC
@@ -23,7 +23,28 @@ const {
 } = require('../helpers/authentication/AuthenticationMiddleWare') // verifies token helper (needed before verify user)
 const { verifyUser } = require('../helpers/authentication/authUser') //verifies that user in token is same as in Account:{}
 
-router.post('/viewMyCoursesCoverage', validateViewMyCoursesCoverage , viewMyCoursesCoverage)
-router.post('/viewMyCoursesAssignment', validateViewMyCoursesCoverage , viewMyCoursesAssignment)
-router.post('/viewStaff', validateViewStaff , viewStaff)
+router.post(
+  '/viewMyCoursesCoverage',
+  validateViewMyCoursesCoverage,
+  verifyToken,
+  verifyUser,
+  verifyINST,
+  viewMyCoursesCoverage
+)
+router.post(
+  '/viewMyCoursesAssignment',
+  validateViewMyCoursesCoverage,
+  verifyToken,
+  verifyUser,
+  verifyINST,
+  viewMyCoursesAssignment
+)
+router.post(
+  '/viewStaff',
+  validateViewStaff,
+  verifyToken,
+  verifyUser,
+  verifyINST,
+  viewStaff
+)
 module.exports = router

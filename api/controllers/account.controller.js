@@ -5,6 +5,7 @@ const AccountModel = require('../../models/account.model')
 const countersModel = require('../../models/counters.model')
 const locationsModel = require('../../models/locations.model')
 const departmentModel = require('../../models/department.model')
+const workAttendanceModel = require('../../models/workAttendance.model')
 const cron = require('cron')
 
 const errorCodes = require('../constants/errorCodes')
@@ -27,6 +28,7 @@ const {
 const moment = require('moment')
 const { findOne, findByIdAndUpdate } = require('../../models/account.model')
 const accountsModel = require('../../models/account.model')
+const attendanceModel = require('../../models/attendance.model')
 
 const createAccount = async (req, res) => {
   try {
@@ -136,12 +138,12 @@ const createAccount = async (req, res) => {
 
 const update_profile = async (req, res) => {
   try {
-    const { Account } = req.body
+    const Account = req.body.AccountUpdated
 
-    const { id } = Account
+    const academicId = req.body.Account.academicId
 
     const account = await AccountModel.findOne({
-      academicId: Account.academicId,
+      academicId: academicId,
     })
     if (!account) {
       return res.json({
@@ -172,12 +174,35 @@ const update_profile = async (req, res) => {
       }
     }
 
-    const newacc = await AccountModel.findByIdAndUpdate(id, Account)
-    console.log(newacc)
-    console.log(Account)
+    if (Account.office) {
+      const x = await firstAssignLocation(Account.office, account.id)
+      if (x === 101) {
+        return res.json({
+          statusCode: 101,
+          error: 'this office does not  exist',
+        })
+      }
+
+      if (x === 201) {
+        return res.json({
+          statusCode: 201,
+          error: 'office is full',
+        })
+      }
+
+      if (x === 400) {
+        return res.json({
+          statusCode: 5555,
+          error: 'No office',
+        })
+      }
+    }
+
+    const newacc = await AccountModel.findByIdAndUpdate(account.id, Account)
 
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
+    console.log(exception)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
@@ -418,8 +443,11 @@ const updateSalary = async (req, res) => {
         error: 'User not found',
       })
     }
-    account.salary = salary
-    const newA = await AccountModel.findByIdAndUpdate(accountId, account)
+
+    const newA = await AccountModel.update(
+      { academicId: academicId },
+      { salary: salary }
+    )
     return res.json({
       statusCode: errorCodes.success,
     })
@@ -469,13 +497,15 @@ const calculateMySalary = async (req, res) => {
     const academicId = Account.academicId
     const Attendance = req.body.Attendance
     const account = await accountsModel.findOne({ academicId: academicId })
-    const baseSalary = account.salary
+    let baseSalary = account.salary
 
-    const extraHours = await viewExtraMissingWorkedHoursHelper(
+    let extraHours = await viewExtraMissingWorkedHoursHelper(
       academicId,
       Attendance
     )
+
     const missedDays = await viewMissingDaysHelper(academicId, Attendance)
+    console.log('extra/missed')
 
     var missedDaysDeduction = missedDays * (baseSalary / 60)
     var missedHoursDeduction = 0
@@ -483,6 +513,7 @@ const calculateMySalary = async (req, res) => {
     if (extraHours <= 3) {
       missedHoursDeduction = extraHours * (baseSalary / 180)
     }
+
     if (extraHours > 0) {
       extraHours = extraHours * (baseSalary / 180)
     }
@@ -503,7 +534,7 @@ const calculateSalary = async (req, res) => {
   //HRRR
   try {
     const Account = req.body.Account
-    const academicId = academicId
+    const academicId = req.body.academicId
     const Attendance = req.body.Attendance
     const account = await accountsModel.findOne({ academicId: academicId })
     if (!account) {
@@ -514,7 +545,7 @@ const calculateSalary = async (req, res) => {
     }
     const baseSalary = account.salary
 
-    const extraHours = await viewExtraMissingWorkedHoursHelper(
+    let extraHours = await viewExtraMissingWorkedHoursHelper(
       academicId,
       Attendance
     )
@@ -655,7 +686,7 @@ const viewMissingDaysHelper = async (academicId, attendance) => {
     `startDate: ${startDate},,,, endDate: ${endDate},,,,, tempDate: ${tempDate}`
   )
 
-  // const accountFound = await accountsModel.findById(accountId)
+  const accountFound = await accountsModel.find({ academicId: academicId })
 
   const attendanceFound = await workAttendanceModel.find({
     academicId: academicId,
@@ -669,12 +700,15 @@ const viewMissingDaysHelper = async (academicId, attendance) => {
         : `${moment().year()}`,
   })
 
+  attendanceFound.length === 0
+
   console.log('attendance found')
   console.log(attendanceFound)
 
   //TODO
   const leavesDays = 0
-  const workedDays = attendanceFound[0].totalWorkedDays
+  const workedDays =
+    attendanceFound.length === 0 ? 0 : attendanceFound[0].totalWorkedDays
   const businessDays = getBusinessWorkingDays(
     startDate,
     endDate,
@@ -684,6 +718,31 @@ const viewMissingDaysHelper = async (academicId, attendance) => {
   console.log(businessDays)
   console.log(workedDays)
   return businessDays - workedDays - leavesDays
+}
+const getBusinessWorkingDays = (startDate, endDate, dayOff) => {
+  let weekday = new Array(7)
+  weekday[0] = days.SUNDAY
+  weekday[1] = days.MONDAY
+  weekday[2] = days.TUESDAY
+  weekday[3] = days.WEDNESDAY
+  weekday[4] = days.THURSDAY
+  weekday[5] = days.FRIDAY
+  weekday[6] = days.SATURDAY
+
+  let businessDays = 0
+
+  while (startDate.isBefore(endDate)) {
+    if (
+      !(
+        weekday[startDate.day()] === dayOff ||
+        weekday[startDate.day()] === weekday[5]
+      )
+    ) {
+      businessDays++
+    }
+    startDate.add(1, 'days')
+  }
+  return businessDays
 }
 
 const viewExtraMissingWorkedHoursHelper = async (academicId, attendance) => {
@@ -700,6 +759,10 @@ const viewExtraMissingWorkedHoursHelper = async (academicId, attendance) => {
         ? attendance.year
         : moment().year(),
   })
+
+  if (attendanceFound.length === 0) {
+    return 0
+  }
 
   let myHours =
     attendanceFound[0].totalWorkedHours -

@@ -27,26 +27,26 @@ const { verifyUser } = require('../helpers/authentication/authUser') //verifies 
 router.post(
   '/slotLinkingRequest',
   validateSlotLinkingRequest,
-  // verifyToken,
-  // verifyUser,
-  // verifyAC,
+  verifyToken,
+  verifyUser,
+  verifyAC,
   slotLinkingRequest
 )
 
 router.post(
   '/acceptSlotLinkingRequest',
   validateAcceptSlotLinkingRequest,
-  // verifyToken,
-  // verifyUser,
-  // verifyCOOR,
+  verifyToken,
+  verifyUser,
+  verifyCOOR,
   acceptSlotLinkingRequest
 )
 router.post(
   '/viewSlotLinkingRequest',
   validateViewSlotLinkingRequest,
-  // verifyToken,
-  // verifyUser,
-  // verifyCOOR,
+  verifyToken,
+  verifyUser,
+  verifyCOOR,
   viewSlotLinkingRequest
 )
 module.exports = router

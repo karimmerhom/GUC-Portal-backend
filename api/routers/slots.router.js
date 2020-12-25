@@ -34,62 +34,61 @@ const { verifyUser } = require('../helpers/authentication/authUser') //verifies 
 router.post(
   '/createSlot',
   validateCreateSlot,
-  // verifyToken,
-  // verifyUser,
-  // verifyCOOR,
+  verifyToken,
+  verifyUser,
+  verifyCOOR,
   createSlot
 )
 
 router.post(
   '/deleteSlot',
   validateDeleteSlot,
-  // verifyToken,
-  // verifyUser,
-  // verifyCOOR,
+  verifyToken,
+  verifyUser,
+  verifyCOOR,
   deleteSlot
 )
 
 router.post(
   '/updateSlot',
   validateUpdateSlot,
-  // verifyToken,
-  // verifyUser,
-  // verifyCOOR,
+  verifyToken,
+  verifyUser,
+  verifyCOOR,
   updateSlot
 )
 
 router.post(
   '/assignSlot',
   validateAssignSlot,
-  // verifyToken,
-  // verifyUser,
-  // verifyINST,
+  verifyToken,
+  verifyUser,
+  verifyINST,
   assignSlot
 )
 
 router.post(
   '/reAssignSlot',
   validateAssignSlot,
-  // verifyToken,
-  // verifyUser,
-  // verifyINST,
+  verifyToken,
+  verifyUser,
+  verifyINST,
   reAssignSlot
 )
 router.post(
   '/unAssignSlot',
   validateUnAssignSlot,
-  // verifyToken,
-  // verifyUser,
-  // verifyINST,
+  verifyToken,
+  verifyUser,
+  verifyINST,
   unAssignSlot
 )
 
 router.post(
   '/viewSchedule',
   validateViewSchedule,
-  // verifyToken,
-  // verifyUser,
-  // verifyINST,
+  verifyToken,
+  verifyUser,
   viewSchedule
 )
 

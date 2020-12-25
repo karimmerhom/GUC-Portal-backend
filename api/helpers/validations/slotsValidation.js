@@ -61,6 +61,7 @@ const validateUpdateSlot = (req, res, next) => {
     }).required(),
 
     slot: Joi.object({
+      id: Joi.string().min(24).required(),
       day: Joi.string().valid(
         days.SATURDAY,
         days.SUNDAY,

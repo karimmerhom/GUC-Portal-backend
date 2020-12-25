@@ -91,14 +91,7 @@ const requestChangeDayOff = async (req, res) => {
           error: 'request does not exist',
         })
        }
-      if(requestFound.status === leaveStatus.ACCEPTED)
-      {
-        return res.json({
-          statusCode: 101,
-          error: 'this request is already accepted',
-        })
-      }
-      if(requestFound.status === leaveStatus.ACCEPTED && body.status == leaveStatus.REJECTED)
+       if(requestFound.status == leaveStatus.ACCEPTED && body.status == leaveStatus.REJECTED)
       {
 
         return res.json({
@@ -106,6 +99,14 @@ const requestChangeDayOff = async (req, res) => {
           error: 'this request is already accepted and cant be rejected',
         })
       }
+      if(requestFound.status === leaveStatus.ACCEPTED)
+      {
+        return res.json({
+          statusCode: 101,
+          error: 'this request is already accepted',
+        })
+      }
+      
       await changeDayOffModel.findByIdAndUpdate(body.reqId, {status: body.status})
       console.log(body.status)
       console.log(leaveStatus.REJECTED)
