@@ -29,8 +29,6 @@ const validateUpdateCourse = (req, res, next) => {
     courseId: Joi.string().required(),
     courseName: Joi.string(),
     creditHours: Joi.number(),
-    faculty: Joi.string(),
-    department: Joi.string().required(),
   })
 
   const isValid = Joi.validate(req.body, schema)
@@ -49,7 +47,6 @@ const validateDeleteCourse = (req, res, next) => {
       academicId: Joi.string().required(),
     }).required(),
     courseId: Joi.string().required(),
-    department: Joi.string().required(),
   })
 
   const isValid = Joi.validate(req.body, schema)

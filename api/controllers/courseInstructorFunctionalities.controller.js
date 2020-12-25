@@ -191,13 +191,13 @@ const slotsModel = require('../../models/slots.modal')
         return res.json({
             statusCode: 0,
             coverage : listReturned[0] ,
-            message: 'courses coverage',
+            message: 'courses assignment',
           })
       }
       return res.json({
           statusCode: 0,
           list : listReturned ,
-          message: 'courses coverage',
+          message: 'courses assignment',
         })
       
      

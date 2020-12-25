@@ -138,12 +138,12 @@ const createAccount = async (req, res) => {
 
 const update_profile = async (req, res) => {
   try {
-    const { Account } = req.body
+    const Account = req.body.AccountUpdated
 
-    const { id } = Account
+    const academicId = req.body.Account.academicId
 
     const account = await AccountModel.findOne({
-      academicId: Account.academicId,
+      academicId: academicId,
     })
     if (!account) {
       return res.json({
@@ -174,12 +174,35 @@ const update_profile = async (req, res) => {
       }
     }
 
-    const newacc = await AccountModel.findByIdAndUpdate(id, Account)
-    console.log(newacc)
-    console.log(Account)
+    if (Account.office) {
+      const x = await firstAssignLocation(Account.office, account.id)
+      if (x === 101) {
+        return res.json({
+          statusCode: 101,
+          error: 'this office does not  exist',
+        })
+      }
+
+      if (x === 201) {
+        return res.json({
+          statusCode: 201,
+          error: 'office is full',
+        })
+      }
+
+      if (x === 400) {
+        return res.json({
+          statusCode: 5555,
+          error: 'No office',
+        })
+      }
+    }
+
+    const newacc = await AccountModel.findByIdAndUpdate(account.id, Account)
 
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
+    console.log(exception)
     return res.json({
       statusCode: errorCodes.unknown,
       error: 'Something went wrong',
