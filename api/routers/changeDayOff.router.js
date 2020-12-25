@@ -1,18 +1,36 @@
-const express = require("express")
+const express = require('express')
 const router = express.Router()
 const {
   requestChangeDayOff,
   updateRequest,
-  viewSentReq
-} = require("../controllers/changeDayOff.controller")
+  viewSentReq,
+} = require('../controllers/changeDayOff.controller')
+const { verifyAC } = require('../helpers/authentication/ACAuthentication')
+const {
+  verifyToken,
+} = require('../helpers/authentication/AuthenticationMiddleWare')
+const { verifyUser } = require('../helpers/authentication/authUser')
+const { verifyHOD } = require('../helpers/authentication/HODAuthentication')
 const {
   validateRequestChangeDayOff,
-  validateUpdateRequest
+  validateUpdateRequest,
 } = require('../helpers/validations/changeDayOffValidations')
 
-
-
-router.post("/requestChangeDayOff", validateRequestChangeDayOff,requestChangeDayOff)
-router.post("/updateRequest", validateUpdateRequest,updateRequest)
-router.post("/viewSentReq",viewSentReq) 
+router.post(
+  '/requestChangeDayOff',
+  validateRequestChangeDayOff,
+  verifyToken,
+  verifyUser,
+  verifyAC,
+  requestChangeDayOff
+)
+router.post(
+  '/updateRequest',
+  validateUpdateRequest,
+  verifyToken,
+  verifyUser,
+  verifyHOD,
+  updateRequest
+)
+router.post('/viewSentReq', verifyToken, verifyUser, verifyHOD, viewSentReq)
 module.exports = router

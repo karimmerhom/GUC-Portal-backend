@@ -408,6 +408,7 @@ const updateCourseInstructor = async (req, res) => {
         academicMem.memberType === memberType.INSTRUCTOR
       )
     ) {
+      console.log(academicMem.memberType)
       return res.json({
         statusCode: errorCodes.wrongUserType,
         error: 'This is not an academic instructor',
@@ -438,7 +439,7 @@ const updateCourseInstructor = async (req, res) => {
     })
 
     const newStaffCourse = await staffCoursesModel.findByIdAndUpdate(
-      staffCourse.id,
+      staffCourse._id,
       {
         academicId: assignedAcademicId,
         courseId: courseId,

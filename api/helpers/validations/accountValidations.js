@@ -244,10 +244,9 @@ const validateCalculateSalary = (req, res, next) => {
       month: Joi.string()
         .regex(/^[2-9]|1[0-2]?$/)
         .min(1)
-        .max(2)
-        .required(),
-      year: Joi.string().min(4).required(),
-    }),
+        .max(2),
+      year: Joi.string().min(4),
+    }).required(),
     academicId: Joi.string().required(),
   })
 
@@ -269,10 +268,9 @@ const validateCalculateMySalary = (req, res, next) => {
       month: Joi.string()
         .regex(/^[2-9]|1[0-2]?$/)
         .min(1)
-        .max(2)
-        .required(),
-      year: Joi.string().min(4).required(),
-    }),
+        .max(2),
+      year: Joi.string().min(4),
+    }).required(),
   })
 
   const isValid = Joi.validate(req.body, schema)

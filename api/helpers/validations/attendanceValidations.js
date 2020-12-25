@@ -73,8 +73,6 @@ const validateViewMissingDays = (req, res, next) => {
       academicId: Joi.string().required(),
     }).required(),
     Attendance: Joi.object({
-      academicId: Joi.string().required(),
-
       month: Joi.string()
         .regex(/^[2-9]|1[0-2]?$/)
         .min(1)

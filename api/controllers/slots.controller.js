@@ -86,7 +86,7 @@ const updateSlot = async (req, res) => {
     const Account = req.body.Account
     const slot = req.body.slot
 
-    const sameSlotFound = await slotsModel.findById(slot.id)
+    let sameSlotFound = await slotsModel.findById(slot.id)
 
     if (!sameSlotFound) {
       return res.json({
@@ -95,7 +95,7 @@ const updateSlot = async (req, res) => {
       })
     }
 
-    if (slot.course) {
+    if (slot.courseId) {
       const course = await coursesModel.findOne({
         courseId: slot.courseId,
       })
@@ -106,35 +106,39 @@ const updateSlot = async (req, res) => {
           error: 'course not found',
         })
       }
-      sameSlotFound.course = slot.course
-    }
-
-    const staffCourse = await staffCoursesModel.findOne({
-      courseId: course.courseId,
-      academicId: Account.academicId,
-    })
-
-    if (!staffCourse) {
-      return res.json({
-        statusCode: errorCodes.notYourCourse,
-        error: 'This is not your course ya coordinator',
+      courseId = slot.courseId
+      // sameSlotFound.courseId = slot.courseId
+      const staffCourse = await staffCoursesModel.findOne({
+        courseId: course.courseId,
+        academicId: Account.academicId,
       })
+      if (!staffCourse) {
+        return res.json({
+          statusCode: errorCodes.notYourCourse,
+          error: 'This is not your course ya coordinator',
+        })
+      }
     }
-    if (slot.location) {
+
+    if (slot.locationName) {
       const location = await locationModel.findOne({ name: slot.locationName })
+
       if (!location) {
         return res.json({
           statusCode: errorCodes.LocationNotFound,
           error: 'location not found',
         })
       }
-      sameSlotFound.location = slot.location
+      locationName = slot.locationName
+      sameSlotFound.locationName = slot.locationName
     }
 
     const sameSlotFound1 = await slotsModel.findOne({
-      day: sameSlotFound.day,
-      slot: sameSlotFound.slot,
-      locationName: sameSlotFound.locationName,
+      day: slot.day ? slot.day : sameSlotFound.day,
+      slot: slot.slot ? slot.slot : sameSlotFound.slot,
+      locationName: slot.locationName
+        ? locationName
+        : sameSlotFound.locationName,
     })
 
     if (sameSlotFound1) {
@@ -144,10 +148,21 @@ const updateSlot = async (req, res) => {
       })
     }
 
-    slotsModel.findByIdAndUpdate(slot.id, sameSlotFound)
+    await slotsModel.findByIdAndUpdate(slot.id, {
+      day: slot.day ? slot.day : sameSlotFound.day,
+      slot: slot.slot ? slot.slot : sameSlotFound.slot,
+      locationName: slot.locationName
+        ? locationName
+        : sameSlotFound.locationName,
+      courseId: slot.courseId ? slot.courseId : sameSlotFound.courseId,
+      assignedAcademicId: slot.assignedAcademicId
+        ? slot.assignedAcademicId
+        : sameSlotFound.assignedAcademicId,
+    })
 
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {
+    console.log(exception)
     return res.json({ statusCode: 400, error: 'Something went wrong' })
   }
 }
@@ -275,6 +290,7 @@ const unAssignSlot = async (req, res) => {
         error: 'This is not your course ya instructor',
       })
     }
+
     //check if slot exists
     if (!sameSlotFound) {
       return res.json({
@@ -291,12 +307,17 @@ const unAssignSlot = async (req, res) => {
         error: 'Slot not assigned',
       })
     }
-    delete sameSlotFound.academicId
+    let toBeSent = {
+      _id: sameSlotFound._id,
+      _id: sameSlotFound._id,
+      day: sameSlotFound.day,
+      slot: sameSlotFound.slot,
+      locationName: sameSlotFound.locationName,
+      courseId: sameSlotFound.courseId,
+    }
 
-    const updated = await slotsModel.findByIdAndUpdate(
-      sameSlotFound._id,
-      sameSlotFound
-    )
+    const updated = await slotsModel.replaceOne(sameSlotFound, toBeSent)
+    // await slotsModel.create(toBeSent)
 
     return res.json({ statusCode: errorCodes.success })
   } catch (exception) {

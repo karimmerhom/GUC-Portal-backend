@@ -46,8 +46,8 @@ const {
 router.post(
   '/createAccount',
   validateCreateAccount,
-  //verifyToken,
-  // verifyHR,
+  // verifyToken,
+  verifyHR,
   createAccount
 )
 router.post('/login', validateLogin, login)
@@ -69,12 +69,23 @@ router.post(
 router.post(
   '/getprofile',
   validateGetProfile,
-  // verifyToken,
-  // verifyUser,
+  verifyToken,
+  verifyUser,
   get_profile
 )
 router.post('/updateSalary', validateUpdateSalary, verifyHR, updateSalary)
 router.post('/deleteProfile', validateDeleteProfile, verifyHR, deleteProfile)
-router.post('calculateMySalary', validateCalculateMySalary, calculateMySalary)
-router.post('calculateSalary', validateCalculateSalary, calculateSalary)
+router.post(
+  '/calculateMySalary',
+  validateCalculateMySalary,
+  verifyToken,
+  verifyUser,
+  calculateMySalary
+)
+router.post(
+  '/calculateSalary',
+  validateCalculateSalary,
+  verifyHR,
+  calculateSalary
+)
 module.exports = router

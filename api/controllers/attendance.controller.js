@@ -806,7 +806,7 @@ const viewAllStaffAttendanceRecord = async (req, res) => {
 //missing days=business working days in month - totalworkeddays-leavs
 const viewMissingDays = async (req, res) => {
   try {
-    let academicId = req.body.Attendance.academicId
+    let academicId = req.body.Account.academicId
     const attendance = req.body.Attendance
 
     //The start date and end date depend on the user input
@@ -859,7 +859,8 @@ const viewMissingDays = async (req, res) => {
 
     //TODO
     const leavesDays = 0
-    const workedDays = attendanceFound[0].totalWorkedDays
+    const workedDays =
+      attendanceFound.length === 0 ? 0 : attendanceFound[0].totalWorkedDays
     const businessDays = getBusinessWorkingDays(
       startDate,
       endDate,
@@ -931,6 +932,12 @@ const viewExtraMissingWorkedHours = async (req, res) => {
   })
 
   console.log(attendanceFound)
+  if (attendanceFound.length === 0) {
+    return res.json({
+      statusCode: 900,
+      message: 'You havent attended this month',
+    })
+  }
 
   let myHours =
     attendanceFound[0].totalWorkedHours -
