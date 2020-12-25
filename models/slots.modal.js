@@ -5,6 +5,7 @@ const {
   memberType,
   days,
   slotNames,
+slotTypes
 } = require('../api/constants/GUC.enum')
 
 //Define a schema
@@ -38,6 +39,14 @@ const slots = new Schema({
   locationName: { type: String },
   assignedAcademicId: {
     type: String,
+  },
+  slotType:{
+    type: String,
+    enum: [
+      slotTypes.LAB,
+      slotTypes.LECTURE,
+      slotTypes.TUTORIAL
+    ],
   },
 })
 

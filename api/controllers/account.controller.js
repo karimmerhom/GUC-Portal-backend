@@ -5,6 +5,7 @@ const AccountModel = require('../../models/account.model')
 const countersModel = require('../../models/counters.model')
 const locationsModel = require('../../models/locations.model')
 const departmentModel = require('../../models/department.model')
+const cron = require('cron')
 
 const errorCodes = require('../constants/errorCodes')
 const {
@@ -16,9 +17,11 @@ const {
   powerSupportSMSLink,
   powerSupportEmailLink,
 } = require('../../config/keys')
-const { userTypes, memberType, days } = require('../constants/GUC.enum')
+const { userTypes, memberType, days ,locationNames } = require('../constants/GUC.enum')
 //const { generateOTP, addPoints } = require('../helpers/helpers')
-const { relativeTimeRounding } = require('moment')
+const moment = require('moment')
+const { findOne, findByIdAndUpdate } = require('../../models/account.model')
+const accountsModel = require('../../models/account.model')
 
 const createAccount = async (req, res) => {
   try {
@@ -60,7 +63,7 @@ const createAccount = async (req, res) => {
     if (x === 101) {
       return res.json({
         statusCode: 101,
-        error: 'location does not  exist',
+        error: 'this office does not  exist',
       })
     }
 
@@ -77,6 +80,25 @@ const createAccount = async (req, res) => {
         error: 'No office',
       })
     } else {
+      const nextmonth = moment().set('date', 1).add(1, 'month') //to set cron to one month
+      var dt = new Date() //sets cron to one min for testing
+      dt.setMinutes(dt.getMinutes() + 2)
+      console.log(dt.getMinutes())
+
+      const scheduleJob = cron.job(dt, async () => {
+        addAnnual(id)
+      })
+      scheduleJob.start()
+
+      const nextYear = moment().add(1, 'year') //to set cron to one year
+      var dt1 = new Date() //sets cron to one min for testing
+      dt1.setMinutes(dt1.getMinutes() + 10)
+
+      const scheduleJob1 = cron.job(dt1, async () => {
+        newAccidental(id)
+      })
+      scheduleJob1.start()
+
       const accountCreated = await AccountModel.create({
         //username: Account.username.toString().toLowerCase(),
         academicId: id,
@@ -92,6 +114,8 @@ const createAccount = async (req, res) => {
         salary: Account.salary,
         office: Account.office,
         department: Account.department,
+        annualLeavesBalance: 5,
+        accidentalBalance: 6,
       })
 
       return res.json({ statusCode: errorCodes.success })
@@ -505,11 +529,45 @@ const generateId = async (type) => {
 
   return null
 }
+const addAnnual = async (academicId) => {
+  console.log('New MONTH!!')
+  const account = await accountsModel.findOne({ academicId: academicId })
+  account.annualLeavesBalance = account.annualLeavesBalance + 2.5
+  const newAcc = await accountsModel.findByIdAndUpdate(account.id, account)
 
+  const nextmonth = moment().set('date', 1).add(1, 'month') //to set cron to one month
+  const nextMin = '1 * * * *'
+
+  var dt = new Date()
+  dt.setMinutes(dt.getMinutes() + 2) //sets cron to one min for testing
+  console.log(dt.getMinutes())
+
+  const scheduleJob = cron.job(dt, async () => {
+    addAnnual(id)
+  })
+  scheduleJob.start()
+}
+
+const newAccidental = async (academicId) => {
+  console.log('New YEAR!!')
+  const account = await accountsModel.findOne({ academicId: academicId })
+  account.accidentalBalance = 6
+  const newAcc = await accountsModel.findByIdAndUpdate(account.id, account)
+
+  const nextYear = moment().add(1, 'year') //to set cron to one year
+  var dt1 = new Date() //sets cron to one min for testing
+  dt1.setMinutes(dt1.getMinutes() + 10)
+
+  const scheduleJob1 = cron.job(dt1, async () => {
+    newAccidental(id)
+  })
+  scheduleJob1.start()
+}
 const firstAssignLocation = async (location, academicId) => {
   try {
     const locationFound = await locationsModel.findOne({
       name: location,
+      type: locationNames.OFFICE,
     })
     console.log(locationFound)
 

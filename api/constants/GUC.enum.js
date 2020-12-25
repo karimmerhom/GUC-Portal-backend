@@ -35,11 +35,35 @@ const locationNames = {
   ROOM: 'room',
 }
 
+const leaveStatus = {
+  ACCEPTED: 'accepted',
+  REJECTED: 'rejected',
+  PENDING: 'pending',
+}
+
+const leaveTypes = {
+  ANNUAL: 'annual',
+  SICK: 'sick',
+  MATERNITY: 'maternity',
+  ACCIDENTAL: 'accidental',
+  COMPENSATION: 'compensation',
+}
+
+const slotTypes = {
+  LAB: 'lab',
+  TUTORIAL: 'tutorial',
+  LECTURE: 'lecture',
+}
+
+
 module.exports = {
+  leaveTypes,
+  leaveStatus,
   position,
   userTypes,
   memberType,
   days,
   slotNames,
   locationNames,
+  slotTypes
 }

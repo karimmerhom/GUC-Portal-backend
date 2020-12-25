@@ -8,6 +8,7 @@ const {
   memberType,
   days,
   slotNames,
+  slotTypes
 } = require('../../constants/GUC.enum')
 
 const validateCreateSlot = (req, res, next) => {
@@ -36,6 +37,13 @@ const validateCreateSlot = (req, res, next) => {
           slotNames.THIRD,
           slotNames.FOURTH,
           slotNames.FIFTH
+        )
+        .required(),
+        slotType: Joi.string()
+        .valid(
+          slotTypes.LAB,
+          slotTypes.LECTURE,
+          slotTypes.TUTORIAL
         )
         .required(),
       assignedAcademicId: Joi.string(),

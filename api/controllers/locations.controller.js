@@ -1,5 +1,6 @@
 const locationsModel = require('../../models/locations.model')
 const AccountModel = require('../../models/account.model')
+const { locationNames } = require('../constants/GUC.enum')
 const createLocation = async (req, res) => {
     try {
       const location = req.body
@@ -32,7 +33,10 @@ const createLocation = async (req, res) => {
       const location = req.body
       const locationFound = await locationsModel.findOne({
        name: location.office,
+       type: locationNames.OFFICE
       })
+      console.log(location.office)
+      console.log(locationNames.office)
       const academicFound = await AccountModel.findOne({
         academicId : location.academicId,
        })
@@ -47,7 +51,7 @@ const createLocation = async (req, res) => {
       if (!locationFound) {
         return res.json({
           statusCode: 101,
-          error: 'location does not  exist',
+          error: 'this office does not  exist',
         })
       }
       if (!academicFound) {

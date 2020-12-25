@@ -474,6 +474,8 @@ const workAttendance = async (
 
     let dayOff = accountFound.dayOff
     if (dayOff === weekday[5] || dayOff == weekday[day]) {
+      const compensationLeaveFound = await leavesModel
+
       //calculate the worked hours
       //'minutes' were used instead of 'hours' because in hours it round downs the minutes
       //update the record
@@ -521,6 +523,7 @@ const workAttendance = async (
     return success
   }
 }
+
 const viewMyAttendanceRecord = async (req, res) => {
   try {
     const attendance = req.body.Attendance
@@ -589,6 +592,29 @@ const viewMyAttendanceRecord = async (req, res) => {
     return res.json({ statusCode: unknown, error: 'Something went wrong!' })
   }
 }
+const viewAllMyAttendanceRecord = async (req, res) => {
+  try {
+    const academicId = req.body.Account.academicId
+    const attendanceFound = await attendanceModel.find({
+      academicId: academicId,
+    })
+
+    if (attendanceFound.length !== 0) {
+      return res.json({
+        statusCode: success,
+        Attendance: attendanceFound,
+      })
+    } else {
+      return res.json({
+        statusCode: 1000,
+        message: 'No attendance record for this user',
+      })
+    }
+  } catch (e) {
+    return res.json({ statusCode: unknown, error: 'Something went wrong!' })
+  }
+}
+
 const viewStaffAttendanceRecord = async (req, res) => {
   try {
     const attendance = req.body.Attendance
@@ -651,6 +677,28 @@ const viewStaffAttendanceRecord = async (req, res) => {
       return res.json({
         statusCode: success,
         Attendance: filteredAttendanceFound,
+      })
+    }
+  } catch (e) {
+    return res.json({ statusCode: unknown, error: 'Something went wrong!' })
+  }
+}
+const viewAllStaffAttendanceRecord = async (req, res) => {
+  try {
+    const academicId = req.body.Attendance.academicId
+    const attendanceFound = await attendanceModel.find({
+      academicId: academicId,
+    })
+
+    if (attendanceFound.length !== 0) {
+      return res.json({
+        statusCode: success,
+        Attendance: attendanceFound,
+      })
+    } else {
+      return res.json({
+        statusCode: 1000,
+        message: 'No attendance record for this user',
       })
     }
   } catch (e) {
@@ -1025,4 +1073,6 @@ module.exports = {
   viewExtraMissingWorkedHours,
   viewStaffWithMissingHours,
   viewStaffWithMissingDays,
+  viewAllMyAttendanceRecord,
+  viewAllStaffAttendanceRecord,
 }

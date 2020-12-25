@@ -130,11 +130,28 @@ const accountNotFound = 213
 const alreadySignedIn = 214
 const haventSignedIn = 215
 const alreadySignedOut = 216
+<<<<<<< HEAD
 const cantSignInAfter19 = 217
 const cantManualSignIn = 218
 module.exports = {
   cantSignInAfter19,
   cantManualSignIn,
+=======
+const yourDayOff = 217
+const dateAfterAllowed = 218
+const leaveNotFound = 219
+const notEnoughAnnualLeaves = 220
+const notRightLeaveType = 221
+const signOutExists = 222
+
+module.exports = {
+  signOutExists,
+  notRightLeaveType,
+  notEnoughAnnualLeaves,
+  leaveNotFound,
+  dateAfterAllowed,
+  yourDayOff,
+>>>>>>> 0237fe605ba2a00a9b63b7dc3d32ad2f59d51d27
   linkAccepted,
   memberAlreadyAssigned,
   assignmentDoesNotExist,
