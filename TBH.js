@@ -17,6 +17,7 @@ const courseInstructorFunctionalities = require('./api/routers/courseInstructorF
 const slotLinking = require('./api/routers/slotLinking.router')
 const attendance = require('./api/routers/attendace.router')
 const replacementsRequests = require('./api/routers/replacementsRequests.router')
+const changeDayOff = require('./api/routers/changeDayOff.router')
 
 const { connectDB } = require('./config/dbConfig')
 app.use(cors())
@@ -38,7 +39,7 @@ const explore = (req, res) => {
   })
   return res.json(result)
 }
-
+app.use('/changeDayOff', changeDayOff)
 app.use('/slots', slots)
 app.use('/courses', courses)
 app.use('/departments', departments)
@@ -51,7 +52,7 @@ app.use('/slotLinking', slotLinking)
 app.use('/attendance', attendance)
 app.use('/leaves', leaves)
 app.use('/hodFunctionalities', hodFunctionalities)
-app.use('/replacementsRequests', replacementsRequests )
+app.use('/replacementsRequests', replacementsRequests)
 app.use('/explore', explore)
 app.get('/hello', (req, res) => {
   console.log('hello world')

@@ -8,7 +8,7 @@ const {
   memberType,
   days,
   slotNames,
-  slotTypes
+  slotTypes,
 } = require('../../constants/GUC.enum')
 
 const validateCreateSlot = (req, res, next) => {
@@ -39,12 +39,8 @@ const validateCreateSlot = (req, res, next) => {
           slotNames.FIFTH
         )
         .required(),
-        slotType: Joi.string()
-        .valid(
-          slotTypes.LAB,
-          slotTypes.LECTURE,
-          slotTypes.TUTORIAL
-        )
+      slotType: Joi.string()
+        .valid(slotTypes.LAB, slotTypes.LECTURE, slotTypes.TUTORIAL)
         .required(),
       assignedAcademicId: Joi.string(),
       locationName: Joi.string().required(),
@@ -215,8 +211,24 @@ const validateUnAssignSlot = (req, res, next) => {
   }
   return next()
 }
+const validateViewSchedule = (req, res, next) => {
+  const schema = Joi.object({
+    Account: Joi.object({
+      academicId: Joi.string().required(),
+    }).required(),
+  })
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: 1001,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
 
 module.exports = {
+  validateViewSchedule,
   validateUnAssignSlot,
   validateUpdateSlot,
   validateCreateSlot,

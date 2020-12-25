@@ -1,7 +1,14 @@
 //const updateDepartment = async (req, res) => lama ussef ye5alas beoble
 
 const errorCodes = require('../constants/errorCodes')
-const { userTypes, memberType, days } = require('../constants/GUC.enum')
+const {
+  userTypes,
+  memberType,
+  days,
+  slotNames,
+  leaveStatus,
+} = require('../constants/GUC.enum')
+const moment = require('moment')
 
 const coursesModel = require('../../models/courses.model')
 const departmentModel = require('../../models/department.model')
@@ -9,6 +16,7 @@ const staffCoursesModel = require('../../models/staffCourses.model')
 const locationModel = require('../../models/locations.model')
 const slotsModel = require('../../models/slots.modal')
 const accountsModel = require('../../models/account.model')
+const compensationRequestsModel = require('../../models/replacementsRequests.model')
 
 //create slot
 const createSlot = async (req, res) => {
@@ -416,8 +424,106 @@ const deleteSlot = async (req, res) => {
     return res.json({ statusCode: 400, error: 'Something went wrong' })
   }
 }
+const viewSchedule = async (req, res) => {
+  try {
+    const Account = req.body.Account
 
+    const account = await accountsModel.findOne({
+      academicId: Account.academicId,
+    })
+    let weekday = new Array(7)
+    weekday[0] = days.SATURDAY
+    weekday[1] = days.SUNDAY
+    weekday[2] = days.MONDAY
+    weekday[3] = days.TUESDAY
+    weekday[4] = days.WEDNESDAY
+    weekday[5] = days.THURSDAY
+
+    const ScheduleList = []
+
+    for (var i = 0; i < 6; i++) {
+      var wday = weekday[i]
+      if (wday === account.dayOff) {
+        ScheduleList[i] = { day: wday, dayOff: true }
+      } else {
+        day = {
+          day: wday,
+          firstSlot: await slotsModel.findOne({
+            assignedAcademicId: Account.academicId,
+            day: wday,
+            slot: slotNames.FIRST,
+          }),
+          secondSlot: await slotsModel.findOne({
+            assignedAcademicId: Account.academicId,
+            day: wday,
+            slot: slotNames.SECOND,
+          }),
+          thirdSlot: await slotsModel.findOne({
+            assignedAcademicId: Account.academicId,
+            day: wday,
+            slot: slotNames.THIRD,
+          }),
+          fourthSlot: await slotsModel.findOne({
+            assignedAcademicId: Account.academicId,
+            day: wday,
+            slot: slotNames.FOURTH,
+          }),
+          fifthSlot: await slotsModel.findOne({
+            assignedAcademicId: Account.academicId,
+            day: wday,
+            slot: slotNames.FIFTH,
+          }),
+        }
+
+        ScheduleList[i] = day
+      }
+    }
+
+    //loop back to saturday
+    var day = moment().add(1, 'day')
+
+    while (day.format('dddd').toLowerCase() !== days.SATURDAY) {
+      day = day.add(-1, 'day')
+    }
+    for (var i = 0; i < 6; i++) {
+      var wd = weekday[i]
+      const d = `${day.year()}-${day.month() + 1}-${day.date()}T00:00:00.0000`
+      const reqs = await compensationRequestsModel.find({
+        date: d,
+        academicIdReciever: Account.academicId,
+        hodStatus: leaveStatus.ACCEPTED,
+      })
+      console.log(reqs)
+
+      for (var j = 0; j < reqs.length; j++) {
+        const slot = await slotsModel.findById(reqs[j].slotId)
+        if (slot.slot === slotNames.FIRST) {
+          ScheduleList[i].firstSlot = slot
+        }
+        if (slot.slot === slotNames.SECOND) {
+          ScheduleList[i].secondSlot = slot
+        }
+        if (slot.slot === slotNames.THIRD) {
+          ScheduleList[i].thirdSlot = slot
+        }
+        if (slot.slot === slotNames.FOURTH) {
+          ScheduleList[i].fourthSlot = slot
+        }
+        if (slot.slot === slotNames.FIFTH) {
+          ScheduleList[i].fifthSlot = slot
+        }
+      }
+      day = day.add(1, 'day')
+    }
+
+    return res.json({ statusCode: errorCodes.success, Schedule: ScheduleList })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ statusCode: 400, error: 'Something went wrong' })
+  }
+}
 module.exports = {
+  viewSchedule,
   createSlot,
   deleteSlot,
   assignSlot,

@@ -10,6 +10,7 @@ const requestMaternityLeave = async (req, res) => {
   try {
     const Account = req.body.Account
     const leaveDay = req.body.leaveDay
+    const comments = req.body.comments
 
     var day = leaveDay.day
     var month = leaveDay.month
@@ -58,6 +59,7 @@ const requestMaternityLeave = async (req, res) => {
     }
 
     await leavesModel.create({
+      comments: comments,
       status: leaveStatus.PENDING,
       academicId: Account.academicId,
       date: d,
@@ -70,10 +72,12 @@ const requestMaternityLeave = async (req, res) => {
     return res.json({ statusCode: 400, error: 'Something went wrong' })
   }
 }
+
 const requestSickLeave = async (req, res) => {
   try {
     const Account = req.body.Account
     const leaveDay = req.body.leaveDay
+    const comments = req.body.comments
 
     var day = leaveDay.day
     var month = leaveDay.month
@@ -123,10 +127,11 @@ const requestSickLeave = async (req, res) => {
     }
 
     await leavesModel.create({
-      status: leaveStatus.PENDING,
       academicId: Account.academicId,
       date: d,
       type: leaveTypes.SICK,
+      comments: comments,
+      status: leaveStatus.PENDING,
     })
 
     return res.json({ statusCode: errorCodes.success })
@@ -135,10 +140,12 @@ const requestSickLeave = async (req, res) => {
     return res.json({ statusCode: 400, error: 'Something went wrong' })
   }
 }
+
 const requestAccidentalLeave = async (req, res) => {
   try {
     const Account = req.body.Account
     const leaveDay = req.body.leaveDay
+    const comments = req.body.comments
 
     var day = leaveDay.day
     var month = leaveDay.month
@@ -191,6 +198,7 @@ const requestAccidentalLeave = async (req, res) => {
       academicId: Account.academicId,
       date: d,
       type: leaveTypes.ACCIDENTAL,
+      comments: comments,
     })
 
     return res.json({ statusCode: errorCodes.success })
@@ -204,7 +212,7 @@ const requestCompensationLeave = async (req, res) => {
   try {
     const Account = req.body.Account
     const leaveDay = req.body.leaveDay
-
+    const reasonForCompensation = req.body.reasonForCompensation
     var day = leaveDay.day
     var month = leaveDay.month
     var year = leaveDay.year
@@ -263,6 +271,7 @@ const requestCompensationLeave = async (req, res) => {
       academicId: Account.academicId,
       date: d,
       type: leaveTypes.COMPENSATION,
+      reasonForCompensation: reasonForCompensation,
     })
 
     return res.json({ statusCode: errorCodes.success })
@@ -421,7 +430,7 @@ const acceptAnnualLeave = async (req, res) => {
         error: 'not Enough Annual Leaves',
       })
     }
-    if (leaveFound.hodStatus === leaveFound.leaveStatus.ACCEPTED) {
+    if (leaveFound.status === leaveStatus.ACCEPTED) {
       return res.json({
         statusCode: errorCodes.alreadyAccepted,
         error: 'H.O.D already accepted this request',
@@ -485,6 +494,13 @@ const acceptAccidentalLeave = async (req, res) => {
       return res.json({
         statusCode: errorCodes.notRightLeaveType,
         error: 'leave not the right type',
+      })
+    }
+
+    if (leaveFound.status === leaveStatus.ACCEPTED) {
+      return res.json({
+        statusCode: errorCodes.alreadyAccepted,
+        error: 'H.O.D already accepted this request',
       })
     }
 
@@ -562,6 +578,13 @@ const acceptSickLeave = async (req, res) => {
       })
     }
 
+    if (leaveFound.status === leaveStatus.ACCEPTED) {
+      return res.json({
+        statusCode: errorCodes.alreadyAccepted,
+        error: 'H.O.D already accepted this request',
+      })
+    }
+
     const account = await accountsModel.findOne({
       academicId: leaveFound.academicId,
     })
@@ -620,7 +643,12 @@ const acceptMaternityLeave = async (req, res) => {
         error: 'leave not the right type',
       })
     }
-
+    if (leaveFound.status === leaveStatus.ACCEPTED) {
+      return res.json({
+        statusCode: errorCodes.alreadyAccepted,
+        error: 'H.O.D already accepted this request',
+      })
+    }
     const account = await accountsModel.findOne({
       academicId: leaveFound.academicId,
     })
@@ -649,6 +677,134 @@ const acceptMaternityLeave = async (req, res) => {
   }
 }
 
+const rejectLeave = async (req, res) => {
+  try {
+    const Account = req.body.Account
+    const leaveId = req.body.leaveId
+
+    const HOD = await accountsModel.findOne({
+      academicId: Account.academicId,
+    })
+
+    if (!HOD) {
+      return res.json({
+        statusCode: errorCodes.accountNotFound,
+        error: 'instructor account not found',
+      })
+    }
+    const leaveFound = await leavesModel.findById(leaveId)
+
+    if (!leaveFound) {
+      return res.json({
+        statusCode: errorCodes.leaveNotFound,
+        error: 'leave not found requested',
+      })
+    }
+    if (leaveFound.status === leaveStatus.ACCEPTED) {
+      return res.json({
+        statusCode: errorCodes.leaveAccepted,
+        error: 'Cannot reject after accept',
+      })
+    }
+
+    const account = await accountsModel.findOne({
+      academicId: leaveFound.academicId,
+    })
+
+    if (!account) {
+      return res.json({
+        statusCode: errorCodes.accountNotFound,
+        error: 'member account not found',
+      })
+    }
+
+    if (account.department !== HOD.department) {
+      return res.json({
+        statusCode: errorCodes.notYourDepartment,
+        error: 'Not your department ya HOD',
+      })
+    }
+
+    leaveFound.status = leaveStatus.REJECTED
+    await leavesModel.findByIdAndUpdate(leaveFound.id, leaveFound)
+
+    return res.json({ statusCode: errorCodes.success })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ statusCode: 400, error: 'Something went wrong' })
+  }
+}
+
+const cancelLeaveReq = async (req, res) => {
+  try {
+    const Account = req.body.Account
+    const leaveId = req.body.leaveId
+    const account = await accountsModel.findOne({
+      academicId: leaveFound.academicId,
+    })
+
+    if (!account) {
+      return res.json({
+        statusCode: errorCodes.accountNotFound,
+        error: 'member account not found',
+      })
+    }
+
+    const leaveFound = await leavesModel.findById(leaveId)
+
+    if (!leaveFound) {
+      return res.json({
+        statusCode: errorCodes.leaveNotFound,
+        error: 'leave not found requested',
+      })
+    }
+
+    if (leaveFound.status === leaveStatus.ACCEPTED) {
+      const date = moment(leaveFound.date)
+      const today = moment()
+      if (today.isAfter(date)) {
+        return res.json({
+          statusCode: errorCodes.dateInThePast,
+          error: 'date already passed',
+        })
+      }
+      removeOneDay(leaveFound.date, Account.academicId)
+      account.annualLeavesBalance = account.annualLeavesBalance + 1
+      await accountsModel.findByIdAndUpdate(account.id, account)
+      await leavesModel.findByIdAndDelete(leaveFound.id)
+      return res.json({ statusCode: errorCodes.success })
+    } else {
+      await leavesModel.findByIdAndDelete(leaveFound.id)
+      return res.json({ statusCode: errorCodes.success })
+    }
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ statusCode: 400, error: 'Something went wrong' })
+  }
+}
+const viewLeaves = async (req, res) => {
+  try {
+    const Account = req.body.Account
+    const status = req.body.status
+
+    let leaveFound = []
+    if (status) {
+      leaveFound = await leavesModel.find({
+        academicId: Account.academicId,
+        status: status,
+      })
+    } else {
+      leaveFound = await leavesModel.find({
+        academicId: Account.academicId,
+      })
+    }
+
+    return res.json({ statusCode: errorCodes.success, leaves: leaveFound })
+  } catch (exception) {
+    console.log(exception)
+    return res.json({ statusCode: 400, error: 'Something went wrong' })
+  }
+}
 const addOneDay = async (date, academicId) => {
   const month = moment(date).month() + 1
   const year = moment(date).year()
@@ -675,6 +831,32 @@ const addOneDay = async (date, academicId) => {
     return true
   }
 }
+const removeOneDay = async (date, academicId) => {
+  const month = moment(date).month() + 1
+  const year = moment(date).year()
+
+  const workAttendanceFound = await workAttendanceModel.findOne({
+    academicId: academicId,
+    month: month,
+    year: year,
+  })
+  console.log(workAttendanceFound)
+  if (!workAttendanceFound) {
+    return false
+  } else {
+    console.log('???')
+    await workAttendanceModel.updateOne({
+      academicId: academicId,
+      month: month,
+      year: year,
+      totalWorkedDays: workAttendanceFound.totalWorkedDays - 1,
+      totalWorkedHours: workAttendanceFound.totalWorkedHours - 8.4,
+    })
+    console.log('????')
+
+    return true
+  }
+}
 
 const noSignOutInThisDay = async (date, academicId) => {
   const attendanceFound = await attendanceModel.find({ academicId: academicId })
@@ -693,7 +875,9 @@ const noSignOutInThisDay = async (date, academicId) => {
 
   return true
 }
+
 module.exports = {
+  rejectLeave,
   requestCompensationLeave,
   requestAnnualLeave,
   requestMaternityLeave,
@@ -703,4 +887,6 @@ module.exports = {
   acceptAnnualLeave,
   acceptMaternityLeave,
   acceptSickLeave,
+  viewLeaves,
+  cancelLeaveReq,
 }

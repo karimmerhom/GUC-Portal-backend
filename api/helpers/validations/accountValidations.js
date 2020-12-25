@@ -68,7 +68,6 @@ const validateCreateAccount = (req, res, next) => {
 const validateUpdateProfile = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       firstName: Joi.string().min(3),
       lastName: Joi.string().min(3),
       phoneNumber: Joi.string().min(11).max(11),
@@ -161,7 +160,6 @@ const validateFirstLogin = (req, res, next) => {
   }
   return next()
 }
-
 const validateChangePassword = (req, res, next) => {
   const complexityOptions = {
     min: 8,
@@ -175,7 +173,6 @@ const validateChangePassword = (req, res, next) => {
 
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
     Credentials: Joi.object({
@@ -195,7 +192,6 @@ const validateChangePassword = (req, res, next) => {
 const validateGetProfile = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
   })
@@ -211,7 +207,6 @@ const validateGetProfile = (req, res, next) => {
 const validateDeleteProfile = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
   })
@@ -227,10 +222,9 @@ const validateDeleteProfile = (req, res, next) => {
 const validateUpdateSalary = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().required(),
       academicId: Joi.string().required(),
     }).required(),
-    salary: Joi.string().required(),
+    salary: Joi.number().required(),
   })
   const isValid = Joi.validate(req.body, schema)
   if (isValid.error) {
@@ -241,7 +235,58 @@ const validateUpdateSalary = (req, res, next) => {
   }
   return next()
 }
+const validateCalculateSalary = (req, res, next) => {
+  const schema = Joi.object({
+    Account: Joi.object({
+      academicId: Joi.string().required(),
+    }).required(),
+    Attendance: Joi.object({
+      month: Joi.string()
+        .regex(/^[2-9]|1[0-2]?$/)
+        .min(1)
+        .max(2)
+        .required(),
+      year: Joi.string().min(4).required(),
+    }),
+    academicId: Joi.string().required(),
+  })
+
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: 1001,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
+const validateCalculateMySalary = (req, res, next) => {
+  const schema = Joi.object({
+    Account: Joi.object({
+      academicId: Joi.string().required(),
+    }).required(),
+    Attendance: Joi.object({
+      month: Joi.string()
+        .regex(/^[2-9]|1[0-2]?$/)
+        .min(1)
+        .max(2)
+        .required(),
+      year: Joi.string().min(4).required(),
+    }),
+  })
+
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: 1001,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
 module.exports = {
+  validateCalculateSalary,
+  validateCalculateMySalary,
   validateUpdateSalary,
   validateGetProfile,
   validateChangePassword,

@@ -17,7 +17,12 @@ const {
   powerSupportSMSLink,
   powerSupportEmailLink,
 } = require('../../config/keys')
-const { userTypes, memberType, days ,locationNames } = require('../constants/GUC.enum')
+const {
+  userTypes,
+  memberType,
+  days,
+  locationNames,
+} = require('../constants/GUC.enum')
 //const { generateOTP, addPoints } = require('../helpers/helpers')
 const moment = require('moment')
 const { findOne, findByIdAndUpdate } = require('../../models/account.model')
@@ -135,7 +140,9 @@ const update_profile = async (req, res) => {
 
     const { id } = Account
 
-    const account = await AccountModel.findById(id)
+    const account = await AccountModel.findOne({
+      academicId: Account.academicId,
+    })
     if (!account) {
       return res.json({
         statusCode: errorCodes.invalidCredentials,
@@ -319,7 +326,9 @@ const change_password = async (req, res) => {
     const { Credentials, Account } = req.body
 
     const { academicId, id } = Account
-    const account = await AccountModel.findById(id)
+    const account = await AccountModel.findOne({
+      academicId: Account.academicId,
+    })
     if (!account) {
       return res.json({
         statusCode: errorCodes.usernameExists,
@@ -367,7 +376,9 @@ const get_profile = async (req, res) => {
 
     const { id } = Account
 
-    const account = await AccountModel.findById(id)
+    const account = await AccountModel.findOne({
+      academicId: Account.academicId,
+    })
     if (!account) {
       return res.json({
         statusCode: errorCodes.invalidCredentials,
@@ -428,7 +439,9 @@ const deleteProfile = async (req, res) => {
 
     const { id } = Account
 
-    const account = await AccountModel.findById(id)
+    const account = await AccountModel.findOne({
+      academicId: Account.academicId,
+    })
     if (!account) {
       return res.json({
         statusCode: errorCodes.invalidCredentials,
@@ -449,55 +462,86 @@ const deleteProfile = async (req, res) => {
     })
   }
 }
-// const resend_token = async (req, res) => {
-//   try {
-//     const { token } = req.body
-//     let data = {}
-//     jwt.verify(token, secretOrKey, (err, authorizedData) => {
-//       if (!err) {
-//         data = authorizedData
-//       } else {
-//         return res.json({ code: errorCodes.authentication, error: 'breach' })
-//       }
-//     })
-//     const account = await AccountModel.findOne({ where: { id: data.id } })
-//     if (!account) {
-//       return res.json({ statusCode: errorCodes.entityNotFound })
-//     }
-//     if (account.status === accountStatus.VERIFIED) {
-//       const payLoad = {
-//         id: account.id,
-//         firstName: account.firstName,
-//         lastName: account.lastName,
-//         username: account.username,
-//         phone: account.phone,
-//         email: account.email,
-//         status: account.status,
-//         type: account.type,
-//       }
 
-//       const token = jwt.sign(payLoad, secretOrKey, {
-//         expiresIn: '999999h',
-//       })
-//       return res.json({
-//         token,
-//         id: account.id,
-//         username: account.username,
-//         state: account.status,
-//         statusCode: errorCodes.success,
-//       })
-//     } else {
-//       return res.json({ statusCode: errorCodes.unVerified })
-//     }
-//   } catch (exception) {
-//     console.log(exception)
-//     return res.json({
-//       statusCode: errorCodes.unknown,
-//       error: 'Something went wrong',
-//     })
-//   }
-// }
+const calculateMySalary = async (req, res) => {
+  try {
+    const Account = req.body.Account
+    const academicId = Account.academicId
+    const Attendance = req.body.Attendance
+    const account = await accountsModel.findOne({ academicId: academicId })
+    const baseSalary = account.salary
 
+    const extraHours = await viewExtraMissingWorkedHoursHelper(
+      academicId,
+      Attendance
+    )
+    const missedDays = await viewMissingDaysHelper(academicId, Attendance)
+
+    var missedDaysDeduction = missedDays * (baseSalary / 60)
+    var missedHoursDeduction = 0
+
+    if (extraHours <= 3) {
+      missedHoursDeduction = extraHours * (baseSalary / 180)
+    }
+    if (extraHours > 0) {
+      extraHours = extraHours * (baseSalary / 180)
+    }
+
+    const totalSalary =
+      baseSalary - missedDaysDeduction + missedHoursDeduction + extraHours
+
+    return res.json({
+      statusCode: errorCodes.success,
+      salary: totalSalary,
+    })
+  } catch (exception) {
+    console.log(exception)
+    return 400
+  }
+}
+const calculateSalary = async (req, res) => {
+  //HRRR
+  try {
+    const Account = req.body.Account
+    const academicId = academicId
+    const Attendance = req.body.Attendance
+    const account = await accountsModel.findOne({ academicId: academicId })
+    if (!account) {
+      return res.json({
+        statusCode: errorCodes.accountNotFound,
+        error: 'Account not found',
+      })
+    }
+    const baseSalary = account.salary
+
+    const extraHours = await viewExtraMissingWorkedHoursHelper(
+      academicId,
+      Attendance
+    )
+    const missedDays = await viewMissingDaysHelper(academicId, Attendance)
+
+    var missedDaysDeduction = missedDays * (baseSalary / 60)
+    var missedHoursDeduction = 0
+
+    if (extraHours <= 3) {
+      missedHoursDeduction = extraHours * (baseSalary / 180)
+    }
+    if (extraHours > 0) {
+      extraHours = extraHours * (baseSalary / 180)
+    }
+
+    const totalSalary =
+      baseSalary - missedDaysDeduction + missedHoursDeduction + extraHours
+
+    return res.json({
+      statusCode: errorCodes.success,
+      salary: totalSalary,
+    })
+  } catch (exception) {
+    console.log(exception)
+    return 400
+  }
+}
 const generateId = async (type) => {
   if (type === userTypes.HR) {
     let counterHR = await countersModel.findOne({ name: userTypes.HR })
@@ -589,7 +633,88 @@ const firstAssignLocation = async (location, academicId) => {
   }
 }
 
+const viewMissingDaysHelper = async (academicId, attendance) => {
+  //The start date and end date depend on the user input
+  //if a user enters a month and a year, it is gonna be
+  //used for our start date otherwise we will use the current month and year
+  const startDate =
+    attendance.hasOwnProperty('month') && attendance.hasOwnProperty('year')
+      ? moment(`${attendance.year}-${attendance.month}-11T00:00:00.0000`)
+      : moment().set('date', 11).set('hours', 0).set('minutes', 0)
+
+  //end date is either a month+startDate or if we haven't reached the end of the month
+  //we will do our business days calculations and getting attendance docs
+  //using the current date as the endDate
+  const tempDate = startDate.clone()
+
+  tempDate.add(1, 'month')
+
+  const endDate = moment().isBefore(tempDate) ? moment() : tempDate
+
+  console.log(
+    `startDate: ${startDate},,,, endDate: ${endDate},,,,, tempDate: ${tempDate}`
+  )
+
+  // const accountFound = await accountsModel.findById(accountId)
+
+  const attendanceFound = await workAttendanceModel.find({
+    academicId: academicId,
+    month:
+      attendance.hasOwnProperty('month') && attendance.hasOwnProperty('year')
+        ? `${attendance.month}`
+        : `${moment().month() + 1}`,
+    year:
+      attendance.hasOwnProperty('month') && attendance.hasOwnProperty('year')
+        ? `${attendance.year}`
+        : `${moment().year()}`,
+  })
+
+  console.log('attendance found')
+  console.log(attendanceFound)
+
+  //TODO
+  const leavesDays = 0
+  const workedDays = attendanceFound[0].totalWorkedDays
+  const businessDays = getBusinessWorkingDays(
+    startDate,
+    endDate,
+    accountFound[0].dayOff
+  )
+  console.log('woww')
+  console.log(businessDays)
+  console.log(workedDays)
+  return businessDays - workedDays - leavesDays
+}
+
+const viewExtraMissingWorkedHoursHelper = async (academicId, attendance) => {
+  // console.log(accountFound)
+
+  const attendanceFound = await workAttendanceModel.find({
+    academicId: academicId,
+    month:
+      attendance.hasOwnProperty('month') && attendance.hasOwnProperty('year')
+        ? attendance.month
+        : moment().month() + 1,
+    year:
+      attendance.hasOwnProperty('month') && attendance.hasOwnProperty('year')
+        ? attendance.year
+        : moment().year(),
+  })
+
+  let myHours =
+    attendanceFound[0].totalWorkedHours -
+    attendanceFound[0].totalWorkedDays * 8.4
+
+  if (myHours > 0) {
+    return myHours
+  } else {
+    return myHours
+  }
+}
+
 module.exports = {
+  calculateMySalary,
+  calculateSalary,
   updateSalary,
   createAccount,
   login,
