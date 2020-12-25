@@ -68,13 +68,13 @@ const requestChangeDayOff = async (req, res) => {
     try {
 
       const body = req.body
-      const accountUser = req.body.account
+      const accountUser = req.body.Account
       const requestFound = await changeDayOffModel.findById(body.reqId)
       const accountFound = await accountsModel.findOne({academicId: requestFound.academicId})
       const accountFoundUser = await accountsModel.findOne({
         academicId: accountUser.academicId,
       })
-      console.log(accountFoundUser.memberType)
+      console.log(accountFound)
      if(!(accountFoundUser.memberType==="head of department")){
       return res.json({
         statusCode: errorCodes.wrongUserType,
@@ -99,8 +99,22 @@ const requestChangeDayOff = async (req, res) => {
           error: 'this request is already accepted',
         })
       }
+      if(requestFound.status === leaveStatus.ACCEPTED && body.status == leaveStatus.REJECTED)
+      {
+
+        return res.json({
+          statusCode: 101,
+          error: 'this request is already accepted and cant be rejected',
+        })
+      }
       await changeDayOffModel.findByIdAndUpdate(body.reqId, {status: body.status})
-      await accountsModel.findByIdAndUpdate(accountFound.id, {dayOff: requestFound.newDayOff})
+      console.log(body.status)
+      console.log(leaveStatus.ACCEPTED)
+     if(body.status == leaveStatus.ACCEPTED)
+     { 
+       console.log("in")
+       await accountsModel.findByIdAndUpdate(accountFound.id, {dayOff: requestFound.newDayOff})
+      }
       return res.json({ statusCode: 0000 })
     } catch (exception) {
         console.log(exception)

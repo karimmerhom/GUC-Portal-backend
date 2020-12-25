@@ -36,12 +36,35 @@ const viewStaff = async (req, res) => {
     }
     else
     {
+      const courseFound = await coursesModel.findOne
+      ({
+         courseId :  details.courseId
+      }
+      )
+      if(!courseFound)
+      {
+        return res.json({
+          statusCode: 101,
+          message: 'course does not exist',
+        })
+        
+      }
+  
         const courses = await staffCoursesModel.find
         (
             {
                 courseId: details.courseId
             }
         )
+      
+        if(courses.length === 0)
+        {
+          return res.json({
+            statusCode: 0,
+            message: 'no staff for this course',
+          })
+          
+        }
         var staff = [] ;
         var staffMember;
         for (var i = 0 ; i<courses.length ; i++)
@@ -123,7 +146,7 @@ const viewDaysOff = async (req, res) => {
        return res.json({
           statusCode: 0,
           staff : staffMemberDayOff ,
-          error: 'staff member day off',
+          message: 'staff member day off',
         })
       }
     } catch (exception) {
@@ -139,7 +162,7 @@ const viewDaysOff = async (req, res) => {
       const accountFound = await AccountModel.findOne({
         academicId: account.academicId
     })
-
+    
     
       if (!accountFound) {
         return res.json({
@@ -152,14 +175,29 @@ const viewDaysOff = async (req, res) => {
     var courses;
       if( courseId !== undefined)
       {
-    courses = await coursesModel.find
-      (
-        
-          {
-               courseId:courseId,
-              department: departmentFound
-          }
-      )
+        courses = await coursesModel.find
+        (
+          
+            {
+                 courseId:courseId,
+                department: departmentFound
+            }
+        )
+        courseFound = await coursesModel.findOne
+        (
+          
+            {
+                 courseId:courseId,
+                department: departmentFound
+            }
+        )
+      if(!courseFound)
+      {
+        return res.json({
+          statusCode: 101,
+          error: 'this course either does not exist or is not in your depatment',
+        })
+      }
     
         }
         else{

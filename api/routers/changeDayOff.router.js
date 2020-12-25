@@ -14,6 +14,7 @@ const { verifyHOD } = require('../helpers/authentication/HODAuthentication')
 const {
   validateRequestChangeDayOff,
   validateUpdateRequest,
+  validateViewSentReq,
 } = require('../helpers/validations/changeDayOffValidations')
 
 router.post(
@@ -32,5 +33,12 @@ router.post(
   verifyHOD,
   updateRequest
 )
-router.post('/viewSentReq', verifyToken, verifyUser, verifyHOD, viewSentReq)
+router.post(
+  '/viewSentReq',
+  validateViewSentReq,
+  verifyToken,
+  verifyUser,
+  verifyHOD,
+  viewSentReq
+)
 module.exports = router
