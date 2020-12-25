@@ -136,8 +136,10 @@ const leaveNotFound = 219
 const notEnoughAnnualLeaves = 220
 const notRightLeaveType = 221
 const signOutExists = 222
+const leaveAccepted = 223
 
 module.exports = {
+  leaveAccepted,
   signOutExists,
   notRightLeaveType,
   notEnoughAnnualLeaves,

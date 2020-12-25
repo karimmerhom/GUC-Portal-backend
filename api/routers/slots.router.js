@@ -7,6 +7,7 @@ const {
   reAssignSlot,
   updateSlot,
   unAssignSlot,
+  viewSchedule,
 } = require('../controllers/slots.controller')
 const {
   validateCreateSlot,
@@ -14,6 +15,7 @@ const {
   validateAssignSlot,
   validateUpdateSlot,
   validateUnAssignSlot,
+  validateViewSchedule,
 } = require('../helpers/validations/slotsValidation')
 
 const { verifyAC } = require('../helpers/authentication/ACAuthentication') // verifies that he is AC
@@ -80,6 +82,15 @@ router.post(
   // verifyUser,
   // verifyINST,
   unAssignSlot
+)
+
+router.post(
+  '/viewSchedule',
+  validateViewSchedule,
+  // verifyToken,
+  // verifyUser,
+  // verifyINST,
+  viewSchedule
 )
 
 module.exports = router

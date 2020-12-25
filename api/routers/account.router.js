@@ -5,6 +5,8 @@ const router = express.Router()
 const accountController = require('../controllers/account.controller')
 
 const {
+  calculateMySalary,
+  calculateSalary,
   createAccount,
   login,
   firstLogin,
@@ -37,6 +39,8 @@ const {
   validateUpdateProfile,
   validateDeleteProfile,
   validateUpdateSalary,
+  validateCalculateMySalary,
+  validateCalculateSalary,
 } = require('../helpers/validations/accountValidations')
 
 router.post(
@@ -71,5 +75,6 @@ router.post(
 )
 router.post('/updateSalary', validateUpdateSalary, verifyHR, updateSalary)
 router.post('/deleteProfile', validateDeleteProfile, verifyHR, deleteProfile)
-
+router.post('calculateMySalary', validateCalculateMySalary, calculateMySalary)
+router.post('calculateSalary', validateCalculateSalary, calculateSalary)
 module.exports = router
