@@ -88,9 +88,10 @@ const createReplacementRequest = async (req, res) => {
       courseId: slotFound.courseId,
     })
     const reciverCourseFound = await staffCoursesModel.findOne({
-      academicId: body.Account.academicId,
+      academicId: body.academicIdReciever,
       courseId: slotFound.courseId,
     })
+    console.log(reciverCourseFound +"gg")
     if (!senderCourseFound) {
       return res.json({
         statusCode: 101,
