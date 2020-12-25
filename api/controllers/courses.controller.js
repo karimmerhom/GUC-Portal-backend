@@ -361,13 +361,6 @@ const assignCourseInstructor = async (req, res) => {
       position: position.INSTRUCTOR,
     })
 
-    if (staffCourse) {
-      return res.json({
-        statusCode: errorCodes.instructorAlreadyExists,
-        error: 'instructor already exists',
-      })
-    }
-
     const newStaffCourse = await staffCoursesModel.create({
       academicId: assignedAcademicId,
       courseId: courseId,
