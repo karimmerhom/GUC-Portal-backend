@@ -18,7 +18,7 @@ const slotLinkingRequest = async (req, res) => {
     }
 
     const slotfound = await slotsModel.findOne({
-      id: slot.id,
+      _id: slot.id,
     })
 
     if (!slotfound) {
@@ -36,7 +36,7 @@ const slotLinkingRequest = async (req, res) => {
     }
 
     const link = await slotLinkingModel.create({
-      slotId: slotfound.id,
+      slotId: slotfound._id,
       academicId: Account.academicId,
     })
 
@@ -60,15 +60,16 @@ const acceptSlotLinkingRequest = async (req, res) => {
         error: 'slot link not found',
       })
     }
+
     if (link.accepted === true) {
       return res.json({
         statusCode: errorCodes.linkAccepted,
         error: 'slot link already accepted',
       })
     }
-
+    console.log(link)
     const slot = await slotsModel.findOne({
-      id: link.slotId,
+      _id: link.slotId,
     })
 
     if (!slot) {
@@ -118,14 +119,14 @@ const viewSlotLinkingRequest = async (req, res) => {
     let mylinks = []
 
     for (var i = 0; i < links.length; i++) {
-      var link = links[0]
+      var link = links[i]
 
       var slot = await slotsModel.findById(link.slotId)
-
       var staffCourse = await staffCoursesModel.find({
         academicId: Account.academicId,
         courseId: slot.courseId,
       })
+      console.log(staffCourse)
 
       if (staffCourse) {
         mylinks.push(link)
