@@ -14,7 +14,8 @@ const changeDayOff = new Schema({
   newDayOff: {type: String, 
   enum:[ days.SATURDAY, days.SUNDAY,days.MONDAY,days.TUESDAY,days.WEDNESDAY, days.THURSDAY]},
   reason: {type: String},
-  hodComment: {type: String}
+  hodComment: {type: String},
+  
 })
 var changeDayOffModel = mongoose.model(
   'changeDayOff',changeDayOff)

@@ -1,8 +1,7 @@
 const changeDayOffModel = require('../../models/changeDayOff.model')
 const slotsModel = require('../../models/slots.modal')
 const accountsModel = require('../../models/account.model')
-const leaveStatus = require('../../api/constants/GUC.enum')
-const { member } = require('../constants/GUC.enum')
+const { leaveStatus  } = require('../constants/GUC.enum')
 const errorCodes = require('../../api/constants/errorCodes')
 
 
@@ -109,8 +108,8 @@ const requestChangeDayOff = async (req, res) => {
       }
       await changeDayOffModel.findByIdAndUpdate(body.reqId, {status: body.status})
       console.log(body.status)
-      console.log(leaveStatus.ACCEPTED)
-     if(body.status == leaveStatus.ACCEPTED)
+      console.log(leaveStatus.REJECTED)
+     if(body.status === 'accepted')
      { 
        console.log("in")
        await accountsModel.findByIdAndUpdate(accountFound.id, {dayOff: requestFound.newDayOff})
@@ -139,14 +138,42 @@ const requestChangeDayOff = async (req, res) => {
       return res.json({ statusCode: 400, error: 'Something went wrong' })
     }
   }
+const viewAllRequests = async(req,res)=>{
+  try{
 
 
+const body = req.body
+
+    const account = await accountsModel.findOne({academicId: body.Account.academicId})
+    const department = account.department
+   
+    const requests = await changeDayOffModel.find()
+    var array = []
+    for (var i = 0; i<requests.length;i++){
+    
+   var thisAc =  requests[i].academicId
+   var thisAcc = await accountsModel.findOne({academicId:thisAc})
+
+   if(thisAcc.department === department){
+     array.push(requests[i])
+   }
+  
+}
+return res.json({ statusCode: errorCodes.success, requests:array })
+
+  }
+  catch (exception) {
+    console.log(exception)
+    return res.json({ statusCode: 400, error: 'Something went wrong' })
+  }
+}
 
  
 
   module.exports = {
     requestChangeDayOff,
     updateRequest,
-    viewSentReq
+    viewSentReq,
+    viewAllRequests
 
 }
