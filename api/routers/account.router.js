@@ -69,8 +69,8 @@ router.post(
 router.post(
   '/getprofile',
   validateGetProfile,
-  verifyToken,
-  verifyUser,
+  // verifyToken,
+  // verifyUser,
   get_profile
 )
 router.post('/updateSalary', validateUpdateSalary, verifyHR, updateSalary)

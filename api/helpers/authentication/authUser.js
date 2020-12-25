@@ -8,12 +8,7 @@ module.exports = {
       if (!Account) {
         return res.json({ code: authentication, error: 'breach not account' })
       }
-      if (req.data.id !== Account.id) {
-        return res.json({
-          code: authentication,
-          error: 'Not your account breach',
-        })
-      }
+
       if (req.data.academicId !== Account.academicId) {
         return res.json({
           code: authentication,
