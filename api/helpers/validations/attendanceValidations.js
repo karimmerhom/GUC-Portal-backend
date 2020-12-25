@@ -3,7 +3,7 @@ const Joi = require('joi')
 const validateSignInOut = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().min(24).required(),
+      academicId: Joi.string().required(),
     }).required(),
   })
 
@@ -19,9 +19,11 @@ const validateSignInOut = (req, res, next) => {
 const validateManualSignInOut = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().min(24).required(),
+      academicId: Joi.string().required(),
     }).required(),
     Attendance: Joi.object({
+      academicId: Joi.string().required(),
+
       hour: Joi.string()
         .regex(/^2[0-3]|[0-1]?[0-9]$/)
         .min(1)
@@ -68,7 +70,51 @@ const validateManualSignInOut = (req, res, next) => {
 const validateViewMissingDays = (req, res, next) => {
   const schema = Joi.object({
     Account: Joi.object({
-      id: Joi.string().min(24).required(),
+      academicId: Joi.string().required(),
+    }).required(),
+    Attendance: Joi.object({
+      academicId: Joi.string().required(),
+
+      month: Joi.string(),
+      year: Joi.string(),
+    }).required(),
+  })
+
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: 1001,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
+
+const validateViewStaffAttendanceRecord = (req, res, next) => {
+  const schema = Joi.object({
+    Account: Joi.object({
+      academicId: Joi.string().required(),
+    }).required(),
+    Attendance: Joi.object({
+      academicId: Joi.string().required(),
+      month: Joi.string(),
+      year: Joi.string(),
+    }).required(),
+  })
+
+  const isValid = Joi.validate(req.body, schema)
+  if (isValid.error) {
+    return res.json({
+      statusCode: 1001,
+      error: isValid.error.details[0].message,
+    })
+  }
+  return next()
+}
+const validateViewWithMissingDaysHours = (req, res, next) => {
+  const schema = Joi.object({
+    Account: Joi.object({
+      academicId: Joi.string().required(),
     }).required(),
     Attendance: Joi.object({
       month: Joi.string(),
@@ -87,7 +133,9 @@ const validateViewMissingDays = (req, res, next) => {
 }
 
 module.exports = {
+  validateViewWithMissingDaysHours,
   validateSignInOut,
   validateViewMissingDays,
   validateManualSignInOut,
+  validateViewStaffAttendanceRecord,
 }

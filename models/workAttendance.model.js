@@ -7,7 +7,7 @@ var Schema = mongoose.Schema
 const workAttendance = new Schema({
   month: { type: String },
   year: { type: String },
-  eid: { type: String },
+  academicId: { type: String },
   totalWorkedDays: { type: Number },
   totalWorkedHours: { type: Number },
 })

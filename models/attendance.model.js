@@ -7,6 +7,7 @@ var Schema = mongoose.Schema
 
 const attendance = new Schema({
   accountId: { type: String },
+  academicId: { type: String },
   signInTime: { type: String },
   signOutTime: { type: String },
   totalTime: { type: Number },

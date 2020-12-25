@@ -130,8 +130,11 @@ const accountNotFound = 213
 const alreadySignedIn = 214
 const haventSignedIn = 215
 const alreadySignedOut = 216
-
+const cantSignInAfter19 = 217
+const cantManualSignIn = 218
 module.exports = {
+  cantSignInAfter19,
+  cantManualSignIn,
   linkAccepted,
   memberAlreadyAssigned,
   assignmentDoesNotExist,

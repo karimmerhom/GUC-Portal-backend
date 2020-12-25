@@ -8,11 +8,17 @@ const {
   viewMissingDays,
   viewMyAttendanceRecord,
   viewExtraMissingWorkedHours,
+  viewStaffAttendanceRecord,
+  viewStaffWithMissingDaysHours,
+  viewStaffWithMissingHours,
+  viewStaffWithMissingDays,
 } = require('../controllers/attendance.controller')
 const {
   validateSignInOut,
   validateManualSignInOut,
   validateViewMissingDays,
+  validateViewStaffAttendanceRecord,
+  validateViewWithMissingDaysHours,
 } = require('../helpers/validations/attendanceValidations')
 
 router.post('/signIn', validateSignInOut, signIn)
@@ -29,7 +35,21 @@ router.post(
   validateViewMissingDays,
   viewExtraMissingWorkedHours
 )
-
+router.post(
+  '/viewStaffAttendanceRecord',
+  validateViewStaffAttendanceRecord,
+  viewStaffAttendanceRecord
+)
 router.post('/viewMissingDays', validateViewMissingDays, viewMissingDays)
+router.post(
+  '/viewStaffWithMissingHours',
+  validateViewWithMissingDaysHours,
+  viewStaffWithMissingHours
+)
+router.post(
+  '/viewStaffWithMissingDays',
+  validateViewWithMissingDaysHours,
+  viewStaffWithMissingDays
+)
 
 module.exports = router
